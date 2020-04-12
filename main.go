@@ -16,6 +16,9 @@ func handlerFunc(res http.ResponseWriter, req *http.Request) {
 		fmt.Fprint(res, "To get in touch, please send an email "+
 		" to <a href=\"mailto:contact@nathanielwheeler.com\">"+
 		"contact@nathanielwheeler.com</a>.")
+	default:
+		fmt.Fprint(res, "<h1>Page Not Found</h1>"+
+		"<p>Please email me if you keep being sent to an invalid page.</p>")
 	}
 }
 
