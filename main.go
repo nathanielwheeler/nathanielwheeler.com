@@ -21,10 +21,9 @@ func contact(res http.ResponseWriter, req *http.Request){
 	)
 }
 
-
 func main() {
 	router := mux.NewRouter()
-	r.HandleFnc("/", home)
-	r.HandleFnc("/contact", contact)
-	http.ListenAndServe(":3000", nil)
+	router.HandleFunc("/", home)
+	router.HandleFunc("/contact", contact)
+	http.ListenAndServe(":3000", router)
 }
