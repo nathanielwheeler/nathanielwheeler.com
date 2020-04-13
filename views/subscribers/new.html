@@ -3,6 +3,7 @@
 	<div class="card border-primary bg-dark">
 		<div class="card-body">
 			<h3 class="card-title text-center">Subscribe to my Email List!</h3>
+			<p class="lead">Please add your email address to get notified when I make things!</p>
 			<div class="card-text">
 				{{template "subscribeForm"}}
 			</div>
@@ -12,12 +13,11 @@
 {{end}}
 
 {{define "subscribeForm"}}
-<p class="lead">Please add your email address to get notified when I make things!</p>
-<form>
+<form action="/subscribe" method="POST">
 	<div class="form-group">
 		<label for="email">Email address</label>
 		<div class="input-group">
-			<input class="form-control" type="email" id="email" placeholder="you@example.com">
+			<input class="form-control" type="email" name="email" id="email" placeholder="you@example.com">
 			<div class="input-group-append">
 				<button class="btn btn-primary" type="submit">Subscribe!</button>
 			</div>

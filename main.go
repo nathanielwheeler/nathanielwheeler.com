@@ -60,8 +60,9 @@ func main() {
 	subsController := controllers.NewSubscribers()
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", home)
-	router.HandleFunc("/resume", resume)
-	router.HandleFunc("/subscribe", subsController.New)
+	router.HandleFunc("/", home).Methods("GET")
+	router.HandleFunc("/resume", resume).Methods("GET")
+	router.HandleFunc("/subscribe", subsController.New).Methods("GET")
+	router.HandleFunc("/subscribe", subsController.Create).Methods("POST")
 	http.ListenAndServe(":3000", router)
 }
