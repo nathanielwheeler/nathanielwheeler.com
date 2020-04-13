@@ -31,7 +31,7 @@ main.go
 var (
 	homeView,
 	contactView,
-	signupView *views.View
+	subscribeView *views.View
 )
 
 // #region Handlers
@@ -46,9 +46,9 @@ func contact(res http.ResponseWriter, req *http.Request) {
 	must(contactView.Render(res, nil))
 }
 
-func signup(res http.ResponseWriter, req *http.Request) {
+func subscribe(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "text/html")
-	must(signupView.Render(res, nil))
+	must(subscribeView.Render(res, nil))
 }
 
 func must(err error) {
@@ -62,11 +62,11 @@ func must(err error) {
 func main() {
 	homeView = views.NewView("app", "views/home.html")
 	contactView = views.NewView("app", "views/contact.html")
-	signupView = views.NewView("app", "views/signup.html")
+	subscribeView = views.NewView("app", "views/subscribe.html")
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", home)
 	router.HandleFunc("/contact", contact)
-	router.HandleFunc("/signup", signup)
+	router.HandleFunc("/subscribe", subscribe)
 	http.ListenAndServe(":3000", router)
 }
