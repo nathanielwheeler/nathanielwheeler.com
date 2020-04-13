@@ -28,7 +28,7 @@ func contact(res http.ResponseWriter, req *http.Request) {
 
 func main() {
 	homeView = views.NewView("app", "views/home.html")
-	contactView = views.NewView("app", "views/contact.gohtml")
+	contactView = views.NewView("app", "views/contact.html")
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", home)
