@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"nathanielwheeler.com/views"
+	"nathanielwheeler.com/controllers"
 
 	"github.com/gorilla/mux"
 )
@@ -30,8 +31,7 @@ main.go
 
 var (
 	homeView,
-	resumeView,
-	subscribeView *views.View
+	resumeView *views.View
 )
 
 // #region Handlers
@@ -46,11 +46,6 @@ func resume(res http.ResponseWriter, req *http.Request) {
 	must(resumeView.Render(res, nil))
 }
 
-func subscribe(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("Content-Type", "text/html")
-	must(subscribeView.Render(res, nil))
-}
-
 func must(err error) {
 	if err != nil {
 		panic(err)
@@ -62,11 +57,11 @@ func must(err error) {
 func main() {
 	homeView = views.NewView("app", "views/home.html")
 	resumeView = views.NewView("app", "views/resume.html")
-	subscribeView = views.NewView("app", "views/subscribe.html")
+	subsController := controllers.NewSubscribers()
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", home)
 	router.HandleFunc("/resume", resume)
-	router.HandleFunc("/subscribe", subscribe)
+	router.HandleFunc("/subscribe", subsController.New)
 	http.ListenAndServe(":3000", router)
 }
