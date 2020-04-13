@@ -1,0 +1,27 @@
+{{define "yield"}}
+<main class="container">
+	<div class="card border-primary bg-dark">
+		<div class="card-body">
+			<h3 class="card-title text-center">Subscribe to my Email List!</h3>
+			<div class="card-text">
+				{{template "signupForm"}}
+			</div>
+		</div>
+	</div>
+</main>
+{{end}}
+
+{{define "signupForm"}}
+<p class="lead">Please add your email address to get notified when I make things!</p>
+<form>
+	<div class="form-group">
+		<label for="email">Email address</label>
+		<div class="input-group">
+			<input class="form-control" type="email" id="email" placeholder="you@example.com">
+			<div class="input-group-append">
+				<button class="btn btn-primary" type="submit">Subscribe!</button>
+			</div>
+		</div>
+	</div>
+</form>
+{{end}}
