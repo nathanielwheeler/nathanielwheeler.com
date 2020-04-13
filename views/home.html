@@ -1,5 +1,30 @@
 {{define "yield"}}
-<p>
-	Hey, welcome to my webzone!
-</p>
+<div class="jumbotron bg-secondary text-light">
+	<div class="row">
+		<div class="col-12 col-md-6 order-1 order-md-2">
+			<img src="http://placehold.it/300x300.png" alt="">
+		</div>
+		<div class="col-12 col-md-6 order-2 order-md-1">
+			<h1 class="display-4">Welcome!</h1>
+			<p>
+				I am a full-stack web developer who works in Go, C#, and JavaScript.  I use Node/Express, Vue.js, Svelte.js, and ASP.NET. <br> <br>
+				I also like to write.  Check out my blog!
+			</p>
+		</div>
+	</div>
+	<hr class="my-4">
+	<div class="row">
+		<div class="col">
+			<h4 class="text-center"><em>Latest Post:</em></h4>
+			<br>
+			<h2>Title</h2>
+			<p class="lead">First paragraph goes here.</p>
+			<br>
+			<div class="row d-flex justify-content-between px-4">
+				<a class="btn btn-primary btn-lg" href="#" role="button">Read more</a>
+				<a class="btn btn-light btn-lg" href="/contact" role="button">Contact me</a>
+			</div>
+		</div>
+	</div>
+</div>
 {{end}}
