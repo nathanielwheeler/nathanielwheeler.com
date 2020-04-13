@@ -12,15 +12,15 @@ var homeView, contactView *views.View
 
 func home(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("content-Type", "text/html")
-	err := homeView.Template.ExecuteTemplate(res, homeView.Layout, nil)
-	if err != nil {
-		panic(err)
-	}
+	must(homeView.Render(res, nil))
 }
 
 func contact(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("content-Type", "text/html")
-	err := contactView.Template.ExecuteTemplate(res, contactView.Layout, nil)
+	must(contactView.Render(res, nil))
+}
+
+func must(err error) {
 	if err != nil {
 		panic(err)
 	}
