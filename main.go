@@ -30,7 +30,7 @@ main.go
 
 var (
 	homeView,
-	contactView,
+	resumeView,
 	subscribeView *views.View
 )
 
@@ -41,9 +41,9 @@ func home(res http.ResponseWriter, req *http.Request) {
 	must(homeView.Render(res, nil))
 }
 
-func contact(res http.ResponseWriter, req *http.Request) {
+func resume(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("content-Type", "text/html")
-	must(contactView.Render(res, nil))
+	must(resumeView.Render(res, nil))
 }
 
 func subscribe(res http.ResponseWriter, req *http.Request) {
@@ -61,12 +61,12 @@ func must(err error) {
 
 func main() {
 	homeView = views.NewView("app", "views/home.html")
-	contactView = views.NewView("app", "views/contact.html")
+	resumeView = views.NewView("app", "views/resume.html")
 	subscribeView = views.NewView("app", "views/subscribe.html")
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", home)
-	router.HandleFunc("/contact", contact)
+	router.HandleFunc("/resume", resume)
 	router.HandleFunc("/subscribe", subscribe)
 	http.ListenAndServe(":3000", router)
 }
