@@ -18,7 +18,15 @@ type View struct {
 
 // Render : Responsible for rendering the view.
 func (v *View) Render(res http.ResponseWriter, data interface{}) error {
+	res.Header().Set("Content-Type", "text/html")
 	return v.Template.ExecuteTemplate(res, v.Layout, data)
+}
+
+// ServeHTTP : Renders and serves views.
+func (v *View) ServeHTTP(res http.ResponseWriter, data interface{}) {
+	if err := v.Render(res, nil); err != nil {
+		panic(err)
+	}
 }
 
 // NewView : Takes in a layout name, any number of filename strings, parses them into template, and returns the address of the new view.
