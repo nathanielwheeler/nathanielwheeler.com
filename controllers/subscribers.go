@@ -39,6 +39,6 @@ func (sub *Subscribers) Create(res http.ResponseWriter, req *http.Request) {
 // NewSubscribers : Initializes the view for subscribers
 func NewSubscribers() *Subscribers {
 	return &Subscribers{
-		NewView: views.NewView("app", "views/subscribers/new.html"),
+		NewView: views.NewView("app", "subscribers/new"),
 	}
 }

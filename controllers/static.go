@@ -13,7 +13,7 @@ type Static struct {
 // NewStatic : Returns the initialized views of the static pages.
 func NewStatic() *Static {
 	return &Static{
-		Home:   views.NewView("app", "views/static/home.html"),
-		Resume: views.NewView("app", "views/static/resume.html"),
+		Home:   views.NewView("app", "static/home"),
+		Resume: views.NewView("app", "static/resume"),
 	}
 }

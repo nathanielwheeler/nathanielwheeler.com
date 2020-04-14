@@ -8,8 +8,13 @@ import (
 
 /*
 NOTE In this file, I am panicking so much because if these views are not parsed correctly, the entire app is useless.
-TODO Make an error handling system
 */
+
+var (
+	templateDir string = "views/"
+	layoutDir   string = templateDir + "layouts/"
+	templateExt string = ".html"
+)
 
 // View : Contains a pointer to a template and the name of a layout.
 type View struct {
@@ -19,6 +24,8 @@ type View struct {
 
 // NewView : Takes in a layout name, any number of filename strings, parses them into template, and returns the address of the new view.
 func NewView(layout string, files ...string) *View {
+	addTemplatePath(files)
+	addTemplateExt(files)
 	files = append(files, layoutFiles()...)
 
 	t, err := template.ParseFiles(files...)
@@ -45,8 +52,28 @@ func (v *View) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
+
+
+/* 
+	HELPERS
+*/
+
+// takes a slice of strings (should be file paths) and prepends the templateDir to each string
+func addTemplatePath(files []string) {
+	for i, f := range files {
+		files[i] = templateDir + f
+	}
+}
+
+// takes in a slice of strings (should be file paths) and appends the templateExt to each string
+func addTemplateExt(files []string) {
+	for i, f := range files {
+		files[i] = f + templateExt
+	}
+}
+
 func layoutFiles() []string {
-	files, err := filepath.Glob("views/layouts/*.html")
+	files, err := filepath.Glob(layoutDir + "*" + templateExt)
 	if err != nil {
 		panic(err)
 	}
