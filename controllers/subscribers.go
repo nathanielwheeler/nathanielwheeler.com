@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/schema"
-
 	"nathanielwheeler.com/views"
 )
 
@@ -16,7 +14,7 @@ type Subscribers struct {
 
 // SubscribeForm :
 type SubscribeForm struct {
-	Email string `schema: "email"`
+	Email string `schema:"email"`
 }
 
 // New : GET /subscribe
@@ -26,22 +24,16 @@ func (sub *Subscribers) New(res http.ResponseWriter, req *http.Request) {
 		// TODO don't panic && give feedback to subscriber
 		panic(err)
 	}
-
-	decoder := schema.NewDecoder()
-	form := SubscribeForm{}
-	if err := decoder.Decode(&form, req.PostForm); err != nil {
-		panic(err)
-	}
-	fmt.Fprintln(res, form)
 }
 
 // Create : POST /subscribe
 // — Used to process the subscription form when a user tries to subscribe
 func (sub *Subscribers) Create(res http.ResponseWriter, req *http.Request) {
-	if err := req.ParseForm(); err != nil {
+	var form SubscribeForm
+	if err := parseForm(req, &form); err != nil {
 		panic(err)
 	}
-	fmt.Fprintln(res, req.PostForm["email"])
+	fmt.Fprintln(res, "Email is", form.Email)
 }
 
 // NewSubscribers : Initializes the view for subscribers
