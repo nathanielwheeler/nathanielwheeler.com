@@ -1,8 +1,8 @@
 package views
 
 import (
-	"net/http"
 	"html/template"
+	"net/http"
 	"path/filepath"
 )
 
@@ -16,8 +16,6 @@ type View struct {
 	Template *template.Template
 	Layout   string
 }
-
-
 
 // NewView : Takes in a layout name, any number of filename strings, parses them into template, and returns the address of the new view.
 func NewView(layout string, files ...string) *View {
@@ -46,8 +44,6 @@ func (v *View) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 }
-
-
 
 func layoutFiles() []string {
 	files, err := filepath.Glob("views/layouts/*.html")
