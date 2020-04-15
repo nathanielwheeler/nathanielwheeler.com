@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	_ "database/sql"
+	"database/sql"
 	"os"
 	"strings"
 
@@ -21,24 +21,38 @@ func init() {
 }
 
 func main() {
-	fmt.Println(getEnv())
+	dbEnv := getEnv()
+	psqlConnectionStr := fmt.Sprintf(
+		"host=%s port=%s user=%s password='%s' dbname=%s sslmode=disable",
+		dbEnv.host, dbEnv.port, dbEnv.user, dbEnv.password, dbEnv.name,
+	)
+	db, err := sql.Open("postgres", psqlConnectionStr)
+	if err != nil {
+		panic(err)
+	}
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Connected to postgreSQL!")
+	db.Close()
 }
 
 func getEnv() env {
-	dbEnv := env{
+	return env{
 		host: checkEnv("host"),
 		user: checkEnv("user"),
 		password: checkEnv("password"),
 		port: checkEnv("port"),
 		name: checkEnv("name"),
 	}
-	return dbEnv
 }
 
 func checkEnv(str string) string {
 	str, exists := os.LookupEnv("DB_" + strings.ToUpper(str))
 	if !exists {
-		panic(".env not properly configured")
+		panic(".env is missing environment variable: '" + str + "'")
 	}
 	return str
 }
