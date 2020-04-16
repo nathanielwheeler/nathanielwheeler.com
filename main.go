@@ -41,7 +41,7 @@ func main() {
 
 	// Initialize controllers
 	staticC := controllers.NewStatic()
-	subsC := controllers.NewSubscribers()
+	subsC := controllers.NewSubscribers(ss)
 
 	// Route Handling
 	router := mux.NewRouter()
@@ -53,7 +53,6 @@ func main() {
 	// Start that server!
 	http.ListenAndServe(":3000", router)
 }
-
 
 // #region DB HELPERS
 
