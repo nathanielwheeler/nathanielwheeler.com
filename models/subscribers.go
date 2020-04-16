@@ -54,6 +54,15 @@ func (ss *SubsService) Update(sub *Subscriber) error {
 	return ss.db.Save(sub).Error
 }
 
+// Delete : Removes the subscriber identified by the id
+func (ss *SubsService) Delete(id uint) error {
+	if id == 0 {
+		return ErrInvalidID
+	}
+	sub := Subscriber{Model: gorm.Model{ID: id}}
+	return ss.db.Delete(&sub).Error
+}
+
 // Close : Shuts down the connection to database
 func (ss *SubsService) Close() error {
 	return ss.db.Close()
