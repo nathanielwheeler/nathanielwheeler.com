@@ -63,6 +63,23 @@ func (ss *SubsService) Delete(id uint) error {
 	return ss.db.Delete(&sub).Error
 }
 
+// AutoMigrate : Attempts to automatically migrate the subscribers table
+func (ss *SubsService) AutoMigrate() error {
+	if err := ss.db.AutoMigrate(&Subscriber{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// DestructiveReset : Destroys tables and calls AutoMigrate()
+func (ss *SubsService) DestructiveReset() error {
+	err := ss.db.DropTableIfExists(&Subscriber{}).Error
+	if err != nil {
+		return err
+	}
+	return ss.AutoMigrate()
+}
+
 // Close : Shuts down the connection to database
 func (ss *SubsService) Close() error {
 	return ss.db.Close()
