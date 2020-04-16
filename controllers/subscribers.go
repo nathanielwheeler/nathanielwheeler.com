@@ -38,7 +38,6 @@ func (s *Subscribers) Create(res http.ResponseWriter, req *http.Request) {
 	}
 	sub := models.Subscriber{
 		Email:       form.Email,
-		EveryUpdate: form.EveryUpdate,
 	}
 	if err := s.ss.Create(&sub); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)

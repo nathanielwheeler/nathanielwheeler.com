@@ -3,7 +3,9 @@
 	<div class="card border-primary bg-dark">
 		<div class="card-body">
 			<h3 class="card-title text-center">Subscribe to my Email List!</h3>
-			<p class="lead">Please add your email address to get notified when I make things!</p>
+			<p class="lead">
+				Please add your email address to get notified when I make things!
+			</p>
 			<div class="card-text">
 				{{template "subscribeForm"}}
 			</div>
@@ -14,16 +16,6 @@
 
 {{define "subscribeForm"}}
 <form action="/subscribe" method="POST">
-	<fieldset class="form-group">
-		<div class="form-check">
-			<input type="radio" class="form-check-input" name="every-update" value="1" id="every-update-true" checked>
-			<label for="" class="form-check-label" for="every-update-true">Receive an email for every update.</label>
-		</div>
-		<div class="form-check">
-			<input type="radio" class="form-check-input" name="every-update" value="0" id="every-update-false">
-			<label for="every-update-false" class="form-check-label" for="false">Receive an email once a month with a summary of updates.</label>
-		</div>
-	</fieldset>
 	<div class="form-group">
 		<div class="input-group">
 			<input class="form-control" type="email" name="email" id="email" placeholder="you@example.com">

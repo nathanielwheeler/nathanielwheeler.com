@@ -19,7 +19,6 @@ var (
 type Subscriber struct {
 	gorm.Model
 	Email       string `gorm:"type:varchar(100);primary key"`
-	EveryUpdate bool `gorm:"type:bool;not null"`
 }
 
 // SubsService : Processes the logic for subscribers
