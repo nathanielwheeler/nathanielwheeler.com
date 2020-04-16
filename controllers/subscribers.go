@@ -15,6 +15,7 @@ type Subscribers struct {
 // SubscribeForm :
 type SubscribeForm struct {
 	Email string `schema:"email"`
+	EveryUpdate bool `schema:"every-update"`
 }
 
 // New : GET /subscribe
@@ -34,6 +35,7 @@ func (sub *Subscribers) Create(res http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 	fmt.Fprintln(res, "Email is", form.Email)
+	fmt.Fprintln(res, "Wants every update", form.EveryUpdate)
 }
 
 // NewSubscribers : Initializes the view for subscribers

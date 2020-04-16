@@ -19,8 +19,7 @@ var (
 type Subscriber struct {
 	gorm.Model
 	Email string `gorm:"not null;type:varchar(100);unique_index"`
-	MonthlyUpdate bool `gorm:"default:true"`
-	EveryUpdate bool `gorm:"default:false"`
+	EveryUpdate bool
 }
 
 
@@ -30,7 +29,7 @@ type SubsService struct {
 	db *gorm.DB
 }
 
-// NewSubsService : constructor for SubsService
+// NewSubsService : constructor for SubsService.  Initializes database connection
 func NewSubsService(connectionStr string) (*SubsService, error) {
 	db, err := gorm.Open("postgres", connectionStr)
 	if err != nil {
