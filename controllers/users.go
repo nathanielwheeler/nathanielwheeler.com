@@ -8,24 +8,53 @@ import (
 	"nathanielwheeler.com/views"
 )
 
-// Users : Holds reference for the Users view and service.
-type Users struct {
-	NewView *views.View
-	us      *models.UsersService
+// NewUsers : Initializes the view for users
+func NewUsers(us *models.UsersService) *Users {
+	return &Users{
+		NewView: views.NewView("app", "users/new"),
+		LoginView: views.NewView("app", "users/login"),
+		us:      us,
+	}
 }
 
-// SignupForm : This form is used to transform a webform into something my server can use
+// Users : Holds reference for the Users view and service.
+type Users struct {
+	NewView   *views.View
+	LoginView *views.View
+	us        *models.UsersService
+}
+
+// #region FORMS
+
+// SignupForm : This form is used to transform a webform into a registration request
 type SignupForm struct {
 	Email    string `schema:"email"`
 	Name     string `schema:"name"`
 	Password string `schema:"password"`
 }
 
+// LoginForm : This form is used to transform a webform into a login request
+type LoginForm struct {
+	Email string `schema:"email"`
+	Password string `schema:"password"`
+}
+
+// #endregion
+
 // New : GET /signup
 // — Renders a new form view for a potential user
 func (u *Users) New(res http.ResponseWriter, req *http.Request) {
 	if err := u.NewView.Render(res, nil); err != nil {
 		// TODO don't panic && give feedback to user
+		panic(err)
+	}
+}
+
+// Login : POST /login
+// — Used to process the login form when a user tries to log in as an existing user
+func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
+	form := LoginForm{}
+	if err := parseForm(req, &form); err != nil {
 		panic(err)
 	}
 }
@@ -47,12 +76,4 @@ func (u *Users) Create(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	fmt.Fprintln(res, "User is", user)
-}
-
-// NewUsers : Initializes the view for users
-func NewUsers(us *models.UsersService) *Users {
-	return &Users{
-		NewView: views.NewView("app", "users/new"),
-		us:      us,
-	}
 }

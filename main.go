@@ -44,14 +44,16 @@ func main() {
 	usersC := controllers.NewUsers(us)
 
 	// Route Handling
-	router := mux.NewRouter()
-	router.Handle("/", staticC.Home).Methods("GET")
-	router.Handle("/resume", staticC.Resume).Methods("GET")
-	router.HandleFunc("/subscribe", usersC.New).Methods("GET")
-	router.HandleFunc("/subscribe", usersC.Create).Methods("POST")
+	r := mux.NewRouter()
+	r.Handle("/", staticC.Home).Methods("GET")
+	r.Handle("/resume", staticC.Resume).Methods("GET")
+	r.HandleFunc("/signup", usersC.New).Methods("GET")
+	r.HandleFunc("/signup", usersC.Create).Methods("POST")
+	r.Handle("/login", usersC.LoginView).Methods("GET")
+	r.HandleFunc("/login", usersC.Login).Methods("POST")
 
 	// Start that server!
-	http.ListenAndServe(":3000", router)
+	http.ListenAndServe(":3000", r)
 }
 
 // #region DB HELPERS
