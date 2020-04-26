@@ -32,23 +32,23 @@ func main() {
 	)
 
 	// Initialize services
-	ss, err := models.NewSubsService(psqlConnectionStr)
+	us, err := models.NewUsersService(psqlConnectionStr)
 	if err != nil {
 		panic(err)
 	}
-	defer ss.Close()
-	ss.AutoMigrate()
+	defer us.Close()
+	us.AutoMigrate()
 
 	// Initialize controllers
 	staticC := controllers.NewStatic()
-	subsC := controllers.NewSubscribers(ss)
+	usersC := controllers.NewUsers(us)
 
 	// Route Handling
 	router := mux.NewRouter()
 	router.Handle("/", staticC.Home).Methods("GET")
 	router.Handle("/resume", staticC.Resume).Methods("GET")
-	router.HandleFunc("/subscribe", subsC.New).Methods("GET")
-	router.HandleFunc("/subscribe", subsC.Create).Methods("POST")
+	router.HandleFunc("/subscribe", usersC.New).Methods("GET")
+	router.HandleFunc("/subscribe", usersC.Create).Methods("POST")
 
 	// Start that server!
 	http.ListenAndServe(":3000", router)
