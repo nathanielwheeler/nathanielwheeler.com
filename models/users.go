@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/jinzhu/gorm"
-	// Not directly used, but needed to help gorm communicate with postgres
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/jinzhu/gorm/dialects/postgres" // Not directly used, but needed to help gorm communicate with postgres
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -15,11 +15,16 @@ var (
 	ErrInvalidID = errors.New("models: ID provided was invalid")
 )
 
+// TODO: remove obvious pepper
+var userPwPepper = "secret-string"
+
 // User : Model for people that want updates from my website and want to leave comments on my posts.
 type User struct {
 	gorm.Model
-	Email string `gorm:"type:varchar(100);primary key"`
-	Name  string
+	Name         string
+	Email        string `gorm:"type:varchar(100);primary key"`
+	Password     string `gorm:"-"` // Ensures that it won't be saved to database
+	PasswordHash string `gorm:"not null"`
 }
 
 // UsersService : Processes the logic for users
@@ -44,25 +49,38 @@ func NewUsersService(connectionStr string) (*UsersService, error) {
 // ByID : Gets a user given an ID.
 func (us *UsersService) ByID(id uint) (*User, error) {
 	var user User
-	err := us.db.Where("id = ?", id).First(&user).Error
-	switch err {
-	case nil:
-		return &user, nil
-	case gorm.ErrRecordNotFound:
-		return nil, ErrNotFound
-	default:
+	db := us.db.Where("id = ?", id)
+	err := first(db, &user)
+	if err != nil {
 		return nil, err
 	}
+	return &user, nil
+}
+
+// ByEmail : Get a user given an email string
+func (us *UsersService) ByEmail(email string) (*User, error) {
+	var user User
+	db := us.db.Where("email = ?", email)
+	err := first(db, &user)
+	return &user, err
 }
 
 // Create : Creates the provided user and fills provided data fields
-func (us *UsersService) Create(u *User) error {
-	return us.db.Create(u).Error
+func (us *UsersService) Create(user *User) error {
+	pwBytes := []byte(user.Password + userPwPepper)
+	hashedBytes, err := bcrypt.GenerateFromPassword(
+		pwBytes, bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = string(hashedBytes)
+	user.Password = ""
+	return us.db.Create(user).Error
 }
 
 // Update : Changes subscriber preferences
-func (us *UsersService) Update(u *User) error {
-	return us.db.Save(u).Error
+func (us *UsersService) Update(user *User) error {
+	return us.db.Save(user).Error
 }
 
 // Delete : Removes the subscriber identified by the id
@@ -70,8 +88,8 @@ func (us *UsersService) Delete(id uint) error {
 	if id == 0 {
 		return ErrInvalidID
 	}
-	u := User{Model: gorm.Model{ID: id}}
-	return us.db.Delete(&u).Error
+	user := User{Model: gorm.Model{ID: id}}
+	return us.db.Delete(&user).Error
 }
 
 // AutoMigrate : Attempts to automatically migrate the subscribers table
@@ -94,6 +112,18 @@ func (us *UsersService) DestructiveReset() error {
 // Close : Shuts down the connection to database
 func (us *UsersService) Close() error {
 	return us.db.Close()
+}
+
+// #endregion
+
+// #region HELPERS
+
+func first(db *gorm.DB, dst interface{}) error {
+	err := db.First(dst).Error
+	if err == gorm.ErrRecordNotFound {
+		return ErrNotFound
+	}
+	return err
 }
 
 // #endregion

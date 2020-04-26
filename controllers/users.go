@@ -8,18 +8,17 @@ import (
 	"nathanielwheeler.com/views"
 )
 
-// Users :
+// Users : Holds reference for the Users view and service.
 type Users struct {
 	NewView *views.View
 	us      *models.UsersService
 }
 
-// FIXME Web form must be updated
-
-// SignupForm :
+// SignupForm : This form is used to transform a webform into something my server can use
 type SignupForm struct {
-	Email       string `schema:"email"`
-	EveryUpdate bool   `schema:"every-update"`
+	Email    string `schema:"email"`
+	Name     string `schema:"name"`
+	Password string `schema:"password"`
 }
 
 // New : GET /signup
@@ -32,14 +31,16 @@ func (u *Users) New(res http.ResponseWriter, req *http.Request) {
 }
 
 // Create : POST /signup
-// — Used to process the subscription form when a user tries to signup
+// — Used to process the signup form when a user tries to create a new user account
 func (u *Users) Create(res http.ResponseWriter, req *http.Request) {
-	var form SubscribeForm
+	var form SignupForm
 	if err := parseForm(req, &form); err != nil {
 		panic(err)
 	}
 	user := models.User{
-		Email:       form.Email,
+		Name:     form.Name,
+		Email:    form.Email,
+		Password: form.Password,
 	}
 	if err := u.us.Create(&user); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
