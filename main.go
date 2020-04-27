@@ -49,7 +49,7 @@ func main() {
 	r.Handle("/resume", staticC.Resume).Methods("GET")
 	r.HandleFunc("/register", usersC.RegisterForm).Methods("GET")
 	r.HandleFunc("/register", usersC.Register).Methods("POST")
-	r.HandleFunc("/login", usersC.LoginForm).Methods("GET")
+	r.Handle("/login", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 
 	// Start that server!

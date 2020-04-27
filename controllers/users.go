@@ -69,22 +69,23 @@ func (u *Users) Register(res http.ResponseWriter, req *http.Request) {
 	fmt.Fprintln(res, "User is", user)
 }
 
-// LoginForm : GET /login
-// — Renders a new login form for a returning user
-func (u *Users) LoginForm(res http.ResponseWriter, req *http.Request) {
-	if err := u.LoginView.Render(res, nil); err != nil {
-		// TODO don't panic and give feedback to user
-		panic(err)
-	}
-}
-
 // Login : POST /login
 // — Used to process the login form when a user tries to log in as an existing user
 func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
-	form := LoginForm{}
+	var form LoginForm
 	if err := parseForm(req, &form); err != nil {
 		panic(err)
 	}
+	user, err := u.us.Authenticate(form.Email, form.Password)
+	switch err {
+	// TODO Remove this error message
+	case models.ErrNotFound:
+		fmt.Fprintln(res, "Email not found")
+	case models.ErrInvalidPassword:
+		fmt.Fprintln(res, "Email and password do not match.")
+	case nil:
+		fmt.Fprintln(res, "User is", user)
+	default:
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
-
-

@@ -8,12 +8,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// #region ERRORS
 var (
 	// ErrNotFound : Indicates that a resource does not exist within postgres
 	ErrNotFound = errors.New("models: resource not found")
 	// ErrInvalidID : Returned when an invalid ID is provided to a method like Delete.
 	ErrInvalidID = errors.New("models: ID provided was invalid")
+	// ErrInvalidPassword : Returned when an invalid password is is used when attempting to authenticate a user.
+	ErrInvalidPassword = errors.New("models: incorrect password")
 )
+
+// #endregion
 
 // TODO: remove obvious pepper
 var userPwPepper = "secret-string"
@@ -92,6 +97,11 @@ func (us *UsersService) Delete(id uint) error {
 	return us.db.Delete(&user).Error
 }
 
+// Close : Shuts down the connection to database
+func (us *UsersService) Close() error {
+	return us.db.Close()
+}
+
 // AutoMigrate : Attempts to automatically migrate the subscribers table
 func (us *UsersService) AutoMigrate() error {
 	if err := us.db.AutoMigrate(&User{}).Error; err != nil {
@@ -109,9 +119,25 @@ func (us *UsersService) DestructiveReset() error {
 	return us.AutoMigrate()
 }
 
-// Close : Shuts down the connection to database
-func (us *UsersService) Close() error {
-	return us.db.Close()
+// Authenticate : Used to authenticate a user with a provided email address and password.  Returns a user and an error message.
+func (us *UsersService) Authenticate(email, password string) (*User, error) {
+	// Check if email exists
+	foundUser, err := us.ByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	// If email found, compare password hashes. Return user or error statement.
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(foundUser.PasswordHash),
+		[]byte(password+userPwPepper))
+	switch err {
+	case nil:
+		return foundUser, nil
+	case bcrypt.ErrMismatchedHashAndPassword:
+		return nil, ErrInvalidPassword
+	default:
+		return nil, err
+	}
 }
 
 // #endregion
