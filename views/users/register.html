@@ -13,7 +13,7 @@
 						Sign up to comment on posts!
 					</p>
 					<div class="card-text">
-						{{template "signupForm"}}
+						{{template "registerForm"}}
 					</div>
 				</div>
 			</div>
@@ -23,9 +23,15 @@
 {{end}}
 
 <!-- TODO: Add optional fields for name, etc. -->
-{{define "signupForm"}}
-<form action="/signup" method="POST">
+{{define "registerForm"}}
+<form action="/register" method="POST">
 	<div class="form-group container-fluid">
+		<div class="row">
+			<label for="name" class="col-12">
+				Full Name
+				<input class="form-control" type="name" name="name" id="name" placeholder="Jane Smith">
+			</label>
+		</div>
 		<div class="row">
 			<label for="email" class="col-12">
 				Email Address
@@ -34,11 +40,11 @@
 		</div>
 		<div class="row">
 			<label for="name" class="col-12">
-				Full Name
-				<input class="form-control" type="name" name="name" id="name" placeholder="Jane Smith">
+				Password
+				<input class="form-control" type="password" password="password" id="password" placeholder="Password123">
 			</label>
 		</div>
-		<button class="btn btn-primary" type="submit">Sign up!</button>
+		<button class="btn btn-primary" type="submit">Register</button>
 	</div>
 </form>
 {{end}}

@@ -11,17 +11,17 @@ import (
 // NewUsers : Initializes the view for users
 func NewUsers(us *models.UsersService) *Users {
 	return &Users{
-		NewView: views.NewView("app", "users/new"),
-		LoginView: views.NewView("app", "users/login"),
-		us:      us,
+		RegisterView: views.NewView("app", "users/register"),
+		LoginView:    views.NewView("app", "users/login"),
+		us:           us,
 	}
 }
 
 // Users : Holds reference for the Users view and service.
 type Users struct {
-	NewView   *views.View
-	LoginView *views.View
-	us        *models.UsersService
+	RegisterView *views.View
+	LoginView    *views.View
+	us           *models.UsersService
 }
 
 // #region FORMS
@@ -35,33 +35,24 @@ type SignupForm struct {
 
 // LoginForm : This form is used to transform a webform into a login request
 type LoginForm struct {
-	Email string `schema:"email"`
+	Email    string `schema:"email"`
 	Password string `schema:"password"`
 }
 
 // #endregion
 
-// New : GET /signup
-// — Renders a new form view for a potential user
-func (u *Users) New(res http.ResponseWriter, req *http.Request) {
-	if err := u.NewView.Render(res, nil); err != nil {
+// RegisterForm : GET /register
+// — Renders a new registration form for a potential user
+func (u *Users) RegisterForm(res http.ResponseWriter, req *http.Request) {
+	if err := u.RegisterView.Render(res, nil); err != nil {
 		// TODO don't panic && give feedback to user
 		panic(err)
 	}
 }
 
-// Login : POST /login
-// — Used to process the login form when a user tries to log in as an existing user
-func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
-	form := LoginForm{}
-	if err := parseForm(req, &form); err != nil {
-		panic(err)
-	}
-}
-
-// Create : POST /signup
+// Register : POST /register
 // — Used to process the signup form when a user tries to create a new user account
-func (u *Users) Create(res http.ResponseWriter, req *http.Request) {
+func (u *Users) Register(res http.ResponseWriter, req *http.Request) {
 	var form SignupForm
 	if err := parseForm(req, &form); err != nil {
 		panic(err)
@@ -77,3 +68,23 @@ func (u *Users) Create(res http.ResponseWriter, req *http.Request) {
 	}
 	fmt.Fprintln(res, "User is", user)
 }
+
+// LoginForm : GET /login
+// — Renders a new login form for a returning user
+func (u *Users) LoginForm(res http.ResponseWriter, req *http.Request) {
+	if err := u.LoginView.Render(res, nil); err != nil {
+		// TODO don't panic and give feedback to user
+		panic(err)
+	}
+}
+
+// Login : POST /login
+// — Used to process the login form when a user tries to log in as an existing user
+func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
+	form := LoginForm{}
+	if err := parseForm(req, &form); err != nil {
+		panic(err)
+	}
+}
+
+
