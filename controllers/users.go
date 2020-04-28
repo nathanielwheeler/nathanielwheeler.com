@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"nathanielwheeler.com/rand"
+
 	"nathanielwheeler.com/models"
 	"nathanielwheeler.com/views"
 )
@@ -66,7 +68,13 @@ func (u *Users) Register(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintln(res, "User is", user)
+
+	err := u.signIn(res, &user)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(res, req, "/cookietest", http.StatusFound)
 }
 
 // Login : POST /login
@@ -77,15 +85,59 @@ func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 	user, err := u.us.Authenticate(form.Email, form.Password)
-	switch err {
-	// TODO Remove this error message
-	case models.ErrNotFound:
-		fmt.Fprintln(res, "Email not found")
-	case models.ErrInvalidPassword:
-		fmt.Fprintln(res, "Email and password do not match.")
-	case nil:
-		fmt.Fprintln(res, "User is", user)
-	default:
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+	if err != nil {
+		switch err {
+		case models.ErrNotFound:
+			fmt.Fprintln(res, "User does not exist") // TODO Remove this error message
+		case models.ErrInvalidPassword:
+			fmt.Fprintln(res, "Email and password do not match.")
+		default:
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+		}
+		return
 	}
+	err = u.signIn(res, user)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(res, req, "/cookietest", http.StatusFound)
+}
+
+// CookieTest is used to display cookies set on the current user
+func (u *Users) CookieTest(res http.ResponseWriter, req *http.Request) {
+	cookie, err := req.Cookie("remember_token")
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	user, err := u.us.ByRemember(cookie.Value)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintln(res, user)
+}
+
+// SignIn is used to sign the given user in via cookies
+func (u *Users) signIn(res http.ResponseWriter, user *models.User) error {
+	if user.Remember == "" {
+		token, err := rand.RememberToken()
+		if err != nil {
+			return err
+		}
+		user.Remember = token
+		err = u.us.Update(user)
+		if err != nil {
+			return err
+		}
+	}
+
+	cookie := http.Cookie{
+		Name:  "remember_token",
+		Value: user.Remember,
+		HttpOnly: true,
+	}
+	http.SetCookie(res, &cookie)
+	return nil
 }

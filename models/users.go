@@ -3,12 +3,22 @@ package models
 import (
 	"errors"
 
+	"nathanielwheeler.com/hash"
+	"nathanielwheeler.com/rand"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres" // Not directly used, but needed to help gorm communicate with postgres
 	"golang.org/x/crypto/bcrypt"
 )
 
+// TODO: randomize and store securely
+const (
+	hmacSecretKey = "secret-hmac-key"
+	userPwPepper  = "secret-string"
+)
+
 // #region ERRORS
+
 var (
 	// ErrNotFound : Indicates that a resource does not exist within postgres
 	ErrNotFound = errors.New("models: resource not found")
@@ -20,41 +30,96 @@ var (
 
 // #endregion
 
-// TODO: remove obvious pepper
-var userPwPepper = "secret-string"
-
-// User : Model for people that want updates from my website and want to leave comments on my posts.
+// User is a model of the people using my website.
 type User struct {
 	gorm.Model
 	Name         string
 	Email        string `gorm:"type:varchar(100);primary key"`
 	Password     string `gorm:"-"` // Ensures that it won't be saved to database
 	PasswordHash string `gorm:"not null"`
+	Remember     string `gorm:"-"`
+	RememberHash string `gorm:"not null;unique_index"`
 }
 
-// UsersService : Processes the logic for users
+// UsersDB is used to interact with the users database
+type UsersDB interface {
+	// Methods for querying single users
+	ByID(id uint) (*User, error)
+	ByEmail(email string) (*User, error)
+	ByRemember(token string) (*User, error)
+
+	// Methods for altering users
+	Create(user *User) error
+	Update(user *User) error
+	Delete(id uint) error
+
+	// Used to close a DB connection
+	Close() error
+
+	// Migration helpers
+	AutoMigrate() error
+	DestructiveReset() error
+}
+
+// UsersService processes the logic for users
 type UsersService struct {
-	db *gorm.DB
+	UsersDB
 }
 
-// NewUsersService : constructor for UsersService.  Initializes database connection
+type usersValidator struct {
+	UsersDB
+}
+
+type usersGorm struct {
+	db   *gorm.DB
+	hmac hash.HMAC
+}
+
+// NewUsersService is a constructor for UsersService.  It embeds UsersDB (usersGorm) to handle database connections.
 func NewUsersService(connectionStr string) (*UsersService, error) {
+	ug, err := newUsersGorm(connectionStr)
+	if err != nil {
+		return nil, err
+	}
+	return &UsersService{
+		UsersDB: ug,
+	}, nil
+}
+
+// newUsersGorm is a constructor for UsersGorm.  Initializes database connection.
+func newUsersGorm(connectionStr string) (*usersGorm, error) {
 	db, err := gorm.Open("postgres", connectionStr)
 	if err != nil {
 		return nil, err
 	}
 	db.LogMode(true)
-	return &UsersService{
-		db: db,
+	hmac := hash.NewHMAC(hmacSecretKey)
+	return &usersGorm{
+		db:   db,
+		hmac: hmac,
 	}, nil
 }
 
-// #region SERVICE METHODS
+// #region METHODS: UsersValidation
 
-// ByID : Gets a user given an ID.
-func (us *UsersService) ByID(id uint) (*User, error) {
+/* 
+func (uv *usersValidator) ByID (id uint) (*User, error) {
+	// Validate the ID
+	if id <= 0 {
+		return nil, errors.New("Invalid ID")
+	}
+	// If valid, call the next method in the chain and return its results.
+	return uv.UsersDB.ByID(id)
+} */
+
+// #endregion
+
+// #region METHODS: UsersDB
+
+// ByID gets a user given an ID.
+func (ug *usersGorm) ByID(id uint) (*User, error) {
 	var user User
-	db := us.db.Where("id = ?", id)
+	db := ug.db.Where("id = ?", id)
 	err := first(db, &user)
 	if err != nil {
 		return nil, err
@@ -62,16 +127,27 @@ func (us *UsersService) ByID(id uint) (*User, error) {
 	return &user, nil
 }
 
-// ByEmail : Get a user given an email string
-func (us *UsersService) ByEmail(email string) (*User, error) {
+// ByEmail gets a user given an email string
+func (ug *usersGorm) ByEmail(email string) (*User, error) {
 	var user User
-	db := us.db.Where("email = ?", email)
+	db := ug.db.Where("email = ?", email)
 	err := first(db, &user)
 	return &user, err
 }
 
-// Create : Creates the provided user and fills provided data fields
-func (us *UsersService) Create(user *User) error {
+// ByRemember looks up a user with the given remember token and returns that user.
+func (ug *usersGorm) ByRemember(token string) (*User, error) {
+	var user User
+	rememberHash := ug.hmac.Hash(token)
+	err := first(ug.db.Where("remember_hash = ?", rememberHash), &user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// Create makes the provided user and fills provided data fields
+func (ug *usersGorm) Create(user *User) error {
 	pwBytes := []byte(user.Password + userPwPepper)
 	hashedBytes, err := bcrypt.GenerateFromPassword(
 		pwBytes, bcrypt.DefaultCost)
@@ -80,46 +156,63 @@ func (us *UsersService) Create(user *User) error {
 	}
 	user.PasswordHash = string(hashedBytes)
 	user.Password = ""
-	return us.db.Create(user).Error
+
+	if user.Remember == "" {
+		token, err := rand.RememberToken()
+		if err != nil {
+			return err
+		}
+		user.Remember = token
+	}
+	user.RememberHash = ug.hmac.Hash(user.Remember)
+
+	return ug.db.Create(user).Error
 }
 
-// Update : Changes subscriber preferences
-func (us *UsersService) Update(user *User) error {
-	return us.db.Save(user).Error
+// Update changes subscriber preferences
+func (ug *usersGorm) Update(user *User) error {
+	if user.Remember != "" {
+		user.RememberHash = ug.hmac.Hash(user.Remember)
+	}
+	return ug.db.Save(user).Error
 }
 
-// Delete : Removes the subscriber identified by the id
-func (us *UsersService) Delete(id uint) error {
+// Delete removes the subscriber identified by the id
+func (ug *usersGorm) Delete(id uint) error {
 	if id == 0 {
 		return ErrInvalidID
 	}
 	user := User{Model: gorm.Model{ID: id}}
-	return us.db.Delete(&user).Error
+	return ug.db.Delete(&user).Error
 }
 
-// Close : Shuts down the connection to database
-func (us *UsersService) Close() error {
-	return us.db.Close()
+// Close shuts down the connection to database
+func (ug *usersGorm) Close() error {
+	return ug.db.Close()
 }
 
-// AutoMigrate : Attempts to automatically migrate the subscribers table
-func (us *UsersService) AutoMigrate() error {
-	if err := us.db.AutoMigrate(&User{}).Error; err != nil {
+// AutoMigrate attempts to automatically migrate the subscribers table
+func (ug *usersGorm) AutoMigrate() error {
+	if err := ug.db.AutoMigrate(&User{}).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-// DestructiveReset : Destroys tables and calls AutoMigrate()
-func (us *UsersService) DestructiveReset() error {
-	err := us.db.DropTableIfExists(&User{}).Error
+// DestructiveReset destroys tables and calls AutoMigrate()
+func (ug *usersGorm) DestructiveReset() error {
+	err := ug.db.DropTableIfExists(&User{}).Error
 	if err != nil {
 		return err
 	}
-	return us.AutoMigrate()
+	return ug.AutoMigrate()
 }
 
-// Authenticate : Used to authenticate a user with a provided email address and password.  Returns a user and an error message.
+// #endregion
+
+
+
+// Authenticate is used to authenticate a user with a provided email address and password.  Returns a user and an error message.
 func (us *UsersService) Authenticate(email, password string) (*User, error) {
 	// Check if email exists
 	foundUser, err := us.ByEmail(email)
@@ -139,8 +232,6 @@ func (us *UsersService) Authenticate(email, password string) (*User, error) {
 		return nil, err
 	}
 }
-
-// #endregion
 
 // #region HELPERS
 
