@@ -17,8 +17,7 @@ const (
 	userPwPepper  = "secret-string"
 )
 
-// #region ERRORS
-
+// errors
 var (
 	// ErrNotFound : Indicates that a resource does not exist within postgres
 	ErrNotFound = errors.New("models: resource not found")
@@ -27,8 +26,6 @@ var (
 	// ErrInvalidPassword : Returned when an invalid password is is used when attempting to authenticate a user.
 	ErrInvalidPassword = errors.New("models: incorrect password")
 )
-
-// #endregion
 
 // User is a model of the people using my website.
 type User struct {
