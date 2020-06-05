@@ -1,7 +1,7 @@
 {{define "yield"}}
 <main class="container">
 	<div class="row">
-		<div class="col">
+		<div class="col-12 offset-md-3 col-md-6">
 
 			<div class="card border-primary bg-dark">
 				<div class="card-body">
@@ -9,7 +9,7 @@
 					<h3 class="card-title text-center">
 						Registration
 					</h3>
-					<p class="card-text lead">
+					<p class="card-text lead text-center">
 						Sign up to comment on posts!
 					</p>
 					<div class="card-text">
@@ -27,24 +27,26 @@
 <form action="/register" method="POST">
 	<div class="form-group container-fluid">
 		<div class="row">
-			<label for="name" class="col-12">
-				Full Name
-				<input class="form-control" type="name" name="name" id="name" placeholder="Jane Smith">
+			<label for="name" class="col-12 text-center">
+				Display Name
+				<input class="form-control" type="name" name="name" id="name" placeholder="Ken Thompson">
 			</label>
 		</div>
 		<div class="row">
-			<label for="email" class="col-12">
+			<label for="email" class="col-12 text-center">
 				Email Address
-				<input class="form-control" type="email" name="email" id="email" placeholder="you@example.com">
+				<input class="form-control" type="email" name="email" id="email" placeholder="gopherfan1970@example.com">
 			</label>
 		</div>
 		<div class="row">
-			<label for="password" class="col-12">
+			<label for="password" class="col-12 text-center">
 				Password
-				<input class="form-control" type="password" name="password" id="password" placeholder="Password123">
+				<input class="form-control" type="password" name="password" id="password" placeholder="preferably generated in password manager">
 			</label>
 		</div>
-		<button class="btn btn-primary" type="submit">Register</button>
+		<div class="row d-flex justify-content-center">
+			<button class="btn btn-success btn-lg" type="submit">Register</button>
+		</div>
 	</div>
 </form>
 {{end}}
