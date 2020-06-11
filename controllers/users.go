@@ -12,8 +12,8 @@ import (
 // NewUsers initializes the view for users
 func NewUsers(us models.UserService) *Users {
 	return &Users{
-		RegisterView: views.NewView("app", "user/register"),
-		LoginView:    views.NewView("app", "user/login"),
+		RegisterView: views.NewView("app", "users/register"),
+		LoginView:    views.NewView("app", "users/login"),
 		us:           us,
 	}
 }

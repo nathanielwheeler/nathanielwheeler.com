@@ -78,7 +78,7 @@ func NewUserService(connectionStr string) (UserService, error) {
 	}
 	hmac := hash.NewHMAC(hmacSecretKey)
 	uv := &userValidator{
-		hmac: hmac,
+		hmac:   hmac,
 		UserDB: ug,
 	}
 	return &userService{
@@ -113,7 +113,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 
 // userGORM represents the database interaction layer
 type userGorm struct {
-	db   *gorm.DB
+	db *gorm.DB
 }
 
 func newUserGorm(connectionStr string) (*userGorm, error) {
@@ -123,7 +123,7 @@ func newUserGorm(connectionStr string) (*userGorm, error) {
 	}
 	db.LogMode(true)
 	return &userGorm{
-		db:   db,
+		db: db,
 	}, nil
 }
 
@@ -220,13 +220,10 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 
 // Create will make the provided user and backfill data like the ID, CreatedAt, and UpdatedAt fields.
 func (uv *userValidator) Create(user *User) error {
-	pwBytes := []byte(user.Password + userPwPepper)
-	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
-	if err != nil {
+	if err := runUserValFns(user,
+		uv.bcryptPassword); err != nil {
 		return err
 	}
-	user.PasswordHash = string(hashedBytes)
-	user.Password = ""
 
 	if user.Remember == "" {
 		token, err := rand.RememberToken()
@@ -241,6 +238,11 @@ func (uv *userValidator) Create(user *User) error {
 
 // Update will hash a remember token if one is provided attached to the user object
 func (uv *userValidator) Update(user *User) error {
+	if err := runUserValFns(user,
+		uv.bcryptPassword); err != nil {
+		return err
+	}
+
 	if user.Remember != "" {
 		user.RememberHash = uv.hmac.Hash(user.Remember)
 	}
@@ -253,6 +255,35 @@ func (uv *userValidator) Delete(id uint) error {
 		return ErrInvalidID
 	}
 	return uv.UserDB.Delete(id)
+}
+
+type userValFn func(*User) error
+
+func runUserValFns(user *User, fns ...userValFn) error {
+	for _, fn := range fns {
+		if err := fn(user); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// bcryptPassword will hash a user's password with pepper and salt it with bcrypt.
+func (uv *userValidator) bcryptPassword(user *User) error {
+	// Will not run if password isn't provided in the provided user
+	if user.Password == "" {
+		return nil
+	}
+
+	pwBytes := []byte(user.Password + userPwPepper)
+	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = string(hashedBytes)
+	user.Password = ""
+
+	return nil
 }
 
 // #endregion
