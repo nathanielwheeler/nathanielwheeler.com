@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strings"
 
 	"nathanielwheeler.com/hash"
 	"nathanielwheeler.com/rand"
@@ -212,6 +213,18 @@ type userValidator struct {
 	hmac hash.HMAC
 }
 
+// ByEmail will normalize an email address before passing it to the database layer.
+func (uv *userValidator) ByEmail(email string) (*User, error) {
+	user := User{
+		Email: email,
+	}
+	err := runUserValFns(&user, uv.normalizeEmail)
+	if err != nil {
+		return nil, err
+	}
+	return uv.UserDB.ByEmail(user.Email)
+}
+
 // ByRemember will hash the remember token then call ByRemember in the UserDB layer.
 func (uv *userValidator) ByRemember(token string) (*User, error) {
 	user := User{
@@ -225,18 +238,11 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 
 // Create will make the provided user and backfill data like the ID, CreatedAt, and UpdatedAt fields.
 func (uv *userValidator) Create(user *User) error {
-	if user.Remember == "" {
-		token, err := rand.RememberToken()
-		if err != nil {
-			return err
-		}
-		user.Remember = token
-	}
-
 	err := runUserValFns(user,
 		uv.bcryptPassword,
 		uv.setRememberIfUnset,
-		uv.hmacRemember)
+		uv.hmacRemember,
+		uv.normalizeEmail)
 	if err != nil {
 		return err
 	}
@@ -245,7 +251,10 @@ func (uv *userValidator) Create(user *User) error {
 
 // Update will hash a remember token if one is provided attached to the user object
 func (uv *userValidator) Update(user *User) error {
-	err := runUserValFns(user, uv.bcryptPassword, uv.hmacRemember)
+	err := runUserValFns(user,
+		uv.bcryptPassword,
+		uv.hmacRemember,
+		uv.normalizeEmail)
 	if err != nil {
 		return err
 	}
@@ -325,6 +334,13 @@ func (uv *userValidator) idGreaterThan(n uint) userValFn {
 		}
 		return nil
 	})
+}
+
+// normalizeEmail will ensure that email addresses are stored in a standardized format in the database.
+func (uv *userValidator) normalizeEmail(user *User) error {
+	user.Email = strings.ToLower(user.Email)
+	user.Email = strings.TrimSpace(user.Email)
+	return nil
 }
 
 // #endregion
