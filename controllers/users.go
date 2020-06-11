@@ -24,23 +24,6 @@ type Users struct {
 	us           *models.UsersService
 }
 
-// #region FORMS
-
-// SignupForm : This form is used to transform a webform into a registration request
-type SignupForm struct {
-	Email    string `schema:"email"`
-	Name     string `schema:"name"`
-	Password string `schema:"password"`
-}
-
-// LoginForm : This form is used to transform a webform into a login request
-type LoginForm struct {
-	Email    string `schema:"email"`
-	Password string `schema:"password"`
-}
-
-// #endregion
-
 // RegisterForm : GET /register
 // — Renders a new registration form for a potential user
 func (u *Users) RegisterForm(res http.ResponseWriter, req *http.Request) {
@@ -50,10 +33,17 @@ func (u *Users) RegisterForm(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// RegistrationForm : This form is used to transform a webform into a registration request
+type RegistrationForm struct {
+	Email    string `schema:"email"`
+	Name     string `schema:"name"`
+	Password string `schema:"password"`
+}
+
 // Register : POST /register
 // — Used to process the signup form when a user tries to create a new user account
 func (u *Users) Register(res http.ResponseWriter, req *http.Request) {
-	var form SignupForm
+	var form RegistrationForm
 	if err := parseForm(req, &form); err != nil {
 		panic(err)
 	}
@@ -88,6 +78,12 @@ func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
 	default:
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+// LoginForm : This form is used to transform a webform into a login request
+type LoginForm struct {
+	Email    string `schema:"email"`
+	Password string `schema:"password"`
 }
 
 // CookieTest is used to display cookies set on the current user
