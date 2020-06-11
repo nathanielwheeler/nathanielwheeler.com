@@ -5,10 +5,11 @@ import (
 	"net/http"
 
 	"nathanielwheeler.com/models"
+	"nathanielwheeler.com/rand"
 	"nathanielwheeler.com/views"
 )
 
-// NewUsers : Initializes the view for users
+// NewUsers initializes the view for users
 func NewUsers(us *models.UserService) *Users {
 	return &Users{
 		RegisterView: views.NewView("app", "users/register"),
@@ -17,7 +18,7 @@ func NewUsers(us *models.UserService) *Users {
 	}
 }
 
-// Users : Holds reference for the Users view and service.
+// Users holds reference for the Users view and service.
 type Users struct {
 	RegisterView *views.View
 	LoginView    *views.View
@@ -33,7 +34,7 @@ func (u *Users) RegisterForm(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// RegistrationForm : This form is used to transform a webform into a registration request
+// RegistrationForm is used to transform a webform into a registration request
 type RegistrationForm struct {
 	Email    string `schema:"email"`
 	Name     string `schema:"name"`
@@ -56,7 +57,14 @@ func (u *Users) Register(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintln(res, "User is", user)
+
+	// remember token
+	err := u.signIn(res, &user)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(res, req, "/cookietest", http.StatusFound)
 }
 
 // Login : POST /login
@@ -67,32 +75,63 @@ func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 	user, err := u.us.Authenticate(form.Email, form.Password)
-	switch err {
-	// TODO Remove this error message
-	case models.ErrNotFound:
-		fmt.Fprintln(res, "Email not found")
-	case models.ErrInvalidPassword:
-		fmt.Fprintln(res, "Email and password do not match.")
-	case nil:
-		fmt.Fprintln(res, "User is", user)
-	default:
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+	if err != nil {
+		switch err {
+		case models.ErrNotFound:
+		case models.ErrInvalidPassword:
+			fmt.Fprintln(res, "Invalid email and/or password.")
+		default:
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+		}
+		return
 	}
+
+	err = u.signIn(res, user)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(res, req, "/cookietest", http.StatusFound)
 }
 
-// LoginForm : This form is used to transform a webform into a login request
+// LoginForm is used to transform a webform into a login request
 type LoginForm struct {
 	Email    string `schema:"email"`
 	Password string `schema:"password"`
 }
 
+// signIn is used to sign the given user in via cookies
+func (u *Users) signIn(res http.ResponseWriter, user *models.User) error {
+	if user.Remember == "" {
+		token, err := rand.RememberToken()
+		if err != nil {
+			return err
+		}
+		user.Remember = token
+		err = u.us.Update(user)
+		if err != nil {
+			return err
+		}
+	}
+	cookie := http.Cookie{
+		Name:  "remember_token",
+		Value: user.Remember,
+	}
+	http.SetCookie(res, &cookie)
+	return nil
+}
+
 // CookieTest is used to display cookies set on the current user
 func (u *Users) CookieTest(res http.ResponseWriter, req *http.Request) {
-	cookie, err := req.Cookie("email")
+	cookie, err := req.Cookie("remember_token")
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintln(res, "Email is:", cookie.Value)
-	fmt.Fprintf(res, "%+v", cookie)
+	user, err := u.us.ByRemember(cookie.Value)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintln(res, user)
 }
