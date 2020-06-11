@@ -3,6 +3,9 @@ package models
 import (
 	"errors"
 
+	"nathanielwheeler.com/hash"
+	"nathanielwheeler.com/rand"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres" // Not directly used, but needed to help gorm communicate with postgres
 	"golang.org/x/crypto/bcrypt"
@@ -23,6 +26,9 @@ var (
 // TODO: remove obvious pepper
 var userPwPepper = "secret-string"
 
+// TODO: remove obvious hmac key
+var hmacSecretKey = "secret-hmac-key"
+
 // User : Model for people that want updates from my website and want to leave comments on my posts.
 type User struct {
 	gorm.Model
@@ -30,11 +36,14 @@ type User struct {
 	Email        string `gorm:"type:varchar(100);primary key"`
 	Password     string `gorm:"-"` // Ensures that it won't be saved to database
 	PasswordHash string `gorm:"not null"`
+	Remember     string `gorm:"-"`
+	RememberHash string `gorm:"not null; unique_index"`
 }
 
 // UsersService : Processes the logic for users
 type UsersService struct {
-	db *gorm.DB
+	db   *gorm.DB
+	hmac hash.HMAC
 }
 
 // NewUsersService : constructor for UsersService.  Initializes database connection
@@ -44,8 +53,12 @@ func NewUsersService(connectionStr string) (*UsersService, error) {
 		return nil, err
 	}
 	db.LogMode(true)
+
+	hmac := hash.NewHMAC(hmacSecretKey)
+
 	return &UsersService{
-		db: db,
+		db:   db,
+		hmac: hmac,
 	}, nil
 }
 
@@ -80,6 +93,15 @@ func (us *UsersService) Create(user *User) error {
 	}
 	user.PasswordHash = string(hashedBytes)
 	user.Password = ""
+
+	if user.Remember == "" {
+		token, err := rand.RememberToken()
+		if err != nil {
+			return err
+		}
+		user.Remember = token
+	}
+
 	return us.db.Create(user).Error
 }
 
