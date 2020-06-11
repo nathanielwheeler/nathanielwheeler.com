@@ -83,7 +83,7 @@ func (us *UsersService) ByEmail(email string) (*User, error) {
 	return &user, err
 }
 
-// Create : Creates the provided user and fills provided data fields
+// Create creates the provided user and fills provided data fields
 func (us *UsersService) Create(user *User) error {
 	pwBytes := []byte(user.Password + userPwPepper)
 	hashedBytes, err := bcrypt.GenerateFromPassword(
@@ -101,16 +101,20 @@ func (us *UsersService) Create(user *User) error {
 		}
 		user.Remember = token
 	}
+	user.RememberHash = us.hmac.Hash(user.Remember)
 
 	return us.db.Create(user).Error
 }
 
-// Update : Changes subscriber preferences
+// Update will update details of the user
 func (us *UsersService) Update(user *User) error {
+	if user.Remember != "" {
+		user.RememberHash = us.hmac.Hash(user.Remember)
+	}
 	return us.db.Save(user).Error
 }
 
-// Delete : Removes the subscriber identified by the id
+// Delete removes the user identified by the id
 func (us *UsersService) Delete(id uint) error {
 	if id == 0 {
 		return ErrInvalidID
@@ -119,7 +123,7 @@ func (us *UsersService) Delete(id uint) error {
 	return us.db.Delete(&user).Error
 }
 
-// Close : Shuts down the connection to database
+// Close shuts down the connection to database
 func (us *UsersService) Close() error {
 	return us.db.Close()
 }
