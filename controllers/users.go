@@ -94,5 +94,5 @@ func (u *Users) CookieTest(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	fmt.Fprintln(res, "Email is:", cookie.Value)
-	fmt.Fprintln(res, cookie)
+	fmt.Fprintf(res, "%+v", cookie)
 }
