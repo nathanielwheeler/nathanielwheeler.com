@@ -64,7 +64,7 @@ func NewUsersService(connectionStr string) (*UsersService, error) {
 
 // #region SERVICE METHODS
 
-// ByID : Gets a user given an ID.
+// ByID gets a user given an ID.
 func (us *UsersService) ByID(id uint) (*User, error) {
 	var user User
 	db := us.db.Where("id = ?", id)
@@ -75,12 +75,23 @@ func (us *UsersService) ByID(id uint) (*User, error) {
 	return &user, nil
 }
 
-// ByEmail : Get a user given an email string
+// ByEmail gets a user given an email string
 func (us *UsersService) ByEmail(email string) (*User, error) {
 	var user User
 	db := us.db.Where("email = ?", email)
 	err := first(db, &user)
 	return &user, err
+}
+
+// ByRemember gets a user given a remember token
+func (us *UsersService) ByRemember(token string) (*User, error) {
+	var user User
+	rememberHash := us.hmac.Hash(token)
+	err := first(us.db.Where("remember_hash = ?", rememberHash), &user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 // Create creates the provided user and fills provided data fields
