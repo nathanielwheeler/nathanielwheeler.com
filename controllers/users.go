@@ -9,7 +9,7 @@ import (
 )
 
 // NewUsers : Initializes the view for users
-func NewUsers(us *models.UsersService) *Users {
+func NewUsers(us *models.UserService) *Users {
 	return &Users{
 		RegisterView: views.NewView("app", "users/register"),
 		LoginView:    views.NewView("app", "users/login"),
@@ -21,7 +21,7 @@ func NewUsers(us *models.UsersService) *Users {
 type Users struct {
 	RegisterView *views.View
 	LoginView    *views.View
-	us           *models.UsersService
+	us           *models.UserService
 }
 
 // RegisterForm : GET /register

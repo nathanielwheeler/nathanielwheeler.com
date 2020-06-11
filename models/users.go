@@ -40,14 +40,14 @@ type User struct {
 	RememberHash string `gorm:"not null; unique_index"`
 }
 
-// UsersService : Processes the logic for users
-type UsersService struct {
+// UserService : Processes the logic for users
+type UserService struct {
 	db   *gorm.DB
 	hmac hash.HMAC
 }
 
-// NewUsersService : constructor for UsersService.  Initializes database connection
-func NewUsersService(connectionStr string) (*UsersService, error) {
+// NewUserService : constructor for UserService.  Initializes database connection
+func NewUserService(connectionStr string) (*UserService, error) {
 	db, err := gorm.Open("postgres", connectionStr)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func NewUsersService(connectionStr string) (*UsersService, error) {
 
 	hmac := hash.NewHMAC(hmacSecretKey)
 
-	return &UsersService{
+	return &UserService{
 		db:   db,
 		hmac: hmac,
 	}, nil
@@ -65,7 +65,7 @@ func NewUsersService(connectionStr string) (*UsersService, error) {
 // #region SERVICE METHODS
 
 // ByID gets a user given an ID.
-func (us *UsersService) ByID(id uint) (*User, error) {
+func (us *UserService) ByID(id uint) (*User, error) {
 	var user User
 	db := us.db.Where("id = ?", id)
 	err := first(db, &user)
@@ -76,7 +76,7 @@ func (us *UsersService) ByID(id uint) (*User, error) {
 }
 
 // ByEmail gets a user given an email string
-func (us *UsersService) ByEmail(email string) (*User, error) {
+func (us *UserService) ByEmail(email string) (*User, error) {
 	var user User
 	db := us.db.Where("email = ?", email)
 	err := first(db, &user)
@@ -84,7 +84,7 @@ func (us *UsersService) ByEmail(email string) (*User, error) {
 }
 
 // ByRemember gets a user given a remember token
-func (us *UsersService) ByRemember(token string) (*User, error) {
+func (us *UserService) ByRemember(token string) (*User, error) {
 	var user User
 	rememberHash := us.hmac.Hash(token)
 	err := first(us.db.Where("remember_hash = ?", rememberHash), &user)
@@ -95,7 +95,7 @@ func (us *UsersService) ByRemember(token string) (*User, error) {
 }
 
 // Create creates the provided user and fills provided data fields
-func (us *UsersService) Create(user *User) error {
+func (us *UserService) Create(user *User) error {
 	pwBytes := []byte(user.Password + userPwPepper)
 	hashedBytes, err := bcrypt.GenerateFromPassword(
 		pwBytes, bcrypt.DefaultCost)
@@ -118,7 +118,7 @@ func (us *UsersService) Create(user *User) error {
 }
 
 // Update will update details of the user
-func (us *UsersService) Update(user *User) error {
+func (us *UserService) Update(user *User) error {
 	if user.Remember != "" {
 		user.RememberHash = us.hmac.Hash(user.Remember)
 	}
@@ -126,7 +126,7 @@ func (us *UsersService) Update(user *User) error {
 }
 
 // Delete removes the user identified by the id
-func (us *UsersService) Delete(id uint) error {
+func (us *UserService) Delete(id uint) error {
 	if id == 0 {
 		return ErrInvalidID
 	}
@@ -135,12 +135,12 @@ func (us *UsersService) Delete(id uint) error {
 }
 
 // Close shuts down the connection to database
-func (us *UsersService) Close() error {
+func (us *UserService) Close() error {
 	return us.db.Close()
 }
 
 // AutoMigrate : Attempts to automatically migrate the subscribers table
-func (us *UsersService) AutoMigrate() error {
+func (us *UserService) AutoMigrate() error {
 	if err := us.db.AutoMigrate(&User{}).Error; err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func (us *UsersService) AutoMigrate() error {
 }
 
 // DestructiveReset : Destroys tables and calls AutoMigrate()
-func (us *UsersService) DestructiveReset() error {
+func (us *UserService) DestructiveReset() error {
 	err := us.db.DropTableIfExists(&User{}).Error
 	if err != nil {
 		return err
@@ -157,7 +157,7 @@ func (us *UsersService) DestructiveReset() error {
 }
 
 // Authenticate : Used to authenticate a user with a provided email address and password.  Returns a user and an error message.
-func (us *UsersService) Authenticate(email, password string) (*User, error) {
+func (us *UserService) Authenticate(email, password string) (*User, error) {
 	// Check if email exists
 	foundUser, err := us.ByEmail(email)
 	if err != nil {

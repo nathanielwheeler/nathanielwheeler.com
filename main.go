@@ -32,7 +32,7 @@ func main() {
 	)
 
 	// Initialize services
-	us, err := models.NewUsersService(psqlConnectionStr)
+	us, err := models.NewUserService(psqlConnectionStr)
 	if err != nil {
 		panic(err)
 	}
