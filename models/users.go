@@ -71,7 +71,9 @@ func NewUserService(connectionStr string) (*UserService, error) {
 		return nil, err
 	}
 	return &UserService{
-		UserDB: ug,
+		UserDB: userValidator{
+			UserDB: ug,
+		},
 	}, nil
 }
 
