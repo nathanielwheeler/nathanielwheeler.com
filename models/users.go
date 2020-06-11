@@ -59,26 +59,32 @@ type UserDB interface {
 
 // #region user service
 
-// UserService processes business rules for users
-type UserService struct {
+// UserService is a set of methods used to handle business rules of the user model
+type UserService interface {
+	Authenticate(email, password string) (*User, error)
 	UserDB
 }
 
-// NewUserService : constructor for UserService.  Initializes database connection
-func NewUserService(connectionStr string) (*UserService, error) {
+// userService processes business rules for users
+type userService struct {
+	UserDB
+}
+
+// NewUserService : constructor for userService.  Initializes database connection
+func NewUserService(connectionStr string) (UserService, error) {
 	ug, err := newUserGorm(connectionStr)
 	if err != nil {
 		return nil, err
 	}
-	return &UserService{
-		UserDB: userValidator{
+	return &userService{
+		UserDB: &userValidator{
 			UserDB: ug,
 		},
 	}, nil
 }
 
 // Authenticate : Used to authenticate a user with a provided email address and password.  Returns a user and an error message.
-func (us *UserService) Authenticate(email, password string) (*User, error) {
+func (us *userService) Authenticate(email, password string) (*User, error) {
 	// Check if email exists
 	foundUser, err := us.ByEmail(email)
 	if err != nil {
