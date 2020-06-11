@@ -252,16 +252,20 @@ func (uv *userValidator) Update(user *User) error {
 	return uv.UserDB.Update(user)
 }
 
-// Delete will delete the user with the provided ID
+// Delete will delete the user with the provided ID, assuming that uint is greater than zero.
 func (uv *userValidator) Delete(id uint) error {
-	if id == 0 {
-		return ErrInvalidID
+	var user User
+	user.ID = id
+	err := runUserValFns(&user, uv.idGreaterThan(0))
+	if err != nil {
+		return err
 	}
 	return uv.UserDB.Delete(id)
 }
 
 type userValFn func(*User) error
 
+// runUserValFns will take a user object and loop through input validation functions to ensure that all data is proper.
 func runUserValFns(user *User, fns ...userValFn) error {
 	for _, fn := range fns {
 		if err := fn(user); err != nil {
@@ -298,6 +302,9 @@ func (uv *userValidator) hmacRemember(user *User) error {
 	return nil
 }
 
+/* setRememberIfUnset will check the input user object to see if it has a remember token.
+If it does, it returns nil.
+If it doesn't, it calls rand.RememberToken() and adds the returned hash to the user. */
 func (uv *userValidator) setRememberIfUnset(user *User) error {
 	if user.Remember != "" {
 		return nil
@@ -308,6 +315,16 @@ func (uv *userValidator) setRememberIfUnset(user *User) error {
 	}
 	user.RememberHash = token
 	return nil
+}
+
+// idGreaterThan is to make sure that a uint of zero never reaches the delete function of Gorm, which would delete the entire database.
+func (uv *userValidator) idGreaterThan(n uint) userValFn {
+	return userValFn(func(user *User) error {
+		if user.ID <= n {
+			return ErrInvalidID
+		}
+		return nil
+	})
 }
 
 // #endregion
