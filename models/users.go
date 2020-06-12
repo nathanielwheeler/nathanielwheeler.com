@@ -21,14 +21,16 @@ var (
 	ErrInvalidID = errors.New("models: ID provided was invalid")
 	// ErrInvalidPassword : Returned when an invalid password is is used when attempting to authenticate a user.
 	ErrInvalidPassword = errors.New("models: incorrect password")
+	// ErrEmailRequired is returned when an email address is not provided when creating or updating a user
+	ErrEmailRequired = errors.New("models: email address is required")
 )
 
 // #endregion
 
-// TODO: remove obvious pepper
+// TODO: remove obvious pepper when deployed
 var userPwPepper = "secret-string"
 
-// TODO: remove obvious hmac key
+// TODO: remove obvious hmac key when deployed
 var hmacSecretKey = "secret-hmac-key"
 
 // User : Model for people that want updates from my website and want to leave comments on my posts.
@@ -242,7 +244,8 @@ func (uv *userValidator) Create(user *User) error {
 		uv.bcryptPassword,
 		uv.setRememberIfUnset,
 		uv.hmacRemember,
-		uv.normalizeEmail)
+		uv.normalizeEmail,
+		uv.requireEmail)
 	if err != nil {
 		return err
 	}
@@ -254,7 +257,8 @@ func (uv *userValidator) Update(user *User) error {
 	err := runUserValFns(user,
 		uv.bcryptPassword,
 		uv.hmacRemember,
-		uv.normalizeEmail)
+		uv.normalizeEmail,
+		uv.requireEmail)
 	if err != nil {
 		return err
 	}
@@ -340,6 +344,14 @@ func (uv *userValidator) idGreaterThan(n uint) userValFn {
 func (uv *userValidator) normalizeEmail(user *User) error {
 	user.Email = strings.ToLower(user.Email)
 	user.Email = strings.TrimSpace(user.Email)
+	return nil
+}
+
+// requireEmail requires an email to be entered before continuing.
+func (uv *userValidator) requireEmail(user *User) error {
+	if user.Email == "" {
+		return ErrEmailRequired
+	}
 	return nil
 }
 
