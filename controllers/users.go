@@ -28,7 +28,23 @@ type Users struct {
 // RegisterForm : GET /register
 // — Renders a new registration form for a potential user
 func (u *Users) RegisterForm(res http.ResponseWriter, req *http.Request) {
-	if err := u.RegisterView.Render(res, nil); err != nil {
+	type Alert struct {
+		Level   string
+		Message string
+	}
+	type Data struct {
+		Alert *Alert
+		Yield interface{}
+	}
+	alert := Alert{
+		Level:   "success",
+		Message: "Successfully rendered a dynamic alert!",
+	}
+	data := Data{
+		Alert: &alert,
+		Yield: "this can be any data b/c its type is interface",
+	}
+	if err := u.RegisterView.Render(res, data); err != nil {
 		// TODO don't panic && give feedback to user
 		panic(err)
 	}
