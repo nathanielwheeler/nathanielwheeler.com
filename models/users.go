@@ -13,20 +13,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// #region ERRORS
-
+// ERRORS
 var (
-	// ErrNotFound : Indicates that a resource does not exist within postgres
+	// ErrNotFound : Indicates that a resource does not exist within postgres.
 	ErrNotFound = errors.New("models: resource not found")
 	// ErrInvalidID : Returned when an invalid ID is provided to a method like Delete.
 	ErrInvalidID = errors.New("models: ID provided was invalid")
 	// ErrInvalidPassword : Returned when an invalid password is is used when attempting to authenticate a user.
 	ErrInvalidPassword = errors.New("models: incorrect password")
-	// ErrEmailRequired is returned when an email address is not provided when creating or updating a user
+	// ErrEmailRequired is returned when an email address is not provided when creating or updating a user.
 	ErrEmailRequired = errors.New("models: email address is required")
+	// ErrEmailInvalid is returned when an email address does not match the regex pattern of an email.
+	ErrEmailInvalid = errors.New("models: invalid email address")
 )
-
-// #endregion
 
 // TODO: remove obvious pepper when deployed
 var userPwPepper = "secret-string"
@@ -364,6 +363,18 @@ func (uv *userValidator) normalizeEmail(user *User) error {
 func (uv *userValidator) requireEmail(user *User) error {
 	if user.Email == "" {
 		return ErrEmailRequired
+	}
+	return nil
+}
+
+// emailFormat checks if provided email address is in a proper form
+func (uv *userValidator) emailFormat(user *User) error {
+	if user.Email == "" {
+		// This is a bit weird, but there may be instances where I accept an optional email field, but still need to make sure I have a proper email.
+		return nil
+	}
+	if !uv.emailRegex.MatchString(user.Email) {
+		return ErrEmailInvalid
 	}
 	return nil
 }
