@@ -17,14 +17,16 @@ import (
 var (
 	// ErrNotFound : Indicates that a resource does not exist within postgres.
 	ErrNotFound = errors.New("models: resource not found")
-	// ErrInvalidID : Returned when an invalid ID is provided to a method like Delete.
-	ErrInvalidID = errors.New("models: ID provided was invalid")
-	// ErrInvalidPassword : Returned when an invalid password is is used when attempting to authenticate a user.
-	ErrInvalidPassword = errors.New("models: incorrect password")
+	// ErrIDInvalid : Returned when an invalid ID is provided to a method like Delete.
+	ErrIDInvalid = errors.New("models: ID provided was invalid")
+	// ErrPasswordInvalid : Returned when an invalid password is is used when attempting to authenticate a user.
+	ErrPasswordInvalid = errors.New("models: incorrect password")
 	// ErrEmailRequired is returned when an email address is not provided when creating or updating a user.
 	ErrEmailRequired = errors.New("models: email address is required")
 	// ErrEmailInvalid is returned when an email address does not match the regex pattern of an email.
 	ErrEmailInvalid = errors.New("models: invalid email address")
+	// ErrEmailTaken is returned when an update or create is attempted with an email address that is already in use.
+	ErrEmailTaken = errors.New("models: email address is already taken")
 )
 
 // TODO: remove obvious pepper when deployed
@@ -101,7 +103,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	case nil:
 		return foundUser, nil
 	case bcrypt.ErrMismatchedHashAndPassword:
-		return nil, ErrInvalidPassword
+		return nil, ErrPasswordInvalid
 	default:
 		return nil, err
 	}
@@ -223,7 +225,7 @@ func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
 	}
 }
 
-// #region VAL METHODS
+// #region DB VALIDATORS
 
 // ByEmail will normalize an email address before passing it to the database layer.
 func (uv *userValidator) ByEmail(email string) (*User, error) {
@@ -256,7 +258,8 @@ func (uv *userValidator) Create(user *User) error {
 		uv.hmacRemember,
 		uv.normalizeEmail,
 		uv.requireEmail,
-		uv.emailFormat)
+		uv.emailFormat,
+		uv.emailIsAvail)
 	if err != nil {
 		return err
 	}
@@ -270,7 +273,8 @@ func (uv *userValidator) Update(user *User) error {
 		uv.hmacRemember,
 		uv.normalizeEmail,
 		uv.requireEmail,
-		uv.emailFormat)
+		uv.emailFormat,
+		uv.emailIsAvail)
 	if err != nil {
 		return err
 	}
@@ -290,7 +294,7 @@ func (uv *userValidator) Delete(id uint) error {
 
 // #endregion
 
-// #region VAL FUNCTIONS
+// #region VAL METHODS
 
 type userValFn func(*User) error
 
@@ -350,7 +354,7 @@ func (uv *userValidator) setRememberIfUnset(user *User) error {
 func (uv *userValidator) idGreaterThan(n uint) userValFn {
 	return userValFn(func(user *User) error {
 		if user.ID <= n {
-			return ErrInvalidID
+			return ErrIDInvalid
 		}
 		return nil
 	})
@@ -379,6 +383,24 @@ func (uv *userValidator) emailFormat(user *User) error {
 	}
 	if !uv.emailRegex.MatchString(user.Email) {
 		return ErrEmailInvalid
+	}
+	return nil
+}
+
+// emailIsAvail checks if the email address entered is not already taken
+func (uv *userValidator) emailIsAvail(user *User) error {
+	existing, err := uv.ByEmail(user.Email)
+	// This means the email address is available.  Continue.
+	if err == ErrNotFound {
+		return nil
+	}
+	// Other errors are bad.  Return error.
+	if err != nil {
+		return err
+	}
+	// Check if the existing email belongs to someone else.
+	if user.ID != existing.ID {
+		return ErrEmailTaken
 	}
 	return nil
 }
