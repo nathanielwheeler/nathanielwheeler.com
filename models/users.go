@@ -19,14 +19,22 @@ var (
 	ErrNotFound = errors.New("models: resource not found")
 	// ErrIDInvalid : Returned when an invalid ID is provided to a method like Delete.
 	ErrIDInvalid = errors.New("models: ID provided was invalid")
-	// ErrPasswordInvalid : Returned when an invalid password is is used when attempting to authenticate a user.
-	ErrPasswordInvalid = errors.New("models: incorrect password")
+
 	// ErrEmailRequired is returned when an email address is not provided when creating or updating a user.
 	ErrEmailRequired = errors.New("models: email address is required")
 	// ErrEmailInvalid is returned when an email address does not match the regex pattern of an email.
 	ErrEmailInvalid = errors.New("models: invalid email address")
 	// ErrEmailTaken is returned when an update or create is attempted with an email address that is already in use.
 	ErrEmailTaken = errors.New("models: email address is already taken")
+
+	// ErrPasswordRequired is returned when a password is required but is not provided.
+	ErrPasswordRequired = errors.New("models: password is required")
+	// ErrPasswordInvalid : Returned when an invalid password is is used when attempting to authenticate a user.
+	ErrPasswordInvalid = errors.New("models: incorrect password")
+	// ErrPasswordTooShort indicates that the password is less than 8 characters long
+	ErrPasswordTooShort = errors.New("models: password was too short")
+	// TODO password validator for max length
+	// TODO password validator for restricted characters in password
 )
 
 // TODO: remove obvious pepper when deployed
@@ -213,6 +221,8 @@ type userValidator struct {
 	UserDB
 	hmac       hash.HMAC
 	emailRegex *regexp.Regexp
+	// TODO: make regex for password validation
+	// passwordRegex *regexp.Regexp
 }
 
 // Constructor for userValidator layer.  Needed so that I can compile regex and assign it.
@@ -222,6 +232,9 @@ func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
 		hmac:   hmac,
 		emailRegex: regexp.MustCompile(
 			`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`),
+		// TODO figure out what I need for this
+		/* passwordRegex: regexp.MustCompile(
+		``), */
 	}
 }
 
@@ -253,7 +266,10 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 // Create will make the provided user and backfill data like the ID, CreatedAt, and UpdatedAt fields.
 func (uv *userValidator) Create(user *User) error {
 	err := runUserValFns(user,
+		uv.passwordRequired,
+		uv.passwordMinLength,
 		uv.bcryptPassword,
+		uv.passwordHashRequired,
 		uv.setRememberIfUnset,
 		uv.hmacRemember,
 		uv.normalizeEmail,
@@ -269,7 +285,9 @@ func (uv *userValidator) Create(user *User) error {
 // Update will hash a remember token if one is provided attached to the user object
 func (uv *userValidator) Update(user *User) error {
 	err := runUserValFns(user,
+		uv.passwordMinLength,
 		uv.bcryptPassword,
+		uv.passwordHashRequired,
 		uv.hmacRemember,
 		uv.normalizeEmail,
 		uv.requireEmail,
@@ -401,6 +419,33 @@ func (uv *userValidator) emailIsAvail(user *User) error {
 	// Check if the existing email belongs to someone else.
 	if user.ID != existing.ID {
 		return ErrEmailTaken
+	}
+	return nil
+}
+
+// passwordMinLength enforces a minimum length on password. NOTE: It MUST be run before the password hasher.
+func (uv *userValidator) passwordMinLength(user *User) error {
+	if user.Password == "" {
+		return nil
+	}
+	if len(user.Password) < 8 {
+		return ErrPasswordTooShort
+	}
+	return nil
+}
+
+// passwordRequired returns an error if the password field passed in is empty
+func (uv *userValidator) passwordRequired(user *User) error {
+	if user.Password == "" {
+		return ErrPasswordRequired
+	}
+	return nil
+}
+
+// passwordHashRequired returns if a hash for whatever reason wasn't made
+func (uv *userValidator) passwordHashRequired(user *User) error {
+	if user.PasswordHash == "" {
+		return ErrPasswordRequired
 	}
 	return nil
 }
