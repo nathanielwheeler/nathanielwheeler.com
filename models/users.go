@@ -255,7 +255,8 @@ func (uv *userValidator) Create(user *User) error {
 		uv.setRememberIfUnset,
 		uv.hmacRemember,
 		uv.normalizeEmail,
-		uv.requireEmail)
+		uv.requireEmail,
+		uv.emailFormat)
 	if err != nil {
 		return err
 	}
@@ -268,7 +269,8 @@ func (uv *userValidator) Update(user *User) error {
 		uv.bcryptPassword,
 		uv.hmacRemember,
 		uv.normalizeEmail,
-		uv.requireEmail)
+		uv.requireEmail,
+		uv.emailFormat)
 	if err != nil {
 		return err
 	}
@@ -287,6 +289,8 @@ func (uv *userValidator) Delete(id uint) error {
 }
 
 // #endregion
+
+// #region VAL FUNCTIONS
 
 type userValFn func(*User) error
 
@@ -378,5 +382,7 @@ func (uv *userValidator) emailFormat(user *User) error {
 	}
 	return nil
 }
+
+// #endregion
 
 // #endregion
