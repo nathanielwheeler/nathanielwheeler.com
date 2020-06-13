@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 
 	"nathanielwheeler.com/hash"
@@ -73,17 +74,14 @@ type userService struct {
 	UserDB
 }
 
-// NewUserService : constructor for userService.  Initializes database connection
+// NewUserService : constructor for userService.  Calls constructors for user gorm and user validator.
 func NewUserService(connectionStr string) (UserService, error) {
 	ug, err := newUserGorm(connectionStr)
 	if err != nil {
 		return nil, err
 	}
 	hmac := hash.NewHMAC(hmacSecretKey)
-	uv := &userValidator{
-		hmac:   hmac,
-		UserDB: ug,
-	}
+	uv := newUserValidator(ug, hmac)
 	return &userService{
 		UserDB: uv,
 	}, nil
@@ -212,8 +210,21 @@ func first(db *gorm.DB, dst interface{}) error {
 // userValidator represents the validation layer.  It also handles normalization.
 type userValidator struct {
 	UserDB
-	hmac hash.HMAC
+	hmac       hash.HMAC
+	emailRegex *regexp.Regexp
 }
+
+// Constructor for userValidator layer.  Needed so that I can compile regex and assign it.
+func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
+	return &userValidator{
+		UserDB: udb,
+		hmac:   hmac,
+		emailRegex: regexp.MustCompile(
+			`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`),
+	}
+}
+
+// #region VAL METHODS
 
 // ByEmail will normalize an email address before passing it to the database layer.
 func (uv *userValidator) ByEmail(email string) (*User, error) {
@@ -275,6 +286,8 @@ func (uv *userValidator) Delete(id uint) error {
 	}
 	return uv.UserDB.Delete(id)
 }
+
+// #endregion
 
 type userValFn func(*User) error
 
