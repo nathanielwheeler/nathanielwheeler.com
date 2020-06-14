@@ -39,9 +39,18 @@ func NewView(layout string, files ...string) *View {
 	}
 }
 
-// Render : Responsible for rendering the view.
+// Render : Responsible for rendering the view.  Checks the underlying type of data passed into it.
 func (v *View) Render(res http.ResponseWriter, data interface{}) error {
 	res.Header().Set("Content-Type", "text/html")
+	switch data.(type) {
+	case Data:
+		// already wrapped, good to go.
+	default:
+		// whatever was passed in, wrap it up in a data type.
+		data = Data{
+			Yield: data,
+		}
+	}
 	return v.Template.ExecuteTemplate(res, v.Layout, data)
 }
 
@@ -52,9 +61,7 @@ func (v *View) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-
-
-/* 
+/*
 	HELPERS
 */
 
