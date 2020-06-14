@@ -15,9 +15,14 @@
 
 	{{template "navbar"}}
 
-	{{template "alert" .}}
+	<!-- NOTE: fix navbar before removing this -->
+	<div class="my-spacer"></div>
 
-	{{template "yield" .}}
+	{{if .Alert}}
+		{{template "alert" .Alert}}
+	{{end}}
+
+	{{template "yield" .Yield}}
 
 	<div class="my-spacer"></div>
 
