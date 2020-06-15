@@ -36,9 +36,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// TODO Clean this
-	defer services.User.Close()
-	services.User.AutoMigrate()
+	defer services.Close()
+	services.AutoMigrate()
 
 	// Initialize controllers
 	staticC := controllers.NewStatic()
