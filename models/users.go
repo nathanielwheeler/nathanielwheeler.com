@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"regexp"
 	"strings"
 
@@ -13,34 +12,49 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// ERRORS
+// #region ERRORS
 var (
 	// ErrNotFound : Indicates that a resource does not exist within postgres.
-	ErrNotFound = errors.New("models: resource not found")
+	ErrNotFound modelError = "models: resource not found"
 	// ErrIDInvalid : Returned when an invalid ID is provided to a method like Delete.
-	ErrIDInvalid = errors.New("models: ID provided was invalid")
+	ErrIDInvalid modelError = "models: ID provided was invalid"
 
 	// ErrEmailRequired is returned when an email address is not provided when creating or updating a user.
-	ErrEmailRequired = errors.New("models: email address is required")
+	ErrEmailRequired modelError = "models: email address is required"
 	// ErrEmailInvalid is returned when an email address does not match the regex pattern of an email.
-	ErrEmailInvalid = errors.New("models: invalid email address")
+	ErrEmailInvalid modelError = "models: invalid email address"
 	// ErrEmailTaken is returned when an update or create is attempted with an email address that is already in use.
-	ErrEmailTaken = errors.New("models: email address is already taken")
+	ErrEmailTaken modelError = "models: email address is already taken"
 
 	// ErrPasswordRequired is returned when a password is required but is not provided.
-	ErrPasswordRequired = errors.New("models: password is required")
+	ErrPasswordRequired modelError = "models: password is required"
 	// ErrPasswordInvalid : Returned when an invalid password is is used when attempting to authenticate a user.
-	ErrPasswordInvalid = errors.New("models: incorrect password")
+	ErrPasswordInvalid modelError = "models: incorrect password"
 	// ErrPasswordTooShort indicates that the password is less than 8 characters long
-	ErrPasswordTooShort = errors.New("models: password was too short")
+	ErrPasswordTooShort modelError = "models: password was too short"
 	// TODO password validator for max length
 	// TODO password validator for restricted characters in password
 
 	// ErrRememberRequired is returned when a create or update is attempted without a token hash
-	ErrRememberRequired = errors.New("models: remember token required")
+	ErrRememberRequired modelError = "models: remember token required"
 	// ErrRememberTooShort is returned when a remember token is not at least 32 bytes
-	ErrRememberTooShort = errors.New("models: remember token should be at least 32 bytes")
+	ErrRememberTooShort modelError = "models: remember token should be at least 32 bytes"
 )
+
+type modelError string
+
+func (e modelError) Error() string {
+	return string(e)
+}
+
+func (e modelError) Public() string {
+	s := strings.Replace(string(e), "models: ", "", 1)
+	split := strings.Split(s, " ")
+	split[0] = strings.Title(split[0])
+	return strings.Join(split, " ")
+}
+
+// #endregion
 
 // TODO: remove obvious pepper when deployed
 var userPwPepper = "secret-string"

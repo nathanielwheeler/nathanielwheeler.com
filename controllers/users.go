@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"nathanielwheeler.com/models"
@@ -48,11 +47,7 @@ func (u *Users) Register(res http.ResponseWriter, req *http.Request) {
 	var vd views.Data
 	var form RegistrationForm
 	if err := parseForm(req, &form); err != nil {
-		log.Println(err)
-		vd.Alert = &views.Alert{
-			Level:   views.AlertLvlError,
-			Message: views.AlertMsgGeneric,
-		}
+		vd.SetAlert(err)
 		u.RegisterView.Render(res, vd)
 		return
 	}
@@ -62,15 +57,10 @@ func (u *Users) Register(res http.ResponseWriter, req *http.Request) {
 		Password: form.Password,
 	}
 	if err := u.us.Create(&user); err != nil {
-		vd.Alert = &views.Alert{
-			Level:   views.AlertLvlError,
-			Message: err.Error(), // TODO: think of a better way to handle this
-		}
+		vd.SetAlert(err)
 		u.RegisterView.Render(res, vd)
 		return
 	}
-
-	// remember token
 	err := u.signIn(res, &user)
 	if err != nil {
 		http.Redirect(res, req, "/login", http.StatusFound)

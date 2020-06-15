@@ -1,9 +1,17 @@
 package views
 
+import "log"
+
 // Data is the top level structure that views expect data to come in.
 type Data struct {
 	Alert *Alert
 	Yield interface{}
+}
+
+// PublicError is an interface applying to errors that have a Public method attached to them.
+type PublicError interface {
+	error
+	Public() string
 }
 
 // Alert is used to render alert messages in templates
@@ -25,3 +33,18 @@ const (
 	// AlertMsgGeneric is the default message for unfiltered errors.
 	AlertMsgGeneric = `Something went wrong, please try again.  If the problem persists, please contact me directly at <a href="mailto:contact@nathanielwheeler.com">contact@nathanielwheeler.com</a>.`
 )
+
+// SetAlert will create an alert using a constant error message
+func (d *Data) SetAlert(err error) {
+	var msg string
+	if pErr, ok := err.(PublicError); ok { // Type assertion, runs if error matches PublicError interface
+		msg = pErr.Public()
+	} else {
+		log.Println(err)
+		msg = AlertMsgGeneric
+	}
+	d.Alert = &Alert{
+		Level:   AlertLvlError,
+		Message: msg,
+	}
+}
