@@ -21,4 +21,7 @@ const (
 	AlertLvlInfo = "info"
 	// AlertLvlSuccess indicates that an action was carried successfully.
 	AlertLvlSuccess = "success"
+
+	// AlertMsgGeneric is the default message for unfiltered errors.
+	AlertMsgGeneric = `Something went wrong, please try again.  If the problem persists, please contact me directly at <a href="mailto:contact@nathanielwheeler.com">contact@nathanielwheeler.com</a>.`
 )
