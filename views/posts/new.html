@@ -1,0 +1,40 @@
+{{define "yield"}}
+<main class="container">
+	<div class="row">
+		<div class="col-12 offset-md-2 col-md-8 offset-lg-3 col-lg-6">
+
+			<div class="card border-light bg-dark">
+				<div class="card-body">
+
+					<h3 class="card-title text-center">
+						New Post
+					</h3>
+					<div class="card-text">
+						{{template "postForm"}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
+{{end}}
+
+{{define "postForm"}}
+<form action="/posts" action="POST">
+	<div class="form-group">
+
+		<div class="row">
+			<label for="title">
+				Title
+				<input type="text" name="title" class="form-control" id="title" placeholder="The Great American Blog Post">
+			</label>
+			<br>
+			<div class="row d-flex-justify-content-center">
+				<button class="btn btn-success btn-lg" type="submit">
+					Post!
+				</button>
+			</div>
+		</div>
+	</div>
+</form>
+{{end}}

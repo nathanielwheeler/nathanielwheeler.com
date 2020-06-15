@@ -1,20 +1,20 @@
 {{define "yield"}}
 <main class="container">
 	<div class="row">
-		<div class="col-12 offset-md-3 col-md-6">
+		<div class="col-12 offset-md-2 col-md-8 offset-lg-2 col-lg-6">
 
-			<div class="card border-primary bg-dark">
+			<div class="card border-light bg-dark">
 				<div class="card-body">
 
 					<h3 class="card-title text-center">
-						Registration
+						Register
 					</h3>
-					<p class="card-text lead text-center">
-						Sign up to comment on posts!
-					</p>
 					<div class="card-text">
 						{{template "registerForm"}}
 					</div>
+					<p class="card-text text-center">
+						Already have an account?  <a href="/login">Click here to login!</a>
+					</p>
 				</div>
 			</div>
 		</div>
@@ -22,33 +22,35 @@
 </main>
 {{end}}
 
-<!-- TODO: Add optional fields for name, etc. -->
 {{define "registerForm"}}
 <form action="/register" method="POST">
-	<div class="form-group container-fluid">
+	<div class="form-group">
+
 		<div class="row">
-			<label for="name" class="col-12 text-center">
-				Display Name
+			<label for="name" class="col-12">
+				Name
 				<input class="form-control" type="name" name="name" id="name" placeholder="Ken Thompson">
 			</label>
 		</div>
 		<div class="row">
-			<label for="email" class="col-12 text-center">
+			<label for="email" class="col-12">
 				Email Address
 				<input class="form-control" type="email" name="email" id="email"
-					placeholder="gopherfan1970@example.com">
+					placeholder="gopherfan70@example.com">
 			</label>
 		</div>
 		<div class="row">
-			<label for="password" class="col-12 text-center">
+			<label for="password" class="col-12">
 				Password
 				<input class="form-control" type="password" name="password" id="password"
-					placeholder="use a password manager!">
+					placeholder="Use a password manager!">
 			</label>
 		</div>
+		<br>
 		<div class="row d-flex justify-content-center">
-			<button class="btn btn-success btn-lg" type="submit">Register</button>
+			<button class="btn btn-success btn-lg" type="submit">Register!</button>
 		</div>
+
 	</div>
 </form>
 {{end}}
