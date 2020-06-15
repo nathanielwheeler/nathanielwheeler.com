@@ -78,25 +78,33 @@ type LoginForm struct {
 // Login : POST /login
 // — Used to process the login form when a user tries to log in as an existing user
 func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
+	var vd views.Data
 	var form LoginForm
 	if err := parseForm(req, &form); err != nil {
-		panic(err)
+		vd.SetAlert(err)
+		u.LoginView.Render(res, vd)
+		return
 	}
 	user, err := u.us.Authenticate(form.Email, form.Password)
 	if err != nil {
 		switch err {
 		case models.ErrNotFound:
 		case models.ErrPasswordInvalid:
-			fmt.Fprintln(res, "Invalid email and/or password.")
+			vd.Alert = &views.Alert{
+				Level: views.AlertLvlError,
+				Message: "Invalid email and/or password.",
+			}
 		default:
-			http.Error(res, err.Error(), http.StatusInternalServerError)
+			vd.SetAlert(err)
 		}
+		u.LoginView.Render(res, vd)
 		return
 	}
 
 	err = u.signIn(res, user)
 	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		vd.SetAlert(err)
+		u.LoginView.Render(res, vd)
 		return
 	}
 	http.Redirect(res, req, "/cookietest", http.StatusFound)
