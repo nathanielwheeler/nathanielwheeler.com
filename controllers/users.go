@@ -27,10 +27,7 @@ type Users struct {
 // RegisterForm : GET /register
 // — Renders a new registration form for a potential user
 func (u *Users) RegisterForm(res http.ResponseWriter, req *http.Request) {
-	if err := u.RegisterView.Render(res, nil); err != nil {
-		// TODO don't panic && give feedback to user
-		panic(err)
-	}
+	u.RegisterView.Render(res, nil)
 }
 
 // RegistrationForm is used to transform a webform into a registration request

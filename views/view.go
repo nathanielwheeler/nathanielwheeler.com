@@ -1,7 +1,9 @@
 package views
 
 import (
+	"bytes"
 	"html/template"
+	"io"
 	"net/http"
 	"path/filepath"
 )
@@ -40,7 +42,7 @@ func NewView(layout string, files ...string) *View {
 }
 
 // Render : Responsible for rendering the view.  Checks the underlying type of data passed into it.
-func (v *View) Render(res http.ResponseWriter, data interface{}) error {
+func (v *View) Render(res http.ResponseWriter, data interface{}) {
 	res.Header().Set("Content-Type", "text/html")
 	switch data.(type) {
 	case Data:
@@ -51,14 +53,18 @@ func (v *View) Render(res http.ResponseWriter, data interface{}) error {
 			Yield: data,
 		}
 	}
-	return v.Template.ExecuteTemplate(res, v.Layout, data)
+	var buf bytes.Buffer
+	err := v.Template.ExecuteTemplate(&buf, v.Layout, data)
+	if err != nil {
+		http.Error(res, `Something went wrong, please try again.  If the problem persists, please contact me directly at <a href="mailto:contact@nathanielwheeler.com">contact@nathanielwheeler.com</a>.`, http.StatusInternalServerError)
+		return
+	}
+	io.Copy(res, &buf)
 }
 
 // ServeHTTP : Renders and serves views.
 func (v *View) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	if err := v.Render(res, nil); err != nil {
-		panic(err)
-	}
+	v.Render(res, nil)
 }
 
 /*
