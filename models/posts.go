@@ -11,21 +11,62 @@ type Post struct {
 	Title  string `gorm:"not_null"`
 }
 
+// #region SERVICE
+
 // PostsService will handle business rules for posts.
 type PostsService interface {
 	PostsDB
 }
 
+type postsService struct {
+	PostsDB
+}
+
+// NewPostsService is 
+func NewPostsService(db *gorm.DB) PostsService {
+	return &postsService{
+		PostsDB: &postsValidator{
+			PostsDB: &postsGorm{
+				db: db,
+			},
+		},
+	}
+}
+
+// #endregion
+
+// #region GORM
+
+//		#region GORM CONFIG
+
 // PostsDB will handle database interaction for posts.
- type PostsDB interface {
-	 Create(post *Post) error
- }
+type PostsDB interface {
+	Create(post *Post) error
+}
 
- type postsGorm struct {
-	 db *gorm.DB
- }
+type postsGorm struct {
+	db *gorm.DB
+}
 
- func (pg *postsGorm) Create(post *Post) error {
-	// TODO: implement
-	return nil
- }
+// Ensure that postsGorm always implements PostsDB interface
+var _ PostsDB = &postsGorm{}
+
+// #endregion
+
+//		#region GORM METHODS
+
+func (pg *postsGorm) Create(post *Post) error {
+	return pg.db.Create(post).Error
+}
+
+// #endregion
+
+// #endregion
+
+// #region VALIDATOR
+
+type postsValidator struct {
+	PostsDB
+}
+
+// #endregion

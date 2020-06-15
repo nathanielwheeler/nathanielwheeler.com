@@ -20,7 +20,7 @@ func NewServices(connectionStr string) (*Services, error) {
 	db.LogMode(true)
 	return &Services{
 		User:  NewUserService(db),
-		Posts: &postsGorm{},
+		Posts: NewPostsService(db),
 		db:    db,
 	}, nil
 }
