@@ -32,16 +32,17 @@ func main() {
 	)
 
 	// Initialize services
-	us, err := models.NewUserService(psqlConnectionStr)
+	services, err := models.NewServices(psqlConnectionStr)
 	if err != nil {
 		panic(err)
 	}
-	defer us.Close()
-	us.AutoMigrate()
+	// TODO Clean this
+	defer services.User.Close()
+	services.User.AutoMigrate()
 
 	// Initialize controllers
 	staticC := controllers.NewStatic()
-	usersC := controllers.NewUsers(us)
+	usersC := controllers.NewUsers(services.User)
 
 	// Route Handling
 	r := mux.NewRouter()

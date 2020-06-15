@@ -103,16 +103,13 @@ type userService struct {
 }
 
 // NewUserService : constructor for userService.  Calls constructors for user gorm and user validator.
-func NewUserService(connectionStr string) (UserService, error) {
-	ug, err := newUserGorm(connectionStr)
-	if err != nil {
-		return nil, err
-	}
+func NewUserService(db *gorm.DB) UserService {
+	ug := &userGorm{db}
 	hmac := hash.NewHMAC(hmacSecretKey)
 	uv := newUserValidator(ug, hmac)
 	return &userService{
 		UserDB: uv,
-	}, nil
+	}
 }
 
 // Authenticate : Used to authenticate a user with a provided email address and password.  Returns a user and an error message.
@@ -143,17 +140,6 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 // userGORM represents the database interaction layer
 type userGorm struct {
 	db *gorm.DB
-}
-
-func newUserGorm(connectionStr string) (*userGorm, error) {
-	db, err := gorm.Open("postgres", connectionStr)
-	if err != nil {
-		return nil, err
-	}
-	db.LogMode(true)
-	return &userGorm{
-		db: db,
-	}, nil
 }
 
 // ByID gets a user given an ID.
