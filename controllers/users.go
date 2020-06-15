@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"nathanielwheeler.com/models"
@@ -90,10 +89,7 @@ func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
 		switch err {
 		case models.ErrNotFound:
 		case models.ErrPasswordInvalid:
-			vd.Alert = &views.Alert{
-				Level: views.AlertLvlError,
-				Message: "Invalid email and/or password.",
-			}
+			vd.AlertError("Invalid email and/or password.")
 		default:
 			vd.SetAlert(err)
 		}
