@@ -24,9 +24,9 @@ type Users struct {
 	us           models.UserService
 }
 
-// RegisterForm : GET /register
+// Registration : GET /register
 // — Renders a new registration form for a potential user
-func (u *Users) RegisterForm(res http.ResponseWriter, req *http.Request) {
+func (u *Users) Registration(res http.ResponseWriter, req *http.Request) {
 	u.RegisterView.Render(res, nil)
 }
 

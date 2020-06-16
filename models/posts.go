@@ -22,7 +22,7 @@ type postsService struct {
 	PostsDB
 }
 
-// NewPostsService is 
+// NewPostsService is
 func NewPostsService(db *gorm.DB) PostsService {
 	return &postsService{
 		PostsDB: &postsValidator{

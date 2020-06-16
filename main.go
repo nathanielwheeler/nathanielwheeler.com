@@ -42,16 +42,21 @@ func main() {
 	// Initialize controllers
 	staticC := controllers.NewStatic()
 	usersC := controllers.NewUsers(services.User)
+	postsC := controllers.NewPosts(services.Posts)
 
 	// Route Handling
 	r := mux.NewRouter()
+	//		Statics
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/resume", staticC.Resume).Methods("GET")
-	r.HandleFunc("/register", usersC.RegisterForm).Methods("GET")
+	//		Users
+	r.HandleFunc("/register", usersC.Registration).Methods("GET")
 	r.HandleFunc("/register", usersC.Register).Methods("POST")
 	r.Handle("/login", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
+	//		Posts
+	r.Handle("/posts/new", postsC.New).Methods("GET")
 
 	// Start that server!
 	http.ListenAndServe(":3000", r)
