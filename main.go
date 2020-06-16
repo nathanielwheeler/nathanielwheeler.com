@@ -50,13 +50,14 @@ func main() {
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/resume", staticC.Resume).Methods("GET")
 	//		Users
-	r.HandleFunc("/register", usersC.Registration).Methods("GET")
+	r.HandleFunc("/register", usersC.Registration).Methods("GET") // Consider making this a view to match LoginView
 	r.HandleFunc("/register", usersC.Register).Methods("POST")
 	r.Handle("/login", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 	//		Posts
 	r.Handle("/posts/new", postsC.New).Methods("GET")
+	r.HandleFunc("posts", postsC.Create).Methods("POST")
 
 	// Start that server!
 	http.ListenAndServe(":3000", r)
