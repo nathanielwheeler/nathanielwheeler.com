@@ -4,6 +4,20 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// #region ERRORS
+
+/* TODO
+- Need to make a private error type */
+
+const (
+	// ErrUserIDRequired indicates that there is a missing user ID
+	ErrUserIDRequired modelError = "models: user ID is required"
+	// ErrTitleRequired indicates that there is a missing title
+	ErrTitleRequired modelError = "models: title is required"
+)
+
+// #endregion
+
 // Post will hold all of the information needed for a blog post.
 type Post struct {
 	gorm.Model
@@ -68,5 +82,48 @@ func (pg *postsGorm) Create(post *Post) error {
 type postsValidator struct {
 	PostsDB
 }
+
+//		#region DB VALIDATORS
+
+func (pv *postsValidator) Create(post *Post) error {
+	err := runPostsValFns(post,
+		pv.userIDRequired,
+		pv.titleRequired)
+	if err != nil {
+		return err
+	}
+	return pv.PostsDB.Create(post)
+}
+
+//		#endregion
+
+//		#region VAL METHODS
+
+type postsValFn func(*Post) error
+
+func runPostsValFns(post *Post, fns ...postsValFn) error {
+	for _, fn := range fns {
+		if err := fn(post); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (pv *postsValidator) userIDRequired(p *Post) error {
+	if p.UserID <= 0 {
+		return ErrUserIDRequired
+	}
+	return nil
+}
+
+func (pv *postsValidator) titleRequired(p *Post) error {
+	if p.Title == "" {
+		return ErrTitleRequired
+	}
+	return nil
+}
+
+//		#endregion
 
 // #endregion
