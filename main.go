@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"nathanielwheeler.com/middleware"
 	"nathanielwheeler.com/controllers"
 	"nathanielwheeler.com/models"
 
@@ -44,6 +45,13 @@ func main() {
 	usersC := controllers.NewUsers(services.User)
 	postsC := controllers.NewPosts(services.Posts)
 
+	// Middleware
+	requireUserMw := middleware.RequireUser{
+		UserService: services.User,
+	}
+	newPost := requireUserMw.Apply(postsC.New)
+	createPost := requireUserMw.ApplyFn(postsC.Create)
+
 	// Route Handling
 	r := mux.NewRouter()
 	//		Statics
@@ -56,8 +64,8 @@ func main() {
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 	//		Posts
-	r.Handle("/posts/new", postsC.New).Methods("GET")
-	r.HandleFunc("posts", postsC.Create).Methods("POST")
+	r.Handle("/posts/new", newPost).Methods("GET")
+	r.HandleFunc("posts", createPost).Methods("POST")
 
 	// Start that server!
 	http.ListenAndServe(":3000", r)
