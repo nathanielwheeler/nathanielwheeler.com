@@ -11,12 +11,9 @@ import (
 	"nathanielwheeler.com/models"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
+	"github.com/jojho/godotenv"
 )
 
-type env struct {
-	host, user, password, port, name string
-}
 
 func init() {
 	if err := godotenv.Load(); err != nil {
@@ -26,7 +23,7 @@ func init() {
 
 func main() {
 	// Start up database connection
-	dbEnv := getEnv()
+	dbEnv := getDBEnv()
 	psqlConnectionStr := fmt.Sprintf(
 		"host=%s port=%s user=%s password='%s' dbname=%s sslmode=disable",
 		dbEnv.host, dbEnv.port, dbEnv.user, dbEnv.password, dbEnv.name,
@@ -73,17 +70,21 @@ func main() {
 
 // #region DB HELPERS
 
-func getEnv() env {
-	return env{
-		host:     checkEnv("host"),
-		user:     checkEnv("user"),
-		password: checkEnv("password"),
-		port:     checkEnv("port"),
-		name:     checkEnv("name"),
+type dbEnv struct {
+	host, user, password, port, name string
+}
+
+func getDBEnv() dbEnv {
+	return dbEnv{
+		host:     checkDBEnv("host"),
+		user:     checkDBEnv("user"),
+		password: checkDBEnv("password"),
+		port:     checkDBEnv("port"),
+		name:     checkDBEnv("name"),
 	}
 }
 
-func checkEnv(str string) string {
+func checkDBEnv(str string) string {
 	str, exists := os.LookupEnv("DB_" + strings.ToUpper(str))
 	if !exists {
 		panic(".env is missing environment variable: '" + str + "'")
