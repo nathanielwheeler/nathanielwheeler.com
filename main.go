@@ -11,7 +11,7 @@ import (
 	"nathanielwheeler.com/models"
 
 	"github.com/gorilla/mux"
-	"github.com/jojho/godotenv"
+	"github.com/joho/godotenv"
 )
 
 
