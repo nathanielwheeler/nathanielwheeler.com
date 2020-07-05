@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"nathanielwheeler.com/context"
 	"nathanielwheeler.com/models"
 )
 
@@ -25,7 +26,12 @@ func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 			http.Redirect(res, req, "/login", http.StatusFound)
 			return
 		}
-		fmt.Println("User found: ", user)
+		
+		// Get context from request, make a new context from the existing one that has our user stored in it with the private user key, and create a new request from the existing one with the new context attached.
+		ctx := req.Context()
+		ctx = context.WithUser(ctx, user)
+		req = req.WithContext(ctx)
+
 		next(res, req)
 	})
 }
