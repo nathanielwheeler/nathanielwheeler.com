@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 
 	"nathanielwheeler.com/context"
@@ -26,7 +25,7 @@ func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 			http.Redirect(res, req, "/login", http.StatusFound)
 			return
 		}
-		
+
 		// Get context from request, make a new context from the existing one that has our user stored in it with the private user key, and create a new request from the existing one with the new context attached.
 		ctx := req.Context()
 		ctx = context.WithUser(ctx, user)

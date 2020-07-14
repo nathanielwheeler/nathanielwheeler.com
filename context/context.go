@@ -22,4 +22,5 @@ func User(ctx context.Context) *models.User {
 			return user
 		}
 	}
+	return nil
 }

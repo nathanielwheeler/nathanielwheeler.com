@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"nathanielwheeler.com/context"
 	"nathanielwheeler.com/models"
 	"nathanielwheeler.com/views"
 )
@@ -36,8 +37,10 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 		p.New.Render(res, vd)
 		return
 	}
+	user := context.User(req.Context())
 	post := models.Post{
 		Title: form.Title,
+		UserID: user.ID,
 	}
 	if err := p.ps.Create(&post); err != nil {
 		vd.SetAlert(err)
