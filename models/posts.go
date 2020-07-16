@@ -55,6 +55,7 @@ func NewPostsService(db *gorm.DB) PostsService {
 
 // PostsDB will handle database interaction for posts.
 type PostsDB interface {
+	ByTitle(title string) (*Post, error)
 	Create(post *Post) error
 }
 
@@ -65,15 +66,26 @@ type postsGorm struct {
 // Ensure that postsGorm always implements PostsDB interface
 var _ PostsDB = &postsGorm{}
 
-// #endregion
+//		#endregion
 
 //		#region GORM METHODS
+
+// ByTitle will search the posts database for input title.
+func (pg *postsGorm) ByTitle(title string) (*Post, error) {
+	var post Post
+	db := pg.db.Where("title = ?", title)
+	err := first(db, &post)
+	if err != nil {
+		return nil, err
+	}
+	return &post, nil
+}
 
 func (pg *postsGorm) Create(post *Post) error {
 	return pg.db.Create(post).Error
 }
 
-// #endregion
+//		#endregion
 
 // #endregion
 

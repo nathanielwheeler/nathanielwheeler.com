@@ -39,9 +39,15 @@ func (p *Posts) Show(res http.ResponseWriter, req *http.Request) {
 	titleVar := vars["title"]
 	title := strings.Replace(titleVar, "-", " ", -1)
 
-	// TODO make real post lookup method
-	post := models.Post{
-		Title: title,
+	post, err := p.ps.ByTitle(title)
+	if err != nil {
+		switch err {
+		case models.ErrNotFound:
+			http.Error(res, "Post not found", http.StatusNotFound)
+		default:
+			http.Error(res, "Something bad happened.", http.StatusInternalServerError)
+		}
+		return
 	}
 
 	var vd views.Data
