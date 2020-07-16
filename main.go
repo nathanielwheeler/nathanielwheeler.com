@@ -6,14 +6,13 @@ import (
 	"os"
 	"strings"
 
-	"nathanielwheeler.com/middleware"
 	"nathanielwheeler.com/controllers"
+	"nathanielwheeler.com/middleware"
 	"nathanielwheeler.com/models"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
-
 
 func init() {
 	if err := godotenv.Load(); err != nil {

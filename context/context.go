@@ -8,6 +8,7 @@ import (
 
 // NOTE these should never be exported.  This prevents outside code from changing these values.
 type privateKey string
+
 const userKey privateKey = "user"
 
 // WithUser accepts an existing context and a user, then returns a new context with that user set as a value.

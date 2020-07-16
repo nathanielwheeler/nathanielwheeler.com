@@ -11,15 +11,17 @@ import (
 
 // Posts will hold information about views and services
 type Posts struct {
-	New *views.View
-	ps  models.PostsService
+	New      *views.View
+	ShowView *views.View
+	ps       models.PostsService
 }
 
 // NewPosts is a constructor for Posts struct
 func NewPosts(ps models.PostsService) *Posts {
 	return &Posts{
-		New: views.NewView("app", "posts/new"),
-		ps:  ps,
+		New:      views.NewView("app", "posts/new"),
+		ShowView: views.NewView("app", "posts/show"),
+		ps:       ps,
 	}
 }
 
@@ -39,7 +41,7 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 	}
 	user := context.User(req.Context())
 	post := models.Post{
-		Title: form.Title,
+		Title:  form.Title,
 		UserID: user.ID,
 	}
 	if err := p.ps.Create(&post); err != nil {
