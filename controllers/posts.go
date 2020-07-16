@@ -33,7 +33,7 @@ type PostForm struct {
 	Title string `schema:"title"`
 }
 
-// Show : GET /posts/:year/:month/:title
+// Show : GET /posts/:title
 func (p *Posts) Show(res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	titleVar := vars["title"]
