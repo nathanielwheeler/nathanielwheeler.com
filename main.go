@@ -62,6 +62,10 @@ func main() {
 	//		Posts
 	r.Handle("/posts/new", newPost).Methods("GET")
 	r.HandleFunc("posts", createPost).Methods("POST")
+	// /posts/:title
+	r.HandleFunc("/posts/{title}", postsC.Show).Methods("GET")
+	// TODO: month and year handling?
+	// {year:2[0-9]{3}}/{month:0?[0-9]|1[0-2]}
 
 	// Start that server!
 	http.ListenAndServe(":3000", r)

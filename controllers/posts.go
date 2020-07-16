@@ -3,10 +3,13 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"nathanielwheeler.com/context"
 	"nathanielwheeler.com/models"
 	"nathanielwheeler.com/views"
+
+	"github.com/gorilla/mux"
 )
 
 // Posts will hold information about views and services
@@ -28,6 +31,22 @@ func NewPosts(ps models.PostsService) *Posts {
 // PostForm will hold information for creating a new post
 type PostForm struct {
 	Title string `schema:"title"`
+}
+
+// Show : GET /posts/:year/:month/:title
+func (p *Posts) Show(res http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	titleVar := vars["title"]
+	title := strings.Replace(titleVar, "-", " ", -1)
+
+	// TODO make real post lookup method
+	post := models.Post{
+		Title: title,
+	}
+
+	var vd views.Data
+	vd.Yield = post
+	p.ShowView.Render(res, vd)
 }
 
 // Create : POST /posts
