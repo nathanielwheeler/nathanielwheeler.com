@@ -66,8 +66,8 @@ func main() {
 	r.HandleFunc("/posts", requireUserMw.ApplyFn(postsC.Create)).Methods("POST")
 	// TODO: implement ByYearAndTitle instead of ByID
 	// /posts/:year/:title
-	// r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}", postsC.Show).Methods("GET").Name(controllers.ShowPost)
-	r.HandleFunc("/posts/{id:[0-9]+}", postsC.Show).Methods("GET").Name(controllers.ShowPost)
+	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}", postsC.Show).Methods("GET").Name(controllers.ShowPost)
+	// r.HandleFunc("/posts/{id:[0-9]+}", postsC.Show).Methods("GET").Name(controllers.ShowPost)
 
 	// Start that server!
 

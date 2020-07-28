@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strconv"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -85,7 +87,10 @@ func (pg *postsGorm) ByID(id uint) (*Post, error) {
 // ByYearAndTitle will search the posts database for input year and title.
 func (pg *postsGorm) ByYearAndTitle(year int, title string) (*Post, error) {
 	var post Post
-	db := pg.db.Where("title = ? AND created_at > '?-01-01 00:00:00-07' AND created_at <= '?-12-31 23:59:59-07'", title, year, year)
+	dateFrom := strconv.Itoa(year) + "-01-01 00:00:00"
+	dateTo := strconv.Itoa(year) + "-12-31 23:59:59"
+
+	db := pg.db.Where("title = ? AND created_at BETWEEN ? AND ?", title, dateFrom, dateTo)
 	err := first(db, &post)
 	if err != nil {
 		return nil, err

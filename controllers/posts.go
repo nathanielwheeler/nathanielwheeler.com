@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"nathanielwheeler.com/context"
 	"nathanielwheeler.com/models"
@@ -42,23 +43,24 @@ func (p *Posts) Show(res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 
 	// TODO use ByYearAndTitle instead of ByID
-	/* yearVar := vars["year"]
+	yearVar := vars["year"]
 	year, err := strconv.Atoi(yearVar)
 	if err != nil {
 		http.Error(res, "Invalid post URL", http.StatusNotFound)
 		return
 	}
 	titleVar := vars["title"]
-	title := strings.Replace(titleVar, "-", " ", -1)
-	post, err := p.ps.ByYearAndTitle(year, title) */
+	title := strings.Replace(titleVar, "_", " ", -1)
+	post, err := p.ps.ByYearAndTitle(year, title)
 
-	idStr := vars["id"]
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(res, "Invalid post ID", http.StatusNotFound)
-		return
-	}
-	post, err := p.ps.ByID(uint(id))
+	// Alternate way to show post by ID instead of Year and Title
+	/* 	idStr := vars["id"]
+	   	id, err := strconv.Atoi(idStr)
+	   	if err != nil {
+	   		http.Error(res, "Invalid post ID", http.StatusNotFound)
+	   		return
+	   	}
+	   	post, err := p.ps.ByID(uint(id)) */
 
 	if err != nil {
 		switch err {
@@ -96,11 +98,11 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 
 	// Redirect to new post
 	// TODO implement ByYearAndTitle
-	/* urlTitle := strings.Replace(post.Title, " ", "-", -1)
+	urlTitle := strings.Replace(post.Title, " ", "_", -1)
 	urlYear := strconv.Itoa(post.CreatedAt.Year())
-	url, err := p.r.Get(ShowPost).URL("year", urlYear, "title", urlTitle) */
-
-	url, err := p.r.Get(ShowPost).URL("id", strconv.Itoa(int(post.ID)))
+	url, err := p.r.Get(ShowPost).URL("year", urlYear, "title", urlTitle)
+	// If I want to use ID instead...
+	// url, err := p.r.Get(ShowPost).URL("id", strconv.Itoa(int(post.ID)))
 	if err != nil {
 		http.Redirect(res, req, "/", http.StatusFound)
 		return
