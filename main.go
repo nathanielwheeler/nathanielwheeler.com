@@ -63,7 +63,7 @@ func main() {
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 	//		Posts
 	r.Handle("/posts/new", requireUserMw.Apply(postsC.New)).Methods("GET")
-	r.Handle("/posts", requireUserMw.ApplyFn(postsC.Create)).Methods("POST")
+	r.HandleFunc("/posts", requireUserMw.ApplyFn(postsC.Create)).Methods("POST")
 	// TODO: implement ByYearAndTitle instead of ByID
 	// /posts/:year/:title
 	// r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}", postsC.Show).Methods("GET").Name(controllers.ShowPost)

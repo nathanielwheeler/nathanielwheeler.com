@@ -3,7 +3,6 @@ package controllers
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
 	"nathanielwheeler.com/context"
 	"nathanielwheeler.com/models"
