@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"nathanielwheeler.com/context"
@@ -12,19 +12,24 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// ShowPost is a named route that will handle showing posts
+const ShowPost = "show_post"
+
 // Posts will hold information about views and services
 type Posts struct {
 	New      *views.View
 	ShowView *views.View
 	ps       models.PostsService
+	r        *mux.Router
 }
 
 // NewPosts is a constructor for Posts struct
-func NewPosts(ps models.PostsService) *Posts {
+func NewPosts(ps models.PostsService, r *mux.Router) *Posts {
 	return &Posts{
 		New:      views.NewView("app", "posts/new"),
 		ShowView: views.NewView("app", "posts/show"),
 		ps:       ps,
+		r:        r,
 	}
 }
 
@@ -33,13 +38,29 @@ type PostForm struct {
 	Title string `schema:"title"`
 }
 
-// Show : GET /posts/:title
+// Show : GET /posts/:year/:title
 func (p *Posts) Show(res http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
+
+	// TODO use ByYearAndTitle instead of ByID
+	/* yearVar := vars["year"]
+	year, err := strconv.Atoi(yearVar)
+	if err != nil {
+		http.Error(res, "Invalid post URL", http.StatusNotFound)
+		return
+	}
 	titleVar := vars["title"]
 	title := strings.Replace(titleVar, "-", " ", -1)
+	post, err := p.ps.ByYearAndTitle(year, title) */
 
-	post, err := p.ps.ByTitle(title)
+	idStr := vars["id"]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(res, "Invalid post ID", http.StatusNotFound)
+		return
+	}
+	post, err := p.ps.ByID(uint(id))
+
 	if err != nil {
 		switch err {
 		case models.ErrNotFound:
@@ -49,7 +70,6 @@ func (p *Posts) Show(res http.ResponseWriter, req *http.Request) {
 		}
 		return
 	}
-
 	var vd views.Data
 	vd.Yield = post
 	p.ShowView.Render(res, vd)
@@ -74,15 +94,17 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 		p.New.Render(res, vd)
 		return
 	}
-	fmt.Fprintln(res, post)
-}
 
-// Update : PUT /posts/:id
-func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
-	// TODO implement
-}
+	// Redirect to new post
+	// TODO implement ByYearAndTitle
+	/* urlTitle := strings.Replace(post.Title, " ", "-", -1)
+	urlYear := strconv.Itoa(post.CreatedAt.Year())
+	url, err := p.r.Get(ShowPost).URL("year", urlYear, "title", urlTitle) */
 
-// Delete : DELETE /posts/:id
-func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
-	// TODO implement
+	url, err := p.r.Get(ShowPost).URL("id", strconv.Itoa(int(post.ID)))
+	if err != nil {
+		http.Redirect(res, req, "/", http.StatusFound)
+		return
+	}
+	http.Redirect(res, req, url.Path, http.StatusFound)
 }

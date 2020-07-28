@@ -14,6 +14,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const port = ":3000"
+
 func init() {
 	if err := godotenv.Load(); err != nil {
 		panic("No .env file found")
@@ -36,39 +38,41 @@ func main() {
 	defer services.Close()
 	services.AutoMigrate()
 
+	// Router Initilization
+	r := mux.NewRouter()
+
 	// Initialize controllers
 	staticC := controllers.NewStatic()
 	usersC := controllers.NewUsers(services.User)
-	postsC := controllers.NewPosts(services.Posts)
+	postsC := controllers.NewPosts(services.Posts, r)
 
 	// Middleware
 	requireUserMw := middleware.RequireUser{
 		UserService: services.User,
 	}
-	newPost := requireUserMw.Apply(postsC.New)
-	createPost := requireUserMw.ApplyFn(postsC.Create)
 
-	// Route Handling
-	r := mux.NewRouter()
+	// Routes
 	//		Statics
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/resume", staticC.Resume).Methods("GET")
 	//		Users
-	r.HandleFunc("/register", usersC.Registration).Methods("GET") // Consider making this a view to match LoginView
+	r.HandleFunc("/register", usersC.Registration).Methods("GET")
 	r.HandleFunc("/register", usersC.Register).Methods("POST")
 	r.Handle("/login", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 	//		Posts
-	r.Handle("/posts/new", newPost).Methods("GET")
-	r.HandleFunc("posts", createPost).Methods("POST")
-	// /posts/:title
-	r.HandleFunc("/posts/{title}", postsC.Show).Methods("GET")
-	// TODO: month and year handling?
-	// {year:2[0-9]{3}}/{month:0?[0-9]|1[0-2]}
+	r.Handle("/posts/new", requireUserMw.Apply(postsC.New)).Methods("GET")
+	r.Handle("/posts", requireUserMw.ApplyFn(postsC.Create)).Methods("POST")
+	// TODO: implement ByYearAndTitle instead of ByID
+	// /posts/:year/:title
+	// r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}", postsC.Show).Methods("GET").Name(controllers.ShowPost)
+	r.HandleFunc("/posts/{id:[0-9]+}", postsC.Show).Methods("GET").Name(controllers.ShowPost)
 
 	// Start that server!
-	http.ListenAndServe(":3000", r)
+
+	fmt.Println("starting the server on", port)
+	http.ListenAndServe(port, r)
 }
 
 // #region DB HELPERS

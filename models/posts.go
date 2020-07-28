@@ -55,7 +55,8 @@ func NewPostsService(db *gorm.DB) PostsService {
 
 // PostsDB will handle database interaction for posts.
 type PostsDB interface {
-	ByTitle(title string) (*Post, error)
+	ByID(id uint) (*Post, error)
+	ByYearAndTitle(year int, title string) (*Post, error)
 	Create(post *Post) error
 }
 
@@ -70,10 +71,21 @@ var _ PostsDB = &postsGorm{}
 
 //		#region GORM METHODS
 
-// ByTitle will search the posts database for input title.
-func (pg *postsGorm) ByTitle(title string) (*Post, error) {
+// ByID will search the posts database for input id.
+func (pg *postsGorm) ByID(id uint) (*Post, error) {
 	var post Post
-	db := pg.db.Where("title = ?", title)
+	db := pg.db.Where("id = ?", id)
+	err := first(db, &post)
+	if err != nil {
+		return nil, err
+	}
+	return &post, nil
+}
+
+// ByYearAndTitle will search the posts database for input year and title.
+func (pg *postsGorm) ByYearAndTitle(year int, title string) (*Post, error) {
+	var post Post
+	db := pg.db.Where("title = ? AND created_at > '?-01-01 00:00:00-07' AND created_at <= '?-12-31 23:59:59-07'", title, year, year)
 	err := first(db, &post)
 	if err != nil {
 		return nil, err
