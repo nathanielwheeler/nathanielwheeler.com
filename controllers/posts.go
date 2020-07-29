@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"nathanielwheeler.com/context"
 	"nathanielwheeler.com/models"
@@ -19,6 +20,7 @@ const ShowPost = "show_post"
 type Posts struct {
 	New      *views.View
 	ShowView *views.View
+	EditView *views.View
 	ps       models.PostsService
 	r        *mux.Router
 }
@@ -28,6 +30,7 @@ func NewPosts(ps models.PostsService, r *mux.Router) *Posts {
 	return &Posts{
 		New:      views.NewView("app", "posts/new"),
 		ShowView: views.NewView("app", "posts/show"),
+		EditView: views.NewView("app", "posts/edit"),
 		ps:       ps,
 		r:        r,
 	}
@@ -38,37 +41,11 @@ type PostForm struct {
 	Title string `schema:"title"`
 }
 
-// Show : GET /posts/:year/:title
+// Show : GET /posts/:year/:urltitle
 func (p *Posts) Show(res http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
-
-	// TODO use ByYearAndTitle instead of ByID
-	yearVar := vars["year"]
-	year, err := strconv.Atoi(yearVar)
+	post, err := p.postByYearAndTitle(res, req)
 	if err != nil {
-		http.Error(res, "Invalid post URL", http.StatusNotFound)
-		return
-	}
-	titleVar := vars["title"]
-	title := strings.Replace(titleVar, "_", " ", -1)
-	post, err := p.ps.ByYearAndTitle(year, title)
-
-	// Alternate way to show post by ID instead of Year and Title
-	/* 	idStr := vars["id"]
-	   	id, err := strconv.Atoi(idStr)
-	   	if err != nil {
-	   		http.Error(res, "Invalid post ID", http.StatusNotFound)
-	   		return
-	   	}
-	   	post, err := p.ps.ByID(uint(id)) */
-
-	if err != nil {
-		switch err {
-		case models.ErrNotFound:
-			http.Error(res, "Post not found", http.StatusNotFound)
-		default:
-			http.Error(res, "Something bad happened.", http.StatusInternalServerError)
-		}
+		// postByYearAndTitle already renders error
 		return
 	}
 	var vd views.Data
@@ -87,25 +64,99 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 	}
 	user := context.User(req.Context())
 	post := models.Post{
-		Title:  form.Title,
-		UserID: user.ID,
+		Title:    form.Title,
+		URLTitle: strings.Replace(form.Title, " ", "_", -1),
+		UserID:   user.ID,
+		Year:     time.Now().Year(),
 	}
 	if err := p.ps.Create(&post); err != nil {
 		vd.SetAlert(err)
 		p.New.Render(res, vd)
 		return
 	}
-
-	// Redirect to new post
-	// TODO implement ByYearAndTitle
-	urlTitle := strings.Replace(post.Title, " ", "_", -1)
-	urlYear := strconv.Itoa(post.CreatedAt.Year())
-	url, err := p.r.Get(ShowPost).URL("year", urlYear, "title", urlTitle)
-	// If I want to use ID instead...
-	// url, err := p.r.Get(ShowPost).URL("id", strconv.Itoa(int(post.ID)))
+	urlYear := strconv.Itoa(post.Year)
+	url, err := p.r.Get(ShowPost).URL("year", urlYear, "title", post.URLTitle)
 	if err != nil {
 		http.Redirect(res, req, "/", http.StatusFound)
 		return
 	}
 	http.Redirect(res, req, url.Path, http.StatusFound)
 }
+
+// Edit : POST /posts/:year/:urltitle/update
+func (p *Posts) Edit(res http.ResponseWriter, req *http.Request) {
+	post, err := p.postByYearAndTitle(res, req)
+	if err != nil {
+		// error handled by postByYearAndTitle
+		return
+	}
+	user := context.User(req.Context())
+	if post.UserID != user.ID {
+		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
+		return
+	}
+	var vd views.Data
+	vd.Yield = post
+	p.EditView.Render(res, vd)
+}
+
+// Update : POST /posts/:year/:urltitle/update
+/*	- This does NOT update the path of the post. */
+func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
+	post, err := p.postByYearAndTitle(res, req)
+	if err != nil {
+		// implemented by postByYearAndTitle
+		return
+	}
+	user := context.User(req.Context())
+	if post.UserID != user.ID {
+		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
+		return
+	}
+
+	var vd views.Data
+	vd.Yield = post
+	var form PostForm
+	if err := parseForm(req, &form); err != nil {
+		vd.SetAlert(err)
+		p.EditView.Render(res, vd)
+		return
+	}
+	post.Title = form.Title
+	err = p.ps.Update(post)
+	if err != nil {
+		vd.SetAlert(err)
+	} else {
+		vd.Alert = &views.Alert{
+			Level:   views.AlertLvlSuccess,
+			Message: "Post updated successfully!",
+		}
+	}
+	p.EditView.Render(res, vd)
+}
+
+// #region HELPERS
+
+func (p *Posts) postByYearAndTitle(res http.ResponseWriter, req *http.Request) (*models.Post, error) {
+	vars := mux.Vars(req)
+	yearVar := vars["year"]
+	year, err := strconv.Atoi(yearVar)
+	if err != nil {
+		http.Error(res, "Invalid post URL", http.StatusNotFound)
+		return nil, err
+	}
+	urlTitle := vars["title"]
+	post, err := p.ps.ByYearAndTitle(year, urlTitle)
+	if err != nil {
+		switch err {
+		case models.ErrNotFound:
+			http.Error(res, "Post not found", http.StatusNotFound)
+		default:
+			http.Error(res, "Something bad happened.", http.StatusInternalServerError)
+		}
+		return nil, err
+	}
+	return post, nil
+}
+
+// #endregion

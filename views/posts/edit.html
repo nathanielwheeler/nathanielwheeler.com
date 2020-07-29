@@ -5,12 +5,12 @@
 
 			<div class="card border-light bg-dark">
 				<h3 class="card-header border-light text-center">
-					New Post
+					Edit Post
 				</h3>
 				<div class="card-body">
 
 					<div class="card-text">
-						{{template "postForm"}}
+						{{template "editPostForm" .}}
 					</div>
 				</div>
 			</div>
@@ -19,23 +19,23 @@
 </main>
 {{end}}
 
-<!-- POST /posts/ -->
+<!-- POST /posts/:year/:title/update -->
 
-{{define "postForm"}}
-<form action="/posts" method="POST">
+{{define "editPostForm"}}
+<form action="/posts/{{.Year}}/{{.URLTitle}}/update" method="POST">
 	<div class="form-group">
 
 		<div class="row">
 			<label for="title" class="col-12">
 				Title
 				<input type="text" name="title" class="form-control" id="title"
-					placeholder="The Great American Blog Post">
+					placeholder="The Great American Blog Post" value="{{.Title}}">
 			</label>
 		</div>
 		<br>
 		<div class="row d-flex justify-content-center">
 			<button class="btn btn-success btn-lg" type="submit">
-				Post!
+				Update!
 			</button>
 		</div>
 	</div>
