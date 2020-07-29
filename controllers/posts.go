@@ -19,21 +19,23 @@ const ShowPost = "show_post"
 
 // Posts will hold information about views and services
 type Posts struct {
-	New      *views.View
-	ShowView *views.View
-	EditView *views.View
-	ps       models.PostsService
-	r        *mux.Router
+	New       *views.View
+	ShowView  *views.View
+	IndexView *views.View
+	EditView  *views.View
+	ps        models.PostsService
+	r         *mux.Router
 }
 
 // NewPosts is a constructor for Posts struct
 func NewPosts(ps models.PostsService, r *mux.Router) *Posts {
 	return &Posts{
-		New:      views.NewView("app", "posts/new"),
-		ShowView: views.NewView("app", "posts/show"),
-		EditView: views.NewView("app", "posts/edit"),
-		ps:       ps,
-		r:        r,
+		New:       views.NewView("app", "posts/new"),
+		ShowView:  views.NewView("app", "posts/show"),
+		IndexView: views.NewView("app", "posts/index"),
+		EditView:  views.NewView("app", "posts/edit"),
+		ps:        ps,
+		r:         r,
 	}
 }
 
@@ -52,6 +54,18 @@ func (p *Posts) Show(res http.ResponseWriter, req *http.Request) {
 	var vd views.Data
 	vd.Yield = post
 	p.ShowView.Render(res, vd)
+}
+
+// Index : GET /posts
+func (p *Posts) Index(res http.ResponseWriter, req *http.Request) {
+	posts, err := p.ps.GetAll()
+	if err != nil {
+		http.Error(res, "Something bad happened.", http.StatusInternalServerError)
+		return
+	}
+	var vd views.Data
+	vd.Yield = posts
+	p.IndexView.Render(res, vd)
 }
 
 // Create : POST /posts

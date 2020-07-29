@@ -62,8 +62,9 @@ func main() {
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 	//		Posts
-	r.Handle("/posts/new", requireUserMw.Apply(postsC.New)).Methods("GET")
+	r.HandleFunc("/posts", postsC.Index).Methods("GET")
 	r.HandleFunc("/posts", requireUserMw.ApplyFn(postsC.Create)).Methods("POST")
+	r.Handle("/posts/new", requireUserMw.Apply(postsC.New)).Methods("GET")
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}", postsC.Show).Methods("GET").Name(controllers.ShowPost)
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/edit", requireUserMw.ApplyFn(postsC.Edit)).Methods("GET")
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/update", requireUserMw.ApplyFn(postsC.Update)).Methods("POST")

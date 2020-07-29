@@ -58,6 +58,7 @@ func NewPostsService(db *gorm.DB) PostsService {
 // PostsDB will handle database interaction for posts.
 type PostsDB interface {
 	ByYearAndTitle(year int, title string) (*Post, error)
+	GetAll() ([]Post, error)
 	Create(post *Post) error
 	Update(post *Post) error
 	Delete(id uint) error
@@ -83,6 +84,15 @@ func (pg *postsGorm) ByYearAndTitle(year int, urlTitle string) (*Post, error) {
 		return nil, err
 	}
 	return &post, nil
+}
+
+// GetAll will return all posts
+func (pg *postsGorm) GetAll() ([]Post, error) {
+	var posts []Post
+	if err := pg.db.Find(&posts).Error; err != nil {
+		return nil, err
+	}
+	return posts, nil
 }
 
 // Create will add a post to the database
