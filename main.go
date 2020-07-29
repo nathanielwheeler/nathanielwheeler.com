@@ -51,25 +51,57 @@ func main() {
 		UserService: services.User,
 	}
 
-	// Routes
-	//		Statics
-	r.Handle("/", staticC.Home).Methods("GET")
-	r.Handle("/resume", staticC.Resume).Methods("GET")
-	//		Users
-	r.HandleFunc("/register", usersC.Registration).Methods("GET")
-	r.HandleFunc("/register", usersC.Register).Methods("POST")
-	r.Handle("/login", usersC.LoginView).Methods("GET")
-	r.HandleFunc("/login", usersC.Login).Methods("POST")
-	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
-	//		Posts
-	r.HandleFunc("/posts", requireUserMw.ApplyFn(postsC.Create)).Methods("POST")
+	// Statics Routes
+	r.Handle("/",
+		staticC.Home).
+		Methods("GET")
+	r.Handle("/resume",
+		staticC.Resume).
+		Methods("GET")
+
+	// User Routes
+	r.HandleFunc("/register",
+		usersC.Registration).
+		Methods("GET")
+	r.HandleFunc("/register",
+		usersC.Register).
+		Methods("POST")
+	r.Handle("/login",
+		usersC.LoginView).
+		Methods("GET")
+	r.HandleFunc("/login",
+		usersC.Login).
+		Methods("POST")
+	r.HandleFunc("/cookietest",
+		usersC.CookieTest).
+		Methods("GET")
+
+	// Post Routes
+	r.HandleFunc("/posts",
+		requireUserMw.ApplyFn(postsC.Create)).
+		Methods("POST")
 	// FIXME: I can't figure out why Index will render for GET "/posts/index" but not GET "/posts"
-	r.HandleFunc("/posts/index", postsC.Index).Methods("GET")
-	r.Handle("/posts/new", requireUserMw.Apply(postsC.New)).Methods("GET")
-	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}", postsC.Show).Methods("GET").Name(controllers.ShowPost)
-	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/edit", requireUserMw.ApplyFn(postsC.Edit)).Methods("GET")
-	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/update", requireUserMw.ApplyFn(postsC.Update)).Methods("POST")
-	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/delete", requireUserMw.ApplyFn(postsC.Delete)).Methods("POST")
+	r.HandleFunc("/posts/index",
+		postsC.Index).
+		Methods("GET").
+		Name(controllers.IndexPosts)
+	r.Handle("/posts/new",
+		requireUserMw.Apply(postsC.New)).
+		Methods("GET")
+	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}",
+		postsC.Show).
+		Methods("GET").
+		Name(controllers.ShowPost)
+	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/edit",
+		requireUserMw.ApplyFn(postsC.Edit)).
+		Methods("GET").
+		Name(controllers.EditPost)
+	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/update",
+		requireUserMw.ApplyFn(postsC.Update)).
+		Methods("POST")
+	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/delete",
+		requireUserMw.ApplyFn(postsC.Delete)).
+		Methods("POST")
 
 	// Start that server!
 	fmt.Println("Now listening on", port)

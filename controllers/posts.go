@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,7 +14,11 @@ import (
 )
 
 // ShowPost is a named route that will handle showing posts
-const ShowPost = "show_post"
+const (
+	IndexPosts = "index_posts"
+	ShowPost   = "show_post"
+	EditPost   = "edit_post"
+)
 
 // Posts will hold information about views and services
 type Posts struct {
@@ -90,7 +93,7 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	urlYear := strconv.Itoa(post.Year)
-	url, err := p.r.Get(ShowPost).URL("year", urlYear, "title", post.URLTitle)
+	url, err := p.r.Get(EditPost).URL("year", urlYear, "title", post.URLTitle)
 	if err != nil {
 		http.Redirect(res, req, "/", http.StatusFound)
 		return
@@ -170,7 +173,12 @@ func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
 		p.EditView.Render(res, vd)
 		return
 	}
-	fmt.Fprintln(res, "Successfully deleted!")
+	url, err := p.r.Get(IndexPosts).URL()
+	if err != nil {
+		http.Redirect(res, req, "/", http.StatusFound)
+		return
+	}
+	http.Redirect(res, req, url.Path, http.StatusFound)
 }
 
 // #region HELPERS
