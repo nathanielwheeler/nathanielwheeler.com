@@ -62,8 +62,9 @@ func main() {
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 	//		Posts
-	r.HandleFunc("/posts", postsC.Index).Methods("GET")
 	r.HandleFunc("/posts", requireUserMw.ApplyFn(postsC.Create)).Methods("POST")
+	// FIXME: I can't figure out why Index will render for GET "/posts/index" but not GET "/posts"
+	r.HandleFunc("/posts/index", postsC.Index).Methods("GET")
 	r.Handle("/posts/new", requireUserMw.Apply(postsC.New)).Methods("GET")
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}", postsC.Show).Methods("GET").Name(controllers.ShowPost)
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/edit", requireUserMw.ApplyFn(postsC.Edit)).Methods("GET")
