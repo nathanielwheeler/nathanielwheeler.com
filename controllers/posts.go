@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -133,6 +134,29 @@ func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 	p.EditView.Render(res, vd)
+}
+
+// Delete : POST /posts/:year/:urltitle/delete
+func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
+	post, err := p.postByYearAndTitle(res, req)
+	if err != nil {
+		// postByYearAndTitle renders error
+		return
+	}
+	user := context.User(req.Context())
+	if post.UserID != user.ID {
+		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
+		return
+	}
+	var vd views.Data
+	err = p.ps.Delete(post.ID)
+	if err != nil {
+		vd.SetAlert(err)
+		vd.Yield = post
+		p.EditView.Render(res, vd)
+		return
+	}
+	fmt.Fprintln(res, "Successfully deleted!")
 }
 
 // #region HELPERS

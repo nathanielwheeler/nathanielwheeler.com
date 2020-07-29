@@ -19,9 +19,8 @@
 </main>
 {{end}}
 
-<!-- POST /posts/:year/:title/update -->
-
 {{define "editPostForm"}}
+<!-- POST /posts/:year/:title/update -->
 <form action="/posts/{{.Year}}/{{.URLTitle}}/update" method="POST">
 	<div class="form-group">
 
@@ -34,8 +33,20 @@
 		</div>
 		<br>
 		<div class="row d-flex justify-content-center">
-			<button class="btn btn-success btn-lg" type="submit">
+			<button type="submit" class="btn btn-success btn-lg" >
 				Update!
+			</button>
+		</div>
+	</div>
+</form>
+
+<!-- POST /posts/:year/:title/delete -->
+<form action="/posts/{{.Year}}/{{.URLTitle}}/delete" method="POST">
+	<div class="form-group">
+
+		<div class="row d-flex justify-content-center">
+			<button type="submit" class="btn btn-danger btn-lg">
+				Delete!
 			</button>
 		</div>
 	</div>

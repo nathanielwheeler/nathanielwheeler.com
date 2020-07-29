@@ -95,6 +95,8 @@ func (pg *postsGorm) Update(post *Post) error {
 	return pg.db.Save(post).Error
 }
 
+// Delete will remove a post from default queries.
+/* Really, it will add a timestamp for deleted_at, which will exclude the post from normal queries. */
 func (pg *postsGorm) Delete(id uint) error {
 	post := Post{Model: gorm.Model{ID: id}}
 	return pg.db.Delete(&post).Error
@@ -128,7 +130,7 @@ func (pv *postsValidator) Create(post *Post) error {
 	return pv.PostsDB.Create(post)
 }
 
-func (pv *postsValidator) Update (post *Post) error {
+func (pv *postsValidator) Update(post *Post) error {
 	err := runPostsValFns(post,
 		pv.userIDRequired,
 		pv.titleRequired)
@@ -136,6 +138,15 @@ func (pv *postsValidator) Update (post *Post) error {
 		return err
 	}
 	return pv.PostsDB.Update(post)
+}
+
+func (pv *postsValidator) Delete(id uint) error {
+	var post Post
+	post.ID = id
+	if err := runPostsValFns(&post, pv.nonZeroID); err != nil {
+		return err
+	}
+	return pv.PostsDB.Delete(post.ID)
 }
 
 //		#endregion
@@ -163,6 +174,13 @@ func (pv *postsValidator) userIDRequired(p *Post) error {
 func (pv *postsValidator) titleRequired(p *Post) error {
 	if p.Title == "" {
 		return ErrTitleRequired
+	}
+	return nil
+}
+
+func (pv *postsValidator) nonZeroID(post *Post) error {
+	if post.ID <= 0 {
+		return ErrIDInvalid
 	}
 	return nil
 }

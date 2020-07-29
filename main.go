@@ -67,6 +67,7 @@ func main() {
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}", postsC.Show).Methods("GET").Name(controllers.ShowPost)
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/edit", requireUserMw.ApplyFn(postsC.Edit)).Methods("GET")
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/update", requireUserMw.ApplyFn(postsC.Update)).Methods("POST")
+	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/delete", requireUserMw.ApplyFn(postsC.Delete)).Methods("POST")
 
 	// Start that server!
 	fmt.Println("Now listening on", port)
