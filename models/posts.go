@@ -60,6 +60,7 @@ type PostsDB interface {
 	ByYearAndTitle(year int, title string) (*Post, error)
 	Create(post *Post) error
 	Update(post *Post) error
+	Delete(id uint) error
 }
 
 type postsGorm struct {
@@ -92,6 +93,11 @@ func (pg *postsGorm) Create(post *Post) error {
 // Update will edit a post in a database
 func (pg *postsGorm) Update(post *Post) error {
 	return pg.db.Save(post).Error
+}
+
+func (pg *postsGorm) Delete(id uint) error {
+	post := Post{Model: gorm.Model{ID: id}}
+	return pg.db.Delete(&post).Error
 }
 
 //		#endregion
