@@ -27,7 +27,7 @@ type Users struct {
 // Registration : GET /register
 // — Renders a new registration form for a potential user
 func (u *Users) Registration(res http.ResponseWriter, req *http.Request) {
-	u.RegisterView.Render(res, nil)
+	u.RegisterView.Render(res, req, nil)
 }
 
 // RegistrationForm is used to transform a webform into a registration request
@@ -44,7 +44,7 @@ func (u *Users) Register(res http.ResponseWriter, req *http.Request) {
 	var form RegistrationForm
 	if err := parseForm(req, &form); err != nil {
 		vd.SetAlert(err)
-		u.RegisterView.Render(res, vd)
+		u.RegisterView.Render(res, req, vd)
 		return
 	}
 	user := models.User{
@@ -54,7 +54,7 @@ func (u *Users) Register(res http.ResponseWriter, req *http.Request) {
 	}
 	if err := u.us.Create(&user); err != nil {
 		vd.SetAlert(err)
-		u.RegisterView.Render(res, vd)
+		u.RegisterView.Render(res, req, vd)
 		return
 	}
 	err := u.signIn(res, &user)
@@ -78,7 +78,7 @@ func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
 	var form LoginForm
 	if err := parseForm(req, &form); err != nil {
 		vd.SetAlert(err)
-		u.LoginView.Render(res, vd)
+		u.LoginView.Render(res, req, vd)
 		return
 	}
 	user, err := u.us.Authenticate(form.Email, form.Password)
@@ -90,14 +90,14 @@ func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
 		default:
 			vd.SetAlert(err)
 		}
-		u.LoginView.Render(res, vd)
+		u.LoginView.Render(res, req, vd)
 		return
 	}
 
 	err = u.signIn(res, user)
 	if err != nil {
 		vd.SetAlert(err)
-		u.LoginView.Render(res, vd)
+		u.LoginView.Render(res, req, vd)
 		return
 	}
 	http.Redirect(res, req, "/cookietest", http.StatusFound)

@@ -56,7 +56,7 @@ func (p *Posts) Show(res http.ResponseWriter, req *http.Request) {
 	}
 	var vd views.Data
 	vd.Yield = post
-	p.ShowView.Render(res, vd)
+	p.ShowView.Render(res, req, vd)
 }
 
 // Index : GET /posts
@@ -68,7 +68,7 @@ func (p *Posts) Index(res http.ResponseWriter, req *http.Request) {
 	}
 	var vd views.Data
 	vd.Yield = posts
-	p.IndexView.Render(res, vd)
+	p.IndexView.Render(res, req, vd)
 }
 
 // Create : POST /posts
@@ -77,7 +77,7 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 	var form PostForm
 	if err := parseForm(req, &form); err != nil {
 		vd.SetAlert(err)
-		p.New.Render(res, vd)
+		p.New.Render(res, req, vd)
 		return
 	}
 	user := context.User(req.Context())
@@ -89,7 +89,7 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 	}
 	if err := p.ps.Create(&post); err != nil {
 		vd.SetAlert(err)
-		p.New.Render(res, vd)
+		p.New.Render(res, req, vd)
 		return
 	}
 	urlYear := strconv.Itoa(post.Year)
@@ -115,7 +115,7 @@ func (p *Posts) Edit(res http.ResponseWriter, req *http.Request) {
 	}
 	var vd views.Data
 	vd.Yield = post
-	p.EditView.Render(res, vd)
+	p.EditView.Render(res, req, vd)
 }
 
 // Update : POST /posts/:year/:urltitle/update
@@ -137,7 +137,7 @@ func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
 	var form PostForm
 	if err := parseForm(req, &form); err != nil {
 		vd.SetAlert(err)
-		p.EditView.Render(res, vd)
+		p.EditView.Render(res, req, vd)
 		return
 	}
 	post.Title = form.Title
@@ -150,7 +150,7 @@ func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
 			Message: "Post updated successfully!",
 		}
 	}
-	p.EditView.Render(res, vd)
+	p.EditView.Render(res, req, vd)
 }
 
 // Delete : POST /posts/:year/:urltitle/delete
@@ -170,7 +170,7 @@ func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		vd.SetAlert(err)
 		vd.Yield = post
-		p.EditView.Render(res, vd)
+		p.EditView.Render(res, req, vd)
 		return
 	}
 	url, err := p.r.Get(IndexPosts).URL()

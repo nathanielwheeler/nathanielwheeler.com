@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+
+	"nathanielwheeler.com/context"
 )
 
 /*
@@ -42,19 +44,23 @@ func NewView(layout string, files ...string) *View {
 }
 
 // Render : Responsible for rendering the view.  Checks the underlying type of data passed into it.
-func (v *View) Render(res http.ResponseWriter, data interface{}) {
+func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface{}) {
 	res.Header().Set("Content-Type", "text/html")
-	switch data.(type) {
+	var vd Data
+	switch d := data.(type) {
 	case Data:
-		// already wrapped, good to go.
+		// Done so I can access the data in a var with type Data.
+		vd = d
 	default:
-		// whatever was passed in, wrap it up in a data type.
-		data = Data{
+		// If data is NOT of type Data, make one and set the data to the Yield field.
+		vd = Data{
 			Yield: data,
 		}
 	}
+	// Lookup and set the user to the User field
+	vd.User = context.User(req.Context())
 	var buf bytes.Buffer
-	err := v.Template.ExecuteTemplate(&buf, v.Layout, data)
+	err := v.Template.ExecuteTemplate(&buf, v.Layout, vd)
 	if err != nil {
 		http.Error(res, `Something went wrong, please try again.  If the problem persists, please contact me directly at <a href="mailto:contact@nathanielwheeler.com">contact@nathanielwheeler.com</a>.`, http.StatusInternalServerError)
 		return
@@ -64,7 +70,7 @@ func (v *View) Render(res http.ResponseWriter, data interface{}) {
 
 // ServeHTTP : Renders and serves views.
 func (v *View) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	v.Render(res, nil)
+	v.Render(res, req, nil)
 }
 
 /*

@@ -7,35 +7,52 @@ import (
 	"nathanielwheeler.com/models"
 )
 
-// RequireUser will hold UserService.
-type RequireUser struct {
+// User middleware will lookup the current user via their remember token cookie using the UserService.  If found, they will be set on the request context.  Either way, the next handler is always called.
+type User struct {
 	models.UserService
 }
 
-// ApplyFn will return http.HandlerFunc that will check if a user is logged in then call next(res, req), or redirect them to the login page if they are not logged in.
-func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
+// Apply will allow http.Handler interfaces to be handled by middleware by applying ServeHTTP to the handler and passing it into ApplyFn
+func (mw *User) Apply(next http.Handler) http.HandlerFunc {
+	return mw.ApplyFn(next.ServeHTTP)
+}
+
+// ApplyFn will take in an http.HandlerFunc and run middleware that will check for a remember token cookie and set it to the request context.  It will always call the next handler.
+func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		cookie, err := req.Cookie("remember_token")
 		if err != nil {
-			http.Redirect(res, req, "/login", http.StatusFound)
+			next(res, req)
 			return
 		}
 		user, err := mw.UserService.ByRemember(cookie.Value)
 		if err != nil {
-			http.Redirect(res, req, "/login", http.StatusFound)
+			next(res, req)
 			return
 		}
-
-		// Get context from request, make a new context from the existing one that has our user stored in it with the private user key, and create a new request from the existing one with the new context attached.
 		ctx := req.Context()
 		ctx = context.WithUser(ctx, user)
 		req = req.WithContext(ctx)
-
 		next(res, req)
 	})
 }
 
-// Apply will allow http.Handler interfaces to apply this middleware by passing ServeHTTP into ApplyFn
+// RequireUser will redirect a user to /login if they are not logged in.  This middleware assumes that User middleware has already been run, otherwise it will always redirect users.
+type RequireUser struct{}
+
+// Apply will allow http.Handler interfaces to be handled by middleware by applying ServeHTTP to the handler and passing it into ApplyFn
 func (mw *RequireUser) Apply(next http.Handler) http.HandlerFunc {
 	return mw.ApplyFn(next.ServeHTTP)
+}
+
+// ApplyFn will take in an http.HandlerFunc and run middlware that will check for a remember token cookie.  If there is no user in context, the user will be redirected to /login.
+func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		user := context.User(req.Context())
+		if user == nil {
+			http.Redirect(res, req, "/login", http.StatusFound)
+			return
+		}
+		next(res, req)
+	})
 }

@@ -19,10 +19,20 @@
 					Resume
 				</a></li>
 
-			<!-- Ideally, I want Login right-aligned -->
+			<li class="nav-item"><a class="nav-link" href="/posts/index">
+					Posts
+				</a></li>
+
+			<!-- TODO Ideally, I want this section right-aligned -->
+			{{if .User}}
+			<li class="nav-item"><a class="nav-link" href="/logout">
+					Logout
+				</a></li>
+			{{else}}
 			<li class="nav-item"><a class="nav-link" href="/login">
 					Login
 				</a></li>
+			{{end}}
 		</ul>
 	</div>
 </nav>

@@ -47,9 +47,10 @@ func main() {
 	postsC := controllers.NewPosts(services.Posts, r)
 
 	// Middleware
-	requireUserMw := middleware.RequireUser{
+	userMw := middleware.User{
 		UserService: services.User,
 	}
+	requireUserMw := middleware.RequireUser{}
 
 	// Statics Routes
 	r.Handle("/",
@@ -105,7 +106,7 @@ func main() {
 
 	// Start that server!
 	fmt.Println("Now listening on", port)
-	http.ListenAndServe(port, r)
+	http.ListenAndServe(port, userMw.Apply(r))
 }
 
 // #region DB HELPERS
