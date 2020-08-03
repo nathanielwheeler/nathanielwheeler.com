@@ -172,9 +172,19 @@ func (p *Posts) Upload(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Parse a multipart form
 	var vd views.Data
-
+	vd.Yield = post
 	err = req.ParseMultipartForm(maxMultipartMem)
+	if err != nil {
+		vd.SetAlert(err)
+		p.EditView.Render(res, req, vd)
+		return
+	}
+
+	// Create the directory for storing images
+	postPath := fmt.Sprintf("images/posts/%v/%v/", post.Year, post.URLTitle)
+	err = os.MkdirAll(postPath, 0755)
 	if err != nil {
 		vd.SetAlert(err)
 		p.EditView.Render(res, req, vd)
@@ -183,6 +193,7 @@ func (p *Posts) Upload(res http.ResponseWriter, req *http.Request) {
 
 	files := req.MultipartForm.File["images"]
 	for _, f := range files {
+		// Open uploaded files
 		file, err := f.Open()
 		if err != nil {
 			vd.SetAlert(err)
@@ -191,14 +202,7 @@ func (p *Posts) Upload(res http.ResponseWriter, req *http.Request) {
 		}
 		defer file.Close()
 
-		postPath := fmt.Sprintf("images/posts/%v/%v/", post.Year, post.URLTitle)
-		err = os.MkdirAll(postPath, 0755)
-		if err != nil {
-			vd.SetAlert(err)
-			p.EditView.Render(res, req, vd)
-			return
-		}
-
+		// Create a destination file
 		dst, err := os.Create(postPath + f.Filename)
 		if err != nil {
 			vd.SetAlert(err)
@@ -207,6 +211,7 @@ func (p *Posts) Upload(res http.ResponseWriter, req *http.Request) {
 		}
 		defer dst.Close()
 
+		// Copy uploaded file data to destination
 		_, err = io.Copy(dst, file)
 		if err != nil {
 			vd.SetAlert(err)

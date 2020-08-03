@@ -100,6 +100,9 @@ func main() {
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/update",
 		requireUserMw.ApplyFn(postsC.Update)).
 		Methods("POST")
+	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/upload",
+		requireUserMw.ApplyFn(postsC.Upload)).
+		Methods("POST")
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/delete",
 		requireUserMw.ApplyFn(postsC.Delete)).
 		Methods("POST")
