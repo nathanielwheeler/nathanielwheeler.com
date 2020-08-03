@@ -22,9 +22,12 @@ const (
 type Post struct {
 	gorm.Model
 	UserID   uint   `gorm:"not_null;index"`
+	// TODO Populate AuthorName into UserID
+	Year     int    `gorm:"not_null"`
 	Title    string `gorm:"not_null"`
 	URLTitle string `gorm:"not_null"`
-	Year     int    `gorm:"not_null"`
+	// Body string
+	// TODO implement
 }
 
 // #region SERVICE

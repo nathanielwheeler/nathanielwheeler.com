@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -18,6 +21,8 @@ const (
 	IndexPosts = "index_posts"
 	ShowPost   = "show_post"
 	EditPost   = "edit_post"
+
+	maxMultipartMem = 1 << 20 // 1 megabyte
 )
 
 // Posts will hold information about views and services
@@ -149,6 +154,70 @@ func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
 			Level:   views.AlertLvlSuccess,
 			Message: "Post updated successfully!",
 		}
+	}
+	p.EditView.Render(res, req, vd)
+}
+
+// Upload : POST /posts/:year/:urltitle/upload
+/*	- This does NOT update the path of the post. */
+func (p *Posts) Upload(res http.ResponseWriter, req *http.Request) {
+	post, err := p.postByYearAndTitle(res, req)
+	if err != nil {
+		// implemented by postByYearAndTitle
+		return
+	}
+	user := context.User(req.Context())
+	if post.UserID != user.ID {
+		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
+		return
+	}
+
+	var vd views.Data
+
+	err = req.ParseMultipartForm(maxMultipartMem)
+	if err != nil {
+		vd.SetAlert(err)
+		p.EditView.Render(res, req, vd)
+		return
+	}
+
+	files := req.MultipartForm.File["images"]
+	for _, f := range files {
+		file, err := f.Open()
+		if err != nil {
+			vd.SetAlert(err)
+			p.EditView.Render(res, req, vd)
+			return
+		}
+		defer file.Close()
+
+		postPath := fmt.Sprintf("images/posts/%v/%v/", post.Year, post.URLTitle)
+		err = os.MkdirAll(postPath, 0755)
+		if err != nil {
+			vd.SetAlert(err)
+			p.EditView.Render(res, req, vd)
+			return
+		}
+
+		dst, err := os.Create(postPath + f.Filename)
+		if err != nil {
+			vd.SetAlert(err)
+			p.EditView.Render(res, req, vd)
+			return
+		}
+		defer dst.Close()
+
+		_, err = io.Copy(dst, file)
+		if err != nil {
+			vd.SetAlert(err)
+			p.EditView.Render(res, req, vd)
+			return
+		}
+	}
+
+	vd.Alert = &views.Alert{
+		Level:   views.AlertLvlSuccess,
+		Message: "Images uploaded successfully!",
 	}
 	p.EditView.Render(res, req, vd)
 }
