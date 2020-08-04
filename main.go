@@ -44,7 +44,7 @@ func main() {
 	// Initialize controllers
 	staticC := controllers.NewStatic()
 	usersC := controllers.NewUsers(services.User)
-	postsC := controllers.NewPosts(services.Posts, r)
+	postsC := controllers.NewPosts(services.Posts, services.Image, r)
 
 	// Middleware
 	userMw := middleware.User{

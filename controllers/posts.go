@@ -1,10 +1,7 @@
 package controllers
 
 import (
-	"fmt"
-	"io"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -32,17 +29,19 @@ type Posts struct {
 	IndexView *views.View
 	EditView  *views.View
 	ps        models.PostsService
+	is        models.ImageService
 	r         *mux.Router
 }
 
 // NewPosts is a constructor for Posts struct
-func NewPosts(ps models.PostsService, r *mux.Router) *Posts {
+func NewPosts(ps models.PostsService, is models.ImageService, r *mux.Router) *Posts {
 	return &Posts{
 		New:       views.NewView("app", "posts/new"),
 		ShowView:  views.NewView("app", "posts/show"),
 		IndexView: views.NewView("app", "posts/index"),
 		EditView:  views.NewView("app", "posts/edit"),
 		ps:        ps,
+		is:        is,
 		r:         r,
 	}
 }
@@ -182,15 +181,6 @@ func (p *Posts) Upload(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Create the directory for storing images
-	postPath := fmt.Sprintf("images/posts/%v/%v/", post.Year, post.URLTitle)
-	err = os.MkdirAll(postPath, 0755)
-	if err != nil {
-		vd.SetAlert(err)
-		p.EditView.Render(res, req, vd)
-		return
-	}
-
 	files := req.MultipartForm.File["images"]
 	for _, f := range files {
 		// Open uploaded files
@@ -202,17 +192,8 @@ func (p *Posts) Upload(res http.ResponseWriter, req *http.Request) {
 		}
 		defer file.Close()
 
-		// Create a destination file
-		dst, err := os.Create(postPath + f.Filename)
-		if err != nil {
-			vd.SetAlert(err)
-			p.EditView.Render(res, req, vd)
-			return
-		}
-		defer dst.Close()
-
-		// Copy uploaded file data to destination
-		_, err = io.Copy(dst, file)
+		// Create image
+		err = p.is.Create(post.ID, file, f.Filename)
 		if err != nil {
 			vd.SetAlert(err)
 			p.EditView.Render(res, req, vd)

@@ -6,9 +6,10 @@ import (
 
 // Services will hold information about the varying services used in the models package.
 type Services struct {
-	Posts PostsService
-	User  UserService
-	db    *gorm.DB
+	Posts  PostsService
+	User   UserService
+	Images ImageService
+	db     *gorm.DB
 }
 
 // NewServices is a constructor for services.
@@ -19,9 +20,10 @@ func NewServices(connectionStr string) (*Services, error) {
 	}
 	db.LogMode(true)
 	return &Services{
-		User:  NewUserService(db),
-		Posts: NewPostsService(db),
-		db:    db,
+		User:   NewUserService(db),
+		Posts:  NewPostsService(db),
+		Images: NewImageService(),
+		db:     db,
 	}, nil
 }
 
