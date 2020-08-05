@@ -25,7 +25,8 @@
 		</div>
 	</div>
 
-	{{template "postImages" .}}
+	<!-- FIXME passing data in breaks the page if no .Image is attached.  It breaks the entire site if there _is_ a .Image attached. -->
+	{{template "postImages"}}
 
 	<br>
 
@@ -39,7 +40,7 @@
 				<div class="card-body">
 
 					<div class="card-text">
-						{{template "uploadImageForm"}}
+						{{template "uploadImageForm" .}}
 					</div>
 				</div>
 			</div>
@@ -101,7 +102,7 @@
 {{end}}
 
 {{define "uploadImageForm"}}
-<form action="/posts/{{.Year}}/{{.URLTitle}}/images" method="POST" enctype="multipart/form-data">
+<form action="/posts/{{.Year}}/{{.URLTitle}}/upload" method="POST" enctype="multipart/form-data">
 	<div class="form-group row">
 		<div class="col-12">
 
@@ -129,8 +130,9 @@
 		{{end}}
 	</div>
 	{{else}}
-	<p class="offset-3 col-6">
-		No Images... yet.
+	<p class="offset-3 col-6 lead text-center">
+		<br>
+		Upload images below!
 	</p>
 	{{end}}
 </div>
