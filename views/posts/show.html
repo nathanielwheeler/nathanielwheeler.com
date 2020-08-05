@@ -1,11 +1,33 @@
 {{define "yield"}}
 <main class="container">
 	<div class="row">
-		<div class="col-12">
+		<div class="col-12 text-center">
 			<h1>
 				{{.Title}}
 			</h1>
 		</div>
 	</div>
+	<!-- FIXME passing data in seems to break the website... -->
+	{{template "postImages"}}
 </main>
+{{end}}
+
+{{define "postImages"}}
+<div class="row">
+	{{if .Images}}
+	<div class="card-deck">
+		{{range .Images}}
+			<img src="#" alt="Help, I'm trapped in the alt text!" class="card-img-top">
+			<div class="card-body">
+				<p class="card-text">{{.}}</p>
+			</div>
+		{{end}}
+	</div>
+	{{else}}
+	<p class="offset-3 col-6 lead text-center">
+		<br>
+		No Images
+	</p>
+	{{end}}
+</div>
 {{end}}
