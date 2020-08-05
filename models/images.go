@@ -9,6 +9,7 @@ import (
 
 // ImageService will handle images for the website
 type ImageService interface {
+	ByPostID(postID uint) ([]string, error)
 	Create(postID uint, r io.Reader, filename string) error
 }
 
@@ -19,9 +20,19 @@ func NewImageService() ImageService {
 	return &imageService{}
 }
 
+// ByPostID will get the directory for a post's images and glob it.
+func (is *imageService) ByPostID(postID uint) ([]string, error) {
+	path := is.imageDir(postID)
+	strings, err := filepath.Glob(filepath.Join(path, "*"))
+	if err != nil {
+		return nil, err
+	}
+	return strings, nil
+}
+
 // Create will add a new image to a post, storing it locally.
 func (is *imageService) Create(postID uint, r io.Reader, filename string) error {
-	path, err := is.mkImagePath(postID)
+	path, err := is.mkImageDir(postID)
 	if err != nil {
 		return err
 	}
@@ -39,11 +50,19 @@ func (is *imageService) Create(postID uint, r io.Reader, filename string) error 
 	return nil
 }
 
-func (is *imageService) mkImagePath(postID uint) (string, error) {
-	postPath := filepath.Join("images", "posts", fmt.Sprintf("%v", postID))
+// #region HELPERS
+
+func (is *imageService) imageDir(postID uint) string {
+	return filepath.Join("images", "posts", fmt.Sprintf("%v", postID))
+}
+
+func (is *imageService) mkImageDir(postID uint) (string, error) {
+	postPath := is.imageDir(postID)
 	err := os.MkdirAll(postPath, 0755)
 	if err != nil {
 		return "", err
 	}
 	return postPath, nil
 }
+
+// #endregion

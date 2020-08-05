@@ -19,15 +19,17 @@ const (
 // #endregion
 
 // Post will hold all of the information needed for a blog post.
+/* TODO
+- implement Body
+- populate AuthorName into UserID
+*/
 type Post struct {
 	gorm.Model
-	UserID   uint   `gorm:"not_null;index"`
-	// TODO Populate AuthorName into UserID
-	Year     int    `gorm:"not_null"`
-	Title    string `gorm:"not_null"`
-	URLTitle string `gorm:"not_null"`
-	// Body string
-	// TODO implement
+	UserID   uint     `gorm:"not_null;index"`
+	Year     int      `gorm:"not_null"`
+	Title    string   `gorm:"not_null"`
+	URLTitle string   `gorm:"not_null"`
+	Images   []string `gorm:"-"`
 }
 
 // #region SERVICE

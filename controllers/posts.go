@@ -257,6 +257,9 @@ func (p *Posts) postByYearAndTitle(res http.ResponseWriter, req *http.Request) (
 		}
 		return nil, err
 	}
+	// Get images from ImageService and attach to post.
+	images, _ := p.is.ByPostID(post.ID)
+	post.Images = images
 	return post, nil
 }
 

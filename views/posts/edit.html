@@ -4,11 +4,7 @@
 		<div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
 
 			<div class="card border-light bg-dark">
-				<h3 class="card-header border-light text-center">
-					Edit Post
-				</h3>
 				<div class="card-body">
-
 					<div class="card-text">
 						{{template "editPostForm" .}}
 					</div>
@@ -16,6 +12,20 @@
 			</div>
 		</div>
 	</div>
+
+	<br>
+
+	<div class="row">
+		<div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
+			<div class="card border-light bg-dark">
+				<h3 class="card-header border-light text-center">
+					Images
+				</h3>
+			</div>
+		</div>
+	</div>
+
+	{{template "postImages" .}}
 
 	<br>
 
@@ -30,6 +40,21 @@
 
 					<div class="card-text">
 						{{template "uploadImageForm"}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<br>
+
+	<div class="row">
+		<div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
+
+			<div class="card border-light bg-dark">
+				<div class="card-body">
+					<div class="card-text">
+						{{template "deletePostForm" .}}
 					</div>
 				</div>
 			</div>
@@ -53,20 +78,22 @@
 		<br>
 		<div class="row d-flex justify-content-center">
 			<button type="submit" class="btn btn-success btn-lg">
-				Update!
+				Edit Post!
 			</button>
 		</div>
 		<br>
 	</div>
 </form>
+{{end}}
 
+{{define "deletePostForm"}}
 <!-- POST /posts/:year/:title/delete -->
 <form action="/posts/{{.Year}}/{{.URLTitle}}/delete" method="POST">
 	<div class="form-group">
 
 		<div class="row d-flex justify-content-center">
 			<button type="submit" class="btn btn-danger btn-lg">
-				Delete!
+				Delete Post!
 			</button>
 		</div>
 	</div>
@@ -88,4 +115,23 @@
 		</button>
 	</div>
 </form>
+{{end}}
+
+{{define "postImages"}}
+<div class="row">
+	{{if .Images}}
+	<div class="card-deck">
+		{{range .Images}}
+			<img src="#" alt="Help, I'm trapped in the alt text!" class="card-img-top">
+			<div class="card-body">
+				<p class="card-text">{{.}}</p>
+			</div>
+		{{end}}
+	</div>
+	{{else}}
+	<p class="offset-3 col-6">
+		No Images... yet.
+	</p>
+	{{end}}
+</div>
 {{end}}
