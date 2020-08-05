@@ -7,8 +7,7 @@
 			</h1>
 		</div>
 	</div>
-	<!-- FIXME passing data in seems to break the website... -->
-	{{template "postImages"}}
+	{{template "postImages" .}}
 </main>
 {{end}}
 
@@ -17,17 +16,11 @@
 	{{if .Images}}
 	<div class="card-deck">
 		{{range .Images}}
-			<img src="#" alt="Help, I'm trapped in the alt text!" class="card-img-top">
-			<div class="card-body">
-				<p class="card-text">{{.}}</p>
-			</div>
+		<div class="card border-light bg-dark">
+			<img src="/{{.}}" alt="Help, I'm trapped in the alt text!" class="card-img-top">
+		</div>
 		{{end}}
 	</div>
-	{{else}}
-	<p class="offset-3 col-6 lead text-center">
-		<br>
-		No Images
-	</p>
 	{{end}}
 </div>
 {{end}}

@@ -158,7 +158,6 @@ func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
 }
 
 // Upload : POST /posts/:year/:urltitle/upload
-/*	- This does NOT update the path of the post. */
 func (p *Posts) Upload(res http.ResponseWriter, req *http.Request) {
 	post, err := p.postByYearAndTitle(res, req)
 	if err != nil {

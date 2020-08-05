@@ -21,12 +21,16 @@
 				<h3 class="card-header border-light text-center">
 					Images
 				</h3>
+				<div class="card-body">
+					<p class="card-text lead">
+						Data: {{.}}
+					</p>
+				</div>
 			</div>
 		</div>
 	</div>
 
-	<!-- FIXME passing data in breaks the page if no .Image is attached.  It breaks the entire site if there _is_ a .Image attached. -->
-	{{template "postImages"}}
+	{{template "postImages" .}}
 
 	<br>
 
@@ -123,10 +127,9 @@
 	{{if .Images}}
 	<div class="card-deck">
 		{{range .Images}}
-			<img src="#" alt="Help, I'm trapped in the alt text!" class="card-img-top">
-			<div class="card-body">
-				<p class="card-text">{{.}}</p>
-			</div>
+		<div class="card border-light bg-dark">
+			<img src="/{{.}}" alt="Help, I'm trapped in the alt text!" class="card-img-top">
+		</div>
 		{{end}}
 	</div>
 	{{else}}
