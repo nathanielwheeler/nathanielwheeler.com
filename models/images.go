@@ -27,6 +27,10 @@ func (is *imageService) ByPostID(postID uint) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Add leading "/" to all image file paths
+	for i := range strings {
+		strings[i] = "/" + strings[i]
+	}
 	return strings, nil
 }
 

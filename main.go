@@ -107,6 +107,14 @@ func main() {
 		requireUserMw.ApplyFn(postsC.Delete)).
 		Methods("POST")
 
+	// Image Routes
+	// - File server located in /images
+	imageHandler := http.FileServer(http.Dir("./images/"))
+	r.PathPrefix("/images/").
+		// Here, I have to strip the prefix in the handler so I don't use something
+		// like "/images/images/whatever.jpg"
+		Handler(http.StripPrefix("/images/", imageHandler))
+
 	// Start that server!
 	fmt.Println("Now listening on", port)
 	http.ListenAndServe(port, userMw.Apply(r))
