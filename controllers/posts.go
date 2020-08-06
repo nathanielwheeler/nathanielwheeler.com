@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -68,6 +69,7 @@ func (p *Posts) Show(res http.ResponseWriter, req *http.Request) {
 func (p *Posts) Index(res http.ResponseWriter, req *http.Request) {
 	posts, err := p.ps.GetAll()
 	if err != nil {
+		log.Println(err)
 		http.Error(res, "Something bad happened.", http.StatusInternalServerError)
 		return
 	}
@@ -100,7 +102,8 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 	urlYear := strconv.Itoa(post.Year)
 	url, err := p.r.Get(EditPost).URL("year", urlYear, "title", post.URLTitle)
 	if err != nil {
-		http.Redirect(res, req, "/", http.StatusFound)
+		log.Println(err)
+		http.Redirect(res, req, "/posts/index", http.StatusFound)
 		return
 	}
 	http.Redirect(res, req, url.Path, http.StatusFound)
@@ -186,7 +189,7 @@ func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, url.Path, http.StatusFound)
 }
 
-// Upload : POST /posts/:id/upload
+// ImageUpload : POST /posts/:id/upload
 func (p *Posts) ImageUpload(res http.ResponseWriter, req *http.Request) {
 	post, err := p.postByID(res, req)
 	if err != nil {
@@ -262,6 +265,7 @@ func (p *Posts) ImageDelete(res http.ResponseWriter, req *http.Request) {
 	}
 	url, err := p.r.Get(EditPost).URL("year", fmt.Sprintf("%v", post.Year), "title", fmt.Sprintf("%v", post.URLTitle))
 	if err != nil {
+		log.Println(err)
 		http.Redirect(res, req, "/posts/index", http.StatusFound)
 		return
 	}
@@ -275,6 +279,7 @@ func (p *Posts) postByYearAndTitle(res http.ResponseWriter, req *http.Request) (
 	yearVar := vars["year"]
 	year, err := strconv.Atoi(yearVar)
 	if err != nil {
+		log.Println(err)
 		http.Error(res, "Invalid post URL", http.StatusNotFound)
 		return nil, err
 	}
@@ -285,6 +290,7 @@ func (p *Posts) postByYearAndTitle(res http.ResponseWriter, req *http.Request) (
 		case models.ErrNotFound:
 			http.Error(res, "Post not found", http.StatusNotFound)
 		default:
+			log.Println(err)
 			http.Error(res, "Something bad happened.", http.StatusInternalServerError)
 		}
 		return nil, err
@@ -297,6 +303,7 @@ func (p *Posts) postByID(res http.ResponseWriter, req *http.Request) (*models.Po
 	idVar := mux.Vars(req)["id"]
 	id, err := strconv.Atoi(idVar)
 	if err != nil {
+		log.Println(err)
 		http.Error(res, "Invalid post ID", http.StatusNotFound)
 		return nil, err
 	}
@@ -306,6 +313,7 @@ func (p *Posts) postByID(res http.ResponseWriter, req *http.Request) (*models.Po
 		case models.ErrNotFound:
 			http.Error(res, "Post not found", http.StatusNotFound)
 		default:
+			log.Println(err)
 			http.Error(res, "Something bad happened.", http.StatusInternalServerError)
 		}
 		return nil, err
@@ -316,7 +324,10 @@ func (p *Posts) postByID(res http.ResponseWriter, req *http.Request) (*models.Po
 
 // Get images from ImageService and attach to post.
 func (p *Posts) getImages(post *models.Post) *models.Post {
-	images, _ := p.is.ByPostID(post.ID)
+	images, err := p.is.ByPostID(post.ID)
+	if err != nil {
+		log.Println(err)
+	}
 	post.Images = images
 	return post
 }
