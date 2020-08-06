@@ -100,12 +100,17 @@ func main() {
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/update",
 		requireUserMw.ApplyFn(postsC.Update)).
 		Methods("POST")
-	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/upload",
-		requireUserMw.ApplyFn(postsC.Upload)).
-		Methods("POST")
 	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/delete",
 		requireUserMw.ApplyFn(postsC.Delete)).
 		Methods("POST")
+	// TODO Update references to old route
+	r.HandleFunc("/posts/{id:[0-9]+}/upload",
+		requireUserMw.ApplyFn(postsC.ImageUpload)).
+		Methods("POST")
+	r.HandleFunc("/posts/{id:[0-9]+}/image/{filename}/delete",
+		requireUserMw.ApplyFn(postsC.ImageDelete)).
+		Methods("POST")
+
 
 	// Image Routes
 	// - File server located in /images

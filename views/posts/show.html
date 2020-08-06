@@ -20,9 +20,9 @@
 		<div id="postCarousel" class="carousel slide" data-ride="carousel">
 			<div class="carousel-inner">
 
-				{{range $i, $source := .Images}}
+				{{range $i, $image := .Images}}
 				<div class="carousel-item {{if (eq $i 0)}}active{{end}}">
-					<img src="{{$source}}" alt="Help, I'm trapped in the alt text!" class="d-block w-100">
+					<img src="{{$image.Path}}" alt="Help, I'm trapped in the alt text!" class="d-block w-100">
 				</div>
 				{{end}}
 			</div>
@@ -38,7 +38,7 @@
 		{{else}}
 			{{range .Images}}
 			<div class="card border-dark">
-				<img src="{{.}}" alt="Help, I'm trapped in the alt text!" class="card-img-top">
+				<img src="{{.Image.Path}}" alt="Help, I'm trapped in the alt text!" class="card-img-top">
 			</div>
 			{{end}}
 		{{end}}

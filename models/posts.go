@@ -25,11 +25,11 @@ const (
 */
 type Post struct {
 	gorm.Model
-	UserID   uint     `gorm:"not_null;index"`
-	Year     int      `gorm:"not_null"`
-	Title    string   `gorm:"not_null"`
-	URLTitle string   `gorm:"not_null"`
-	Images   []string `gorm:"-"`
+	UserID   uint    `gorm:"not_null;index"`
+	Year     int     `gorm:"not_null"`
+	Title    string  `gorm:"not_null"`
+	URLTitle string  `gorm:"not_null"`
+	Images   []Image `gorm:"-"` // Not stored in database
 }
 
 // #region SERVICE
@@ -62,6 +62,7 @@ func NewPostsService(db *gorm.DB) PostsService {
 
 // PostsDB will handle database interaction for posts.
 type PostsDB interface {
+	ByID(id uint) (*Post, error)
 	ByYearAndTitle(year int, title string) (*Post, error)
 	GetAll() ([]Post, error)
 	Create(post *Post) error
@@ -79,6 +80,17 @@ var _ PostsDB = &postsGorm{}
 //		#endregion
 
 //		#region GORM METHODS
+
+// ByID will search the posts database for a post using input ID.
+func (pg *postsGorm) ByID(id uint) (*Post, error) {
+	var post Post
+	db := pg.db.Where("id = ?", id)
+	err := first(db, &post)
+	if err != nil {
+		return nil, err
+	}
+	return &post, nil
+}
 
 // ByYearAndTitle will search the posts database for input URL-friendly year and title.
 func (pg *postsGorm) ByYearAndTitle(year int, urlTitle string) (*Post, error) {

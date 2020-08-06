@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -157,9 +158,37 @@ func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
 	p.EditView.Render(res, req, vd)
 }
 
-// Upload : POST /posts/:year/:urltitle/upload
-func (p *Posts) Upload(res http.ResponseWriter, req *http.Request) {
+// Delete : POST /posts/:year/:urltitle/delete
+func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
 	post, err := p.postByYearAndTitle(res, req)
+	if err != nil {
+		// postByYearAndTitle renders error
+		return
+	}
+	user := context.User(req.Context())
+	if post.UserID != user.ID {
+		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
+		return
+	}
+	var vd views.Data
+	err = p.ps.Delete(post.ID)
+	if err != nil {
+		vd.SetAlert(err)
+		vd.Yield = post
+		p.EditView.Render(res, req, vd)
+		return
+	}
+	url, err := p.r.Get(IndexPosts).URL()
+	if err != nil {
+		http.Redirect(res, req, "/", http.StatusFound)
+		return
+	}
+	http.Redirect(res, req, url.Path, http.StatusFound)
+}
+
+// Upload : POST /posts/:id/upload
+func (p *Posts) ImageUpload(res http.ResponseWriter, req *http.Request) {
+	post, err := p.postByID(res, req)
 	if err != nil {
 		// implemented by postByYearAndTitle
 		return
@@ -207,29 +236,33 @@ func (p *Posts) Upload(res http.ResponseWriter, req *http.Request) {
 	p.EditView.Render(res, req, vd)
 }
 
-// Delete : POST /posts/:year/:urltitle/delete
-func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
-	post, err := p.postByYearAndTitle(res, req)
+// ImageDelete /posts/:id/images/:filename/delete
+func (p *Posts) ImageDelete(res http.ResponseWriter, req *http.Request) {
+	post, err := p.postByID(res, req)
 	if err != nil {
-		// postByYearAndTitle renders error
 		return
 	}
 	user := context.User(req.Context())
 	if post.UserID != user.ID {
-		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
+		http.Error(res, "You do not have permission to edit this post or image", http.StatusForbidden)
 		return
 	}
-	var vd views.Data
-	err = p.ps.Delete(post.ID)
+	filename := mux.Vars(req)["filename"]
+	i := models.Image{
+		Filename: filename,
+		PostID:   post.ID,
+	}
+	err = p.is.Delete(&i)
 	if err != nil {
-		vd.SetAlert(err)
+		var vd views.Data
 		vd.Yield = post
+		vd.SetAlert(err)
 		p.EditView.Render(res, req, vd)
 		return
 	}
-	url, err := p.r.Get(IndexPosts).URL()
+	url, err := p.r.Get(EditPost).URL("year", fmt.Sprintf("%v", post.Year), "title", fmt.Sprintf("%v", post.URLTitle))
 	if err != nil {
-		http.Redirect(res, req, "/", http.StatusFound)
+		http.Redirect(res, req, "/posts/index", http.StatusFound)
 		return
 	}
 	http.Redirect(res, req, url.Path, http.StatusFound)
@@ -256,10 +289,36 @@ func (p *Posts) postByYearAndTitle(res http.ResponseWriter, req *http.Request) (
 		}
 		return nil, err
 	}
-	// Get images from ImageService and attach to post.
+	post = p.getImages(post)
+	return post, nil
+}
+
+func (p *Posts) postByID(res http.ResponseWriter, req *http.Request) (*models.Post, error) {
+	idVar := mux.Vars(req)["id"]
+	id, err := strconv.Atoi(idVar)
+	if err != nil {
+		http.Error(res, "Invalid post ID", http.StatusNotFound)
+		return nil, err
+	}
+	post, err := p.ps.ByID(uint(id))
+	if err != nil {
+		switch err {
+		case models.ErrNotFound:
+			http.Error(res, "Post not found", http.StatusNotFound)
+		default:
+			http.Error(res, "Something bad happened.", http.StatusInternalServerError)
+		}
+		return nil, err
+	}
+	post = p.getImages(post)
+	return post, nil
+}
+
+// Get images from ImageService and attach to post.
+func (p *Posts) getImages(post *models.Post) *models.Post {
 	images, _ := p.is.ByPostID(post.ID)
 	post.Images = images
-	return post, nil
+	return post
 }
 
 // #endregion

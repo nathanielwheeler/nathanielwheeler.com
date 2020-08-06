@@ -16,19 +16,16 @@
 	<br>
 
 	<div class="row">
-		<div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
+		<div class="col-12">
 			<div class="card border-light bg-dark">
-				<h3 class="card-header border-light text-center">
+				<h3 class="card-header text-center">
 					Images
 				</h3>
-				<div class="card-body">
-					<p class="card-text lead">
-						Data: {{.}}
-					</p>
-				</div>
 			</div>
 		</div>
 	</div>
+
+	<br>
 
 	{{template "postImages" .}}
 
@@ -106,7 +103,7 @@
 {{end}}
 
 {{define "uploadImageForm"}}
-<form action="/posts/{{.Year}}/{{.URLTitle}}/upload" method="POST" enctype="multipart/form-data">
+<form action="/posts/{{.ID}}/upload" method="POST" enctype="multipart/form-data">
 	<div class="form-group row">
 		<div class="col-12">
 
@@ -129,7 +126,13 @@
 		{{range .Images}}
 		<div class="col-6 col-md-4 col-lg-3">
 			<div class="card border-light bg-dark">
-				<img src="{{.}}" alt="Help, I'm trapped in the alt text!" class="card-img-top">
+				<img src="{{.Path}}" alt="Help, I'm trapped in the alt text!" class="card-img-top">
+				<div class="card-body">
+					<p class="card-text">{{.Filename}}</p>
+					<div class="text-center">
+						{{template "deleteImageForm" .}}
+					</div>
+				</div>
 			</div>
 		</div>
 		{{end}}
@@ -141,4 +144,11 @@
 	</p>
 	{{end}}
 </div>
+{{end}}
+
+{{define "deleteImageForm"}}
+<form action="/posts/{{.PostID}}/image/{{.Filename}}/delete" method="POST">
+	<button type="submit" class="btn btn-danger">Delete!</button>
+	<!-- <a class="badge badge-danger" onclick="this.closest('form').submit();return false;">X</a> -->
+</form>
 {{end}}
