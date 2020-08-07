@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"net/url"
 	"path/filepath"
 
 	"nathanielwheeler.com/context"
@@ -34,13 +35,16 @@ func NewView(layout string, files ...string) *View {
 	addTemplatePath(files)
 	addTemplateExt(files)
 	files = append(files, layoutFiles()...)
-
 	t, err := template.
 		New("").
 		Funcs(template.FuncMap{
+			// csrfField is a placeholder for the gorilla/csrf field.  If it is not replaced in the render, it will throw an error.
 			"csrfField": func() (template.HTML, error) {
-				// Only called if I don't replace with implementation during render, since I need the http request itself.
 				return "", errors.New("csrfField is not implemented")
+			},
+			// pathEscape will escape a path using the net/url package.
+			"pathExcape": func(s string) string {
+				return url.PathEscape(s)
 			},
 		}).
 		ParseFiles(files...)

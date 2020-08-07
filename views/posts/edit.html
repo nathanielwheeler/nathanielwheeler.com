@@ -150,7 +150,7 @@
 {{end}}
 
 {{define "deleteImageForm"}}
-<form action="/posts/{{.PostID}}/image/{{.Filename}}/delete" method="POST">
+<form action="/posts/{{.PostID}}/image/{{pathEscape .Filename}}/delete" method="POST">
 	{{csrfField}}
 	<button type="submit" class="btn btn-danger">Delete!</button>
 	<!-- <a class="badge badge-danger" onclick="this.closest('form').submit();return false;">X</a> -->
