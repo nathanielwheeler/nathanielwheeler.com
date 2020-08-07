@@ -66,8 +66,8 @@
 {{end}}
 
 {{define "editPostForm"}}
-<!-- POST /posts/:year/:title/update -->
-<form action="/posts/{{.Year}}/{{.URLTitle}}/update" method="POST">
+<!-- POST /posts/:id/update -->
+<form action="/posts/{{.ID}}/update" method="POST">
 	<div class="form-group">
 
 		<div class="row">
@@ -89,8 +89,8 @@
 {{end}}
 
 {{define "deletePostForm"}}
-<!-- POST /posts/:year/:title/delete -->
-<form action="/posts/{{.Year}}/{{.URLTitle}}/delete" method="POST">
+<!-- POST /posts/:id/delete -->
+<form action="/posts/{{.ID}}/delete" method="POST">
 	<div class="form-group">
 
 		<div class="row d-flex justify-content-center">

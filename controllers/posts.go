@@ -164,6 +164,7 @@ func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
 }
 
 // Delete : POST /posts/:id/delete
+// TODO cascade delete all images within post
 func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
 	post, err := p.postByID(res, req)
 	if err != nil {
