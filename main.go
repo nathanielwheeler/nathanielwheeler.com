@@ -9,12 +9,17 @@ import (
 	"nathanielwheeler.com/controllers"
 	"nathanielwheeler.com/middleware"
 	"nathanielwheeler.com/models"
+	"nathanielwheeler.com/rand"
 
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
-const port = ":3000"
+const (
+	port   = ":3000"
+	isProd = false
+)
 
 func init() {
 	if err := godotenv.Load(); err != nil {
@@ -51,6 +56,12 @@ func main() {
 		UserService: services.User,
 	}
 	requireUserMw := middleware.RequireUser{}
+	// CSRF Protection
+	b, err := rand.Bytes(32)
+	if err != nil {
+		panic(err)
+	}
+	csrfMw := csrf.Protect(b, csrf.Secure(isProd))
 
 	// Public Routes
 	publicHandler := http.FileServer(http.Dir("./public/"))
@@ -120,7 +131,7 @@ func main() {
 
 	// Start that server!
 	fmt.Println("Now listening on", port)
-	http.ListenAndServe(port, userMw.Apply(r))
+	http.ListenAndServe(port, csrfMw(userMw.Apply(r)))
 }
 
 // #region DB HELPERS

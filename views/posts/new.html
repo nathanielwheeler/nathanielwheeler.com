@@ -23,6 +23,7 @@
 
 {{define "postForm"}}
 <form action="/posts" method="POST">
+	{{csrfField}}
 	<div class="form-group">
 
 		<div class="row">

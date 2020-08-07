@@ -2,12 +2,15 @@ package views
 
 import (
 	"bytes"
+	"errors"
 	"html/template"
 	"io"
 	"net/http"
 	"path/filepath"
 
 	"nathanielwheeler.com/context"
+
+	"github.com/gorilla/csrf"
 )
 
 /*
@@ -32,7 +35,15 @@ func NewView(layout string, files ...string) *View {
 	addTemplateExt(files)
 	files = append(files, layoutFiles()...)
 
-	t, err := template.ParseFiles(files...)
+	t, err := template.
+		New("").
+		Funcs(template.FuncMap{
+			"csrfField": func() (template.HTML, error) {
+				// Only called if I don't replace with implementation during render, since I need the http request itself.
+				return "", errors.New("csrfField is not implemented")
+			},
+		}).
+		ParseFiles(files...)
 	if err != nil {
 		panic(err)
 	}
@@ -60,9 +71,18 @@ func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface
 	// Lookup and set the user to the User field
 	vd.User = context.User(req.Context())
 	var buf bytes.Buffer
-	err := v.Template.ExecuteTemplate(&buf, v.Layout, vd)
+
+	// Create csrfField using current http request and add it onto the template FuncMap for any forms that need it.
+	csrfField := csrf.TemplateField(req)
+	tpl := v.Template.Funcs(template.FuncMap{
+		"csrfField": func() template.HTML {
+			return csrfField
+		},
+	})
+
+	err := tpl.ExecuteTemplate(&buf, v.Layout, vd)
 	if err != nil {
-		http.Error(res, `Something went wrong, please try again.  If the problem persists, please contact me directly at <a href="mailto:contact@nathanielwheeler.com">contact@nathanielwheeler.com</a>.`, http.StatusInternalServerError)
+		http.Error(res, `Something went wrong, please try again.  If the problem persists, please contact me directly at "contact@nathanielwheeler.com"`, http.StatusInternalServerError)
 		return
 	}
 	io.Copy(res, &buf)

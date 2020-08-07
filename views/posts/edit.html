@@ -68,6 +68,7 @@
 {{define "editPostForm"}}
 <!-- POST /posts/:id/update -->
 <form action="/posts/{{.ID}}/update" method="POST">
+	{{csrfField}}
 	<div class="form-group">
 
 		<div class="row">
@@ -91,6 +92,7 @@
 {{define "deletePostForm"}}
 <!-- POST /posts/:id/delete -->
 <form action="/posts/{{.ID}}/delete" method="POST">
+	{{csrfField}}
 	<div class="form-group">
 
 		<div class="row d-flex justify-content-center">
@@ -104,6 +106,7 @@
 
 {{define "uploadImageForm"}}
 <form action="/posts/{{.ID}}/upload" method="POST" enctype="multipart/form-data">
+	{{csrfField}}
 	<div class="form-group row">
 		<div class="col-12">
 
@@ -148,6 +151,7 @@
 
 {{define "deleteImageForm"}}
 <form action="/posts/{{.PostID}}/image/{{.Filename}}/delete" method="POST">
+	{{csrfField}}
 	<button type="submit" class="btn btn-danger">Delete!</button>
 	<!-- <a class="badge badge-danger" onclick="this.closest('form').submit();return false;">X</a> -->
 </form>
