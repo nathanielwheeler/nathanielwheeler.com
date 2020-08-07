@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 )
@@ -15,9 +16,12 @@ type Image struct {
 
 // #region Image methods
 
-// Path builds an absolute path used to reference this image via web request
+// Path builds an absolute URL-safe path used to reference this image via web request.
 func (i *Image) Path() string {
-	return "/" + i.RelativePath()
+	temp := url.URL{
+		Path: "/" + i.RelativePath(),
+	}
+	return temp.String()
 }
 
 // RelativePath builds a path to this image on local disk, relative to the app working directory

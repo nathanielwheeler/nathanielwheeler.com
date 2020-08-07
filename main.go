@@ -21,6 +21,10 @@ const (
 	isProd = false
 )
 
+/* TODO
+- Decouple User middleware from routes (like with RequireUser)
+*/
+
 func init() {
 	if err := godotenv.Load(); err != nil {
 		panic("No .env file found")

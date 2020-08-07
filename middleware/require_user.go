@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 
 	"nathanielwheeler.com/context"
 	"nathanielwheeler.com/models"
@@ -20,6 +21,12 @@ func (mw *User) Apply(next http.Handler) http.HandlerFunc {
 // ApplyFn will take in an http.HandlerFunc and run middleware that will check for a remember token cookie and set it to the request context.  It will always call the next handler.
 func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		path := req.URL.Path
+		// If user requests anything from public, we don't need to lookup the user
+		if strings.HasPrefix(path, "/assets/") || strings.HasPrefix(path, "/images/") {
+			next(res, req)
+			return
+		}
 		cookie, err := req.Cookie("remember_token")
 		if err != nil {
 			next(res, req)
