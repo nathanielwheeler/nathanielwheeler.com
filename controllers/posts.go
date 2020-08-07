@@ -235,11 +235,12 @@ func (p *Posts) ImageUpload(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	vd.Alert = &views.Alert{
-		Level:   views.AlertLvlSuccess,
-		Message: "Images uploaded successfully!",
+	url, err := p.r.Get(EditPost).URL("id", fmt.Sprintf("%v", post.ID))
+	if err != nil {
+		http.Redirect(res, req, "/posts", http.StatusFound)
+		return
 	}
-	p.EditView.Render(res, req, vd)
+	http.Redirect(res, req, url.Path, http.StatusFound)
 }
 
 // ImageDelete /posts/:id/images/:filename/delete
