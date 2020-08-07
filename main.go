@@ -52,6 +52,13 @@ func main() {
 	}
 	requireUserMw := middleware.RequireUser{}
 
+	// Public Routes
+	publicHandler := http.FileServer(http.Dir("./public/"))
+	r.PathPrefix("/images/").
+		Handler(publicHandler)
+	r.PathPrefix("/assets/").
+		Handler(publicHandler)
+
 	// Statics Routes
 	r.Handle("/",
 		staticC.Home).
@@ -93,14 +100,14 @@ func main() {
 		postsC.Show).
 		Methods("GET").
 		Name(controllers.ShowPost)
-	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/edit",
+	r.HandleFunc("/posts/{id:[0-9]+}/edit",
 		requireUserMw.ApplyFn(postsC.Edit)).
 		Methods("GET").
 		Name(controllers.EditPost)
-	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/update",
+	r.HandleFunc("/posts/{id:[0-9]+}/update",
 		requireUserMw.ApplyFn(postsC.Update)).
 		Methods("POST")
-	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}/delete",
+	r.HandleFunc("/posts/{id:[0-9]+}/delete",
 		requireUserMw.ApplyFn(postsC.Delete)).
 		Methods("POST")
 	// TODO Update references to old route
@@ -110,15 +117,6 @@ func main() {
 	r.HandleFunc("/posts/{id:[0-9]+}/image/{filename}/delete",
 		requireUserMw.ApplyFn(postsC.ImageDelete)).
 		Methods("POST")
-
-
-	// Image Routes
-	// - File server located in /images
-	imageHandler := http.FileServer(http.Dir("./images/"))
-	r.PathPrefix("/images/").
-		// Here, I have to strip the prefix in the handler so I don't use something
-		// like "/images/images/whatever.jpg"
-		Handler(http.StripPrefix("/images/", imageHandler))
 
 	// Start that server!
 	fmt.Println("Now listening on", port)

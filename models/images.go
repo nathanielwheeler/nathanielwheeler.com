@@ -88,7 +88,7 @@ func (is *imageService) Delete(i *Image) error {
 // #region HELPERS
 
 func (is *imageService) imageDir(postID uint) string {
-	return filepath.Join("images", "posts", fmt.Sprintf("%v", postID))
+	return filepath.Join("public", "images", "posts", fmt.Sprintf("%v", postID))
 }
 
 func (is *imageService) mkImageDir(postID uint) (string, error) {

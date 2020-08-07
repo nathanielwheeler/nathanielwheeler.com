@@ -15,12 +15,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// ShowPost is a named route that will handle showing posts
+// Named routes.
 const (
 	IndexPosts = "index_posts"
 	ShowPost   = "show_post"
 	EditPost   = "edit_post"
+)
 
+const (
 	maxMultipartMem = 1 << 20 // 1 megabyte
 )
 
@@ -109,11 +111,11 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, url.Path, http.StatusFound)
 }
 
-// Edit : POST /posts/:year/:urltitle/update
+// Edit : POST /posts/:id/update
 func (p *Posts) Edit(res http.ResponseWriter, req *http.Request) {
-	post, err := p.postByYearAndTitle(res, req)
+	post, err := p.postByID(res, req)
 	if err != nil {
-		// error handled by postByYearAndTitle
+		// error handled by postByID
 		return
 	}
 	user := context.User(req.Context())
@@ -126,12 +128,12 @@ func (p *Posts) Edit(res http.ResponseWriter, req *http.Request) {
 	p.EditView.Render(res, req, vd)
 }
 
-// Update : POST /posts/:year/:urltitle/update
+// Update : POST /posts/:id/update
 /*	- This does NOT update the path of the post. */
 func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
-	post, err := p.postByYearAndTitle(res, req)
+	post, err := p.postByID(res, req)
 	if err != nil {
-		// implemented by postByYearAndTitle
+		// implemented by postByID
 		return
 	}
 	user := context.User(req.Context())
@@ -161,11 +163,11 @@ func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
 	p.EditView.Render(res, req, vd)
 }
 
-// Delete : POST /posts/:year/:urltitle/delete
+// Delete : POST /posts/:id/delete
 func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
-	post, err := p.postByYearAndTitle(res, req)
+	post, err := p.postByID(res, req)
 	if err != nil {
-		// postByYearAndTitle renders error
+		// postByID renders error
 		return
 	}
 	user := context.User(req.Context())

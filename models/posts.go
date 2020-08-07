@@ -7,7 +7,8 @@ import (
 // #region ERRORS
 
 /* TODO
-- Need to make a private error type */
+- Need to make a private error type 
+*/
 
 const (
 	// ErrUserIDRequired indicates that there is a missing user ID
