@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 // PostgresConfig holds database connection info.
@@ -45,6 +47,14 @@ func (c PostgresConfig) ConnectionString() string {
 	)
 }
 
+// CheckForDotEnv will check to see if there are any .Env files.  If there are not, it will panic.
+// TODO Refactor for production
+func CheckForDotEnv() {
+	if err := godotenv.Load(); err != nil {
+		panic("No .env file found")
+	}
+}
+
 // Config holds configuration variables
 type Config struct {
 	Port      int
@@ -66,8 +76,6 @@ func (c Config) IsProd() bool {
 	return c.Env == "prod"
 }
 
-// #region DB HELPERS
-
 func checkDBEnv(str string) string {
 	str, exists := os.LookupEnv("DB_" + strings.ToUpper(str))
 	if !exists {
@@ -75,5 +83,3 @@ func checkDBEnv(str string) string {
 	}
 	return str
 }
-
-// #endregion

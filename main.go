@@ -11,7 +11,6 @@ import (
 
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 )
 
 /* TODO
@@ -19,9 +18,7 @@ import (
 */
 
 func init() {
-	if err := godotenv.Load(); err != nil {
-		panic("No .env file found")
-	}
+	CheckForDotEnv()
 }
 
 func main() {
