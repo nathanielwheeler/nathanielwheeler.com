@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
 
 	"nathanielwheeler.com/controllers"
 	"nathanielwheeler.com/middleware"
@@ -14,11 +12,6 @@ import (
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-)
-
-const (
-	port   = ":3000"
-	isProd = false
 )
 
 /* TODO
@@ -32,15 +25,12 @@ func init() {
 }
 
 func main() {
-	// Start up database connection
-	dbEnv := getDBEnv()
-	psqlConnectionStr := fmt.Sprintf(
-		"host=%s port=%s user=%s password='%s' dbname=%s sslmode=disable",
-		dbEnv.host, dbEnv.port, dbEnv.user, dbEnv.password, dbEnv.name,
-	)
+	// Default development configurations
+	cfg := DefaultConfig()
+	dbCfg := DefaultPostgresConfig()
 
 	// Initialize services
-	services, err := models.NewServices(psqlConnectionStr)
+	services, err := models.NewServices(dbCfg.Dialect(), dbCfg.ConnectionString())
 	if err != nil {
 		panic(err)
 	}
@@ -61,11 +51,11 @@ func main() {
 	}
 	requireUserMw := middleware.RequireUser{}
 	// CSRF Protection
-	b, err := rand.Bytes(32)
+	b, err := rand.Bytes(cfg.CSRFBytes)
 	if err != nil {
 		panic(err)
 	}
-	csrfMw := csrf.Protect(b, csrf.Secure(isProd))
+	csrfMw := csrf.Protect(b, csrf.Secure(cfg.IsProd()))
 
 	// Public Routes
 	publicHandler := http.FileServer(http.Dir("./public/"))
@@ -134,32 +124,7 @@ func main() {
 		Methods("POST")
 
 	// Start that server!
-	fmt.Println("Now listening on", port)
+	port := fmt.Sprintf(":%d", cfg.Port)
+	fmt.Printf("Now listening on %s...\n", port)
 	http.ListenAndServe(port, csrfMw(userMw.Apply(r)))
 }
-
-// #region DB HELPERS
-
-type dbEnv struct {
-	host, user, password, port, name string
-}
-
-func getDBEnv() dbEnv {
-	return dbEnv{
-		host:     checkDBEnv("host"),
-		user:     checkDBEnv("user"),
-		password: checkDBEnv("password"),
-		port:     checkDBEnv("port"),
-		name:     checkDBEnv("name"),
-	}
-}
-
-func checkDBEnv(str string) string {
-	str, exists := os.LookupEnv("DB_" + strings.ToUpper(str))
-	if !exists {
-		panic(".env is missing environment variable: '" + str + "'")
-	}
-	return str
-}
-
-// #endregion

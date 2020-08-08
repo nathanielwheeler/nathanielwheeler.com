@@ -2,6 +2,8 @@ package models
 
 import (
 	"github.com/jinzhu/gorm"
+	// Since this is implicitly needed by gorm
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 // Services will hold information about the varying services used in the models package.
@@ -13,8 +15,8 @@ type Services struct {
 }
 
 // NewServices is a constructor for services.
-func NewServices(connectionStr string) (*Services, error) {
-	db, err := gorm.Open("postgres", connectionStr)
+func NewServices(dialect, connectionStr string) (*Services, error) {
+	db, err := gorm.Open(dialect, connectionStr)
 	if err != nil {
 		return nil, err
 	}

@@ -43,7 +43,7 @@ func NewView(layout string, files ...string) *View {
 				return "", errors.New("csrfField is not implemented")
 			},
 			// pathEscape will escape a path using the net/url package.
-			"pathExcape": func(s string) string {
+			"pathEscape": func(s string) string {
 				return url.PathEscape(s)
 			},
 		}).
