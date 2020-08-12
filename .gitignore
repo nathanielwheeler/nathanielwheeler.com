@@ -1,6 +1,5 @@
+.*
 tmp
 exp
-.env
-.vscode
-/public/images/posts/
-config.yml
+
+/public/images/
