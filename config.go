@@ -8,6 +8,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// #region Database
+
 // PostgresConfig holds database connection info.
 type PostgresConfig struct {
 	Host     string `json:"host"`
@@ -55,11 +57,23 @@ func CheckForDotEnv() {
 	}
 }
 
+func checkDBEnv(str string) string {
+	str, exists := os.LookupEnv("DB_" + strings.ToUpper(str))
+	if !exists {
+		panic(".env is missing environment variable: '" + str + "'")
+	}
+	return str
+}
+
+// #endregion
+
 // Config holds configuration variables
 type Config struct {
-	Port      int
-	Env       string
-	CSRFBytes int
+	Port      int    `json:"port"`
+	Env       string `json:"env"`
+	CSRFBytes int    `json:"csrf_bytes"`
+	Pepper    string `json:"pepper"`
+	HMACKey   string `json:"hmcac_key"`
 }
 
 // DefaultConfig sets up Config for a development environment
@@ -68,18 +82,12 @@ func DefaultConfig() Config {
 		Port:      3000,
 		Env:       "dev",
 		CSRFBytes: 32,
+		Pepper: "secret-string",
+		HMACKey: "secret-hmac-key",
 	}
 }
 
 // IsProd sets Config Env to Production
 func (c Config) IsProd() bool {
 	return c.Env == "prod"
-}
-
-func checkDBEnv(str string) string {
-	str, exists := os.LookupEnv("DB_" + strings.ToUpper(str))
-	if !exists {
-		panic(".env is missing environment variable: '" + str + "'")
-	}
-	return str
 }

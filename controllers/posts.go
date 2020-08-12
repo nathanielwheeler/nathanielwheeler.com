@@ -33,12 +33,12 @@ type Posts struct {
 	IndexView *views.View
 	EditView  *views.View
 	ps        models.PostsService
-	is        models.ImageService
+	is        models.ImagesService
 	r         *mux.Router
 }
 
 // NewPosts is a constructor for Posts struct
-func NewPosts(ps models.PostsService, is models.ImageService, r *mux.Router) *Posts {
+func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *Posts {
 	return &Posts{
 		New:       views.NewView("app", "posts/new"),
 		ShowView:  views.NewView("app", "posts/show"),

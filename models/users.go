@@ -56,12 +56,6 @@ func (e modelError) Public() string {
 
 // #endregion
 
-// TODO: remove obvious pepper when deployed
-var userPwPepper = "secret-string"
-
-// TODO: remove obvious hmac key when deployed
-var hmacSecretKey = "secret-hmac-key"
-
 // User : Model for people that want updates from my website and want to leave comments on my posts.
 type User struct {
 	gorm.Model
@@ -96,15 +90,17 @@ type UserService interface {
 // userService processes business rules for users
 type userService struct {
 	UserDB
+	pepper string
 }
 
 // NewUserService : constructor for userService.  Calls constructors for user gorm and user validator.
-func NewUserService(db *gorm.DB) UserService {
+func NewUserService(db *gorm.DB, pepper, hmacKey string) UserService {
 	ug := &userGorm{db}
-	hmac := hash.NewHMAC(hmacSecretKey)
-	uv := newUserValidator(ug, hmac)
+	hmac := hash.NewHMAC(hmacKey)
+	uv := newUserValidator(ug, hmac, pepper)
 	return &userService{
 		UserDB: uv,
+		pepper: pepper,
 	}
 }
 
@@ -118,7 +114,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	// If email found, compare password hashes. Return user or error statement.
 	err = bcrypt.CompareHashAndPassword(
 		[]byte(foundUser.PasswordHash),
-		[]byte(password+userPwPepper))
+		[]byte(password+us.pepper))
 	switch err {
 	case nil:
 		return foundUser, nil
@@ -199,19 +195,27 @@ func first(db *gorm.DB, dst interface{}) error {
 type userValidator struct {
 	UserDB
 	hmac       hash.HMAC
+	pepper     string
 	emailRegex *regexp.Regexp
 	// TODO: make regex for password validation
 	// passwordRegex *regexp.Regexp
 }
 
 // Constructor for userValidator layer.  Needed so that I can compile regex and assign it.
-func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
+func newUserValidator(udb UserDB, hmac hash.HMAC, pepper string) *userValidator {
 	return &userValidator{
 		UserDB: udb,
 		hmac:   hmac,
+		pepper: pepper,
 		emailRegex: regexp.MustCompile(
 			`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`),
 		// TODO figure out what I need for this
+		/* Requirements:
+			- A-z
+			- 0-9
+			- !@#$%^&*()-_+={}[]\|:;'".,/<>?`~
+			- spaces
+		*/
 		/* passwordRegex: regexp.MustCompile(
 		``), */
 	}
@@ -316,7 +320,7 @@ func (uv *userValidator) bcryptPassword(user *User) error {
 		return nil
 	}
 
-	pwBytes := []byte(user.Password + userPwPepper)
+	pwBytes := []byte(user.Password + uv.pepper)
 	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
 	if err != nil {
 		return err

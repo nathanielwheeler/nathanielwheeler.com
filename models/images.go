@@ -33,22 +33,22 @@ func (i *Image) RelativePath() string {
 
 // #endregion
 
-// ImageService will handle images for the website
-type ImageService interface {
+// ImagesService will handle images for the website
+type ImagesService interface {
 	ByPostID(postID uint) ([]Image, error)
 	Create(postID uint, r io.Reader, filename string) error
 	Delete(i *Image) error
 }
 
-type imageService struct{}
+type imagesService struct{}
 
-// NewImageService is the constructor of ImageService
-func NewImageService() ImageService {
-	return &imageService{}
+// NewImagesService is the constructor of ImageService
+func NewImagesService() ImagesService {
+	return &imagesService{}
 }
 
 // ByPostID will get the directory for a post's images, glob it, and return a slice of images.
-func (is *imageService) ByPostID(postID uint) ([]Image, error) {
+func (is *imagesService) ByPostID(postID uint) ([]Image, error) {
 	path := is.imageDir(postID)
 	strings, err := filepath.Glob(filepath.Join(path, "*"))
 	if err != nil {
@@ -66,7 +66,7 @@ func (is *imageService) ByPostID(postID uint) ([]Image, error) {
 }
 
 // Create will add a new image to a post, storing it locally.
-func (is *imageService) Create(postID uint, r io.Reader, filename string) error {
+func (is *imagesService) Create(postID uint, r io.Reader, filename string) error {
 	path, err := is.mkImageDir(postID)
 	if err != nil {
 		return err
@@ -85,17 +85,17 @@ func (is *imageService) Create(postID uint, r io.Reader, filename string) error 
 	return nil
 }
 
-func (is *imageService) Delete(i *Image) error {
+func (is *imagesService) Delete(i *Image) error {
 	return os.Remove(i.RelativePath())
 }
 
 // #region HELPERS
 
-func (is *imageService) imageDir(postID uint) string {
+func (is *imagesService) imageDir(postID uint) string {
 	return filepath.Join("public", "images", "posts", fmt.Sprintf("%v", postID))
 }
 
-func (is *imageService) mkImageDir(postID uint) (string, error) {
+func (is *imagesService) mkImageDir(postID uint) (string, error) {
 	postPath := is.imageDir(postID)
 	err := os.MkdirAll(postPath, 0755)
 	if err != nil {

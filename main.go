@@ -27,10 +27,13 @@ func main() {
 	dbCfg := DefaultPostgresConfig()
 
 	// Initialize services
-	services, err := models.NewServices(dbCfg.Dialect(), dbCfg.ConnectionString())
-	if err != nil {
-		panic(err)
-	}
+	services, err := models.NewServices(
+		models.WithGorm(dbCfg.Dialect(), dbCfg.ConnectionString()),
+		models.WithLogMode(!cfg.IsProd()),
+		models.WithUser(cfg.Pepper, cfg.HMACKey),
+		models.WithPosts(),
+		models.WithImages(),
+	)
 	defer services.Close()
 	services.AutoMigrate()
 
