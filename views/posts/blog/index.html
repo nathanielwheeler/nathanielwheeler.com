@@ -1,10 +1,10 @@
 {{define "yield"}}
-<main class="container">
+<main class="container-fluid">
 	<div class="row">
 		<div class="col-12 offset-md-2 col-md-8">
 			{{range .}}
 			<div class="card border-light bg-dark">
-				<h3 class="card-header border-light"><a href="/posts/{{.Year}}/{{.URLTitle}}">
+				<h3 class="card-header border-light"><a href="/blog/{{.Year}}/{{.URLTitle}}">
 						{{.Title}}
 					</a></h3>
 				<p class="card-body">

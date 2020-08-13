@@ -89,22 +89,13 @@ func main() {
 		usersC.CookieTest).
 		Methods("GET")
 
-	// Post Routes
+  // Post Routes
 	r.HandleFunc("/posts",
 		requireUserMw.ApplyFn(postsC.Create)).
 		Methods("POST")
-	// FIXME: I can't figure out why Index will render for GET "/posts/index" but not GET "/posts"
-	r.HandleFunc("/posts/index",
-		postsC.Index).
-		Methods("GET").
-		Name(controllers.IndexPosts)
 	r.Handle("/posts/new",
 		requireUserMw.Apply(postsC.New)).
-		Methods("GET")
-	r.HandleFunc("/posts/{year:20[0-9]{2}}/{title}",
-		postsC.Show).
-		Methods("GET").
-		Name(controllers.ShowPost)
+    Methods("GET")
 	r.HandleFunc("/posts/{id:[0-9]+}/edit",
 		requireUserMw.ApplyFn(postsC.Edit)).
 		Methods("GET").
@@ -114,8 +105,17 @@ func main() {
 		Methods("POST")
 	r.HandleFunc("/posts/{id:[0-9]+}/delete",
 		requireUserMw.ApplyFn(postsC.Delete)).
-		Methods("POST")
-	// TODO Update references to old route
+    Methods("POST")
+ //    Blog
+  r.HandleFunc("/blog",
+    postsC.BlogIndex).
+    Methods("GET").
+    Name(controllers.BlogIndexRoute)
+  r.HandleFunc("/blog/{year:20[0-9]{2}}/{title}",
+    postsC.BlogPost).
+    Methods("GET").
+    Name(controllers.BlogPostRoute)
+  //    Images
 	r.HandleFunc("/posts/{id:[0-9]+}/upload",
 		requireUserMw.ApplyFn(postsC.ImageUpload)).
 		Methods("POST")
