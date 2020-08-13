@@ -19,7 +19,7 @@ import (
 */
 
 func main() {
-  boolPtr := flag.Bool("prod", false, "Provide this flag in production to ensure that a configurationf ile is provided before the application starts.")
+  boolPtr := flag.Bool("prod", false, "Provide this flag in production to ensure that a production configuration file is provided before the application starts.")
   flag.Parse()
 	cfg := LoadConfig(*boolPtr)
 	dbCfg := cfg.Database
