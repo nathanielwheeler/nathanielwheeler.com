@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"nathanielwheeler.com/context"
 	"nathanielwheeler.com/models"
@@ -19,7 +18,7 @@ import (
 const (
 	BlogIndexRoute = "blog_index"
 	BlogPostRoute  = "blog_post"
-	EditPost  = "edit_post"
+	EditPost       = "edit_post"
 )
 
 const (
@@ -29,9 +28,9 @@ const (
 // Posts will hold information about views and services
 type Posts struct {
 	New           *views.View
+	EditView      *views.View
 	BlogPostView  *views.View
 	BlogIndexView *views.View
-	EditView      *views.View
 	ps            models.PostsService
 	is            models.ImagesService
 	r             *mux.Router
@@ -52,32 +51,9 @@ func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *P
 
 // PostForm will hold information for creating a new post
 type PostForm struct {
-	Title string `schema:"title"`
-}
-
-// BlogPost : GET /blog/:year/:urltitle
-func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
-	post, err := p.postByYearAndTitle(res, req)
-	if err != nil {
-		// postByYearAndTitle already renders error
-		return
-	}
-	var vd views.Data
-	vd.Yield = post
-	p.BlogPostView.Render(res, req, vd)
-}
-
-// BlogIndex : GET /blog
-func (p *Posts) BlogIndex(res http.ResponseWriter, req *http.Request) {
-	posts, err := p.ps.GetAll()
-	if err != nil {
-		log.Println(err)
-		http.Error(res, "Something bad happened.", http.StatusInternalServerError)
-		return
-	}
-	var vd views.Data
-	vd.Yield = posts
-	p.BlogIndexView.Render(res, req, vd)
+	Title    string `schema:"title"`
+	FileDir  string `schema:"file-dir"`
+	FileName string `schema:"file-name"`
 }
 
 // Create : POST /posts
@@ -90,22 +66,25 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	user := context.User(req.Context())
+	if user.IsAdmin != true {
+		http.Error(res, "You do not have permission to create a post", http.StatusForbidden)
+		return
+	}
 	post := models.Post{
 		Title:    form.Title,
 		URLTitle: strings.Replace(form.Title, " ", "_", -1),
-		UserID:   user.ID,
-		Year:     time.Now().Year(),
+		FileDir:  form.FileDir,
+		FileName: form.FileName,
 	}
 	if err := p.ps.Create(&post); err != nil {
 		vd.SetAlert(err)
 		p.New.Render(res, req, vd)
 		return
 	}
-	urlYear := strconv.Itoa(post.Year)
-	url, err := p.r.Get(EditPost).URL("year", urlYear, "title", post.URLTitle)
+	url, err := p.r.Get(EditPost).URL("id", fmt.Sprintf("%v", post.ID))
 	if err != nil {
 		log.Println(err)
-		http.Redirect(res, req, "/posts/index", http.StatusFound)
+		http.Redirect(res, req, "/blog", http.StatusFound)
 		return
 	}
 	http.Redirect(res, req, url.Path, http.StatusFound)
@@ -119,7 +98,7 @@ func (p *Posts) Edit(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	user := context.User(req.Context())
-	if post.UserID != user.ID {
+	if user.IsAdmin != true {
 		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
 		return
 	}
@@ -137,7 +116,7 @@ func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	user := context.User(req.Context())
-	if post.UserID != user.ID {
+	if user.IsAdmin != true {
 		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
 		return
 	}
@@ -172,7 +151,7 @@ func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	user := context.User(req.Context())
-	if post.UserID != user.ID {
+	if user.IsAdmin != true {
 		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
 		return
 	}
@@ -192,6 +171,31 @@ func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, url.Path, http.StatusFound)
 }
 
+// BlogPost : GET /blog/:year/:urltitle
+func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
+	post, err := p.postByYearAndTitle(res, req)
+	if err != nil {
+		// postByYearAndTitle already renders error
+		return
+	}
+	var vd views.Data
+	vd.Yield = post
+	p.BlogPostView.Render(res, req, vd)
+}
+
+// BlogIndex : GET /blog
+func (p *Posts) BlogIndex(res http.ResponseWriter, req *http.Request) {
+	posts, err := p.ps.GetAll()
+	if err != nil {
+		log.Println(err)
+		http.Error(res, "Something bad happened.", http.StatusInternalServerError)
+		return
+	}
+	var vd views.Data
+	vd.Yield = posts
+	p.BlogIndexView.Render(res, req, vd)
+}
+
 // ImageUpload : POST /posts/:id/upload
 func (p *Posts) ImageUpload(res http.ResponseWriter, req *http.Request) {
 	post, err := p.postByID(res, req)
@@ -200,7 +204,7 @@ func (p *Posts) ImageUpload(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	user := context.User(req.Context())
-	if post.UserID != user.ID {
+	if user.IsAdmin != true {
 		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
 		return
 	}
@@ -250,7 +254,7 @@ func (p *Posts) ImageDelete(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	user := context.User(req.Context())
-	if post.UserID != user.ID {
+	if user.IsAdmin != true {
 		http.Error(res, "You do not have permission to edit this post or image", http.StatusForbidden)
 		return
 	}
@@ -267,7 +271,7 @@ func (p *Posts) ImageDelete(res http.ResponseWriter, req *http.Request) {
 		p.EditView.Render(res, req, vd)
 		return
 	}
-	url, err := p.r.Get(EditPost).URL("year", fmt.Sprintf("%v", post.Year), "title", fmt.Sprintf("%v", post.URLTitle))
+	url, err := p.r.Get(EditPost).URL("id", fmt.Sprintf("%v", post.ID))
 	if err != nil {
 		log.Println(err)
 		http.Redirect(res, req, "/posts/index", http.StatusFound)
