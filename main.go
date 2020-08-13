@@ -60,7 +60,9 @@ func main() {
 	r.PathPrefix("/images/").
 		Handler(publicHandler)
 	r.PathPrefix("/assets/").
-		Handler(publicHandler)
+    Handler(publicHandler)
+  r.PathPrefix("/markdown/").
+    Handler(publicHandler)
 
 	// Statics Routes
 	r.Handle("/",
