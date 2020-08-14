@@ -177,8 +177,14 @@ func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		// postByYearAndTitle already renders error
 		return
-	}
+  }
 	var vd views.Data
+  // Get post from /markdown/blog
+  if err := p.GetMarkdown(); err != nil {
+    vd.SetAlert(err)
+		p.New.Render(res, req, vd)
+		return
+  }
 	vd.Yield = post
 	p.BlogPostView.Render(res, req, vd)
 }

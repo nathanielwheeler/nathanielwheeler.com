@@ -1,7 +1,11 @@
 package models
 
 import (
+	"bytes"
+	"io/ioutil"
+
 	"github.com/jinzhu/gorm"
+	"github.com/yuin/goldmark"
 )
 
 // #region ERRORS
@@ -26,11 +30,26 @@ const (
 */
 type Post struct {
 	gorm.Model
-	Title    string  `gorm:"not_null"`
-	URLTitle string  `gorm:"not_null"`
-	FileDir  string  `gorm:"not_null;index"`
-	FileName string  `gorm:"not_null"`
-	Images   []Image `gorm:"-"` // Not stored in database
+	Title    string   `gorm:"not_null"`
+	URLTitle string   `gorm:"not_null"`
+	FileDir  string   `gorm:"not_null;index"`
+	FileName string   `gorm:"not_null"`
+	Images   []Image  `gorm:"-"` // Not stored in database
+	Body     []string `gorm:"-"`
+}
+
+// GetMarkdown will retrieve raw markdown from fileserver, parse it, sanitize it, and attaches the HTML to the post's body.
+func (p Post) GetMarkdown() error {
+	data, err := ioutil.ReadFile(p.FileDir + p.FileName)
+	if err != nil {
+		return err
+	}
+	var buf bytes.Buffer
+	if err := goldmark.Convert(data, &buf); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // #region SERVICE
@@ -189,7 +208,6 @@ func runPostsValFns(post *Post, fns ...postsValFn) error {
 	}
 	return nil
 }
-
 
 func (pv *postsValidator) titleRequired(p *Post) error {
 	if p.Title == "" {
