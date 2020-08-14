@@ -26,36 +26,21 @@ const (
 // Post will hold all of the information needed for a blog post.
 /* TODO
 - implement Body
-- populate AuthorName into UserID
 */
 type Post struct {
 	gorm.Model
-	Title    string   `gorm:"not_null"`
-	URLTitle string   `gorm:"not_null"`
-	FileDir  string   `gorm:"not_null;index"`
-	FileName string   `gorm:"not_null"`
-	Images   []Image  `gorm:"-"` // Not stored in database
-	Body     []string `gorm:"-"`
-}
-
-// GetMarkdown will retrieve raw markdown from fileserver, parse it, sanitize it, and attaches the HTML to the post's body.
-func (p Post) GetMarkdown() error {
-	data, err := ioutil.ReadFile(p.FileDir + p.FileName)
-	if err != nil {
-		return err
-	}
-	var buf bytes.Buffer
-	if err := goldmark.Convert(data, &buf); err != nil {
-		return err
-	}
-
-	return nil
+	Title       string `gorm:"not_null"`
+	URLTitle    string `gorm:"not_null"`
+	FilePath    string `gorm:"not_null;index"`
+	Body        string `gorm:"-"` // Not stored in database
+	BodyPreview string `gorm:"-"` // TODO implement
 }
 
 // #region SERVICE
 
 // PostsService will handle business rules for posts.
 type PostsService interface {
+	GetMarkdown(post *Post) error
 	PostsDB
 }
 
@@ -72,6 +57,21 @@ func NewPostsService(db *gorm.DB) PostsService {
 			},
 		},
 	}
+}
+
+// GetMarkdown will retrieve raw markdown from fileserver, parse it, and attach the HTML to the post's body.
+// TODO consider sanitizing HTML
+func (ps *postsService) GetMarkdown(post *Post) error {
+	data, err := ioutil.ReadFile(post.FilePath)
+	if err != nil {
+		return err
+	}
+	var buf bytes.Buffer
+	if err := goldmark.Convert(data, &buf); err != nil {
+		return err
+	}
+	post.Body = buf.String()
+	return nil
 }
 
 // #endregion

@@ -52,8 +52,7 @@ func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *P
 // PostForm will hold information for creating a new post
 type PostForm struct {
 	Title    string `schema:"title"`
-	FileDir  string `schema:"file-dir"`
-	FileName string `schema:"file-name"`
+	FilePath string `schema:"filepath"`
 }
 
 // Create : POST /posts
@@ -73,8 +72,7 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 	post := models.Post{
 		Title:    form.Title,
 		URLTitle: strings.Replace(form.Title, " ", "_", -1),
-		FileDir:  form.FileDir,
-		FileName: form.FileName,
+		FilePath: form.FilePath,
 	}
 	if err := p.ps.Create(&post); err != nil {
 		vd.SetAlert(err)
@@ -177,14 +175,14 @@ func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		// postByYearAndTitle already renders error
 		return
-  }
+	}
 	var vd views.Data
-  // Get post from /markdown/blog
-  if err := p.GetMarkdown(); err != nil {
-    vd.SetAlert(err)
+	// Get post from /markdown/blog
+	if err := p.ps.GetMarkdown(post); err != nil {
+		vd.SetAlert(err)
 		p.New.Render(res, req, vd)
 		return
-  }
+	}
 	vd.Yield = post
 	p.BlogPostView.Render(res, req, vd)
 }
@@ -309,7 +307,6 @@ func (p *Posts) postByYearAndTitle(res http.ResponseWriter, req *http.Request) (
 		}
 		return nil, err
 	}
-	post = p.getImages(post)
 	return post, nil
 }
 
@@ -332,18 +329,7 @@ func (p *Posts) postByID(res http.ResponseWriter, req *http.Request) (*models.Po
 		}
 		return nil, err
 	}
-	post = p.getImages(post)
 	return post, nil
-}
-
-// Get images from ImageService and attach to post.
-func (p *Posts) getImages(post *models.Post) *models.Post {
-	images, err := p.is.ByPostID(post.ID)
-	if err != nil {
-		log.Println(err)
-	}
-	post.Images = images
-	return post
 }
 
 // #endregion
