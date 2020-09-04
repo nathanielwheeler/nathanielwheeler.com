@@ -1,5 +1,5 @@
 nathanielwheeler.com {
-	gzip
+	encode gzip
 	proxy / localhost:3000 {
 		transparent
 	}
