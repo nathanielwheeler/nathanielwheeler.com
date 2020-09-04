@@ -19,7 +19,7 @@ type Config struct {
 	Env       string         `yaml:"env"`
 	Port      int            `yaml:"port"`
 	Pepper    string         `yaml:"pepper"`
-	HMACKey   string         `yaml:"hmcac_key"`
+	HMACKey   string         `yaml:"hmac_key"`
 	CSRFBytes int            `yaml:"csrf_bytes"`
 	Database  PostgresConfig `yaml:"database"`
 }

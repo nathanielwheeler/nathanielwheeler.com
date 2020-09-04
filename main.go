@@ -19,8 +19,8 @@ import (
 */
 
 func main() {
-  boolPtr := flag.Bool("prod", false, "Provide this flag in production to ensure that a production configuration file is provided before the application starts.")
-  flag.Parse()
+	boolPtr := flag.Bool("prod", false, "Provide this flag in production to ensure that a production configuration file is provided before the application starts.")
+	flag.Parse()
 	cfg := LoadConfig(*boolPtr)
 	dbCfg := cfg.Database
 
@@ -44,10 +44,9 @@ func main() {
 	postsC := controllers.NewPosts(services.Posts, services.Images, r)
 
 	// Middleware
-	userMw := middleware.User{
-		UserService: services.User,
-	}
+	userMw := middleware.User{UserService: services.User}
 	requireUserMw := middleware.RequireUser{}
+
 	// CSRF Protection
 	b, err := rand.Bytes(cfg.CSRFBytes)
 	if err != nil {
@@ -60,9 +59,9 @@ func main() {
 	r.PathPrefix("/images/").
 		Handler(publicHandler)
 	r.PathPrefix("/assets/").
-    Handler(publicHandler)
-  r.PathPrefix("/markdown/").
-    Handler(publicHandler)
+		Handler(publicHandler)
+	r.PathPrefix("/markdown/").
+		Handler(publicHandler)
 
 	// Statics Routes
 	r.Handle("/",
@@ -89,13 +88,13 @@ func main() {
 		usersC.CookieTest).
 		Methods("GET")
 
-  // Post Routes
+		// Post Routes
 	r.HandleFunc("/posts",
 		requireUserMw.ApplyFn(postsC.Create)).
 		Methods("POST")
 	r.Handle("/posts/new",
 		requireUserMw.Apply(postsC.New)).
-    Methods("GET")
+		Methods("GET")
 	r.HandleFunc("/posts/{id:[0-9]+}/edit",
 		requireUserMw.ApplyFn(postsC.Edit)).
 		Methods("GET").
@@ -105,17 +104,17 @@ func main() {
 		Methods("POST")
 	r.HandleFunc("/posts/{id:[0-9]+}/delete",
 		requireUserMw.ApplyFn(postsC.Delete)).
-    Methods("POST")
- //    Blog
-  r.HandleFunc("/blog",
-    postsC.BlogIndex).
-    Methods("GET").
-    Name(controllers.BlogIndexRoute)
-  r.HandleFunc("/blog/{year:20[0-9]{2}}/{title}",
-    postsC.BlogPost).
-    Methods("GET").
-    Name(controllers.BlogPostRoute)
-  //    Images
+		Methods("POST")
+		//    Blog
+	r.HandleFunc("/blog",
+		postsC.BlogIndex).
+		Methods("GET").
+		Name(controllers.BlogIndexRoute)
+	r.HandleFunc("/blog/{year:20[0-9]{2}}/{title}",
+		postsC.BlogPost).
+		Methods("GET").
+		Name(controllers.BlogPostRoute)
+		//    Images
 	r.HandleFunc("/posts/{id:[0-9]+}/upload",
 		requireUserMw.ApplyFn(postsC.ImageUpload)).
 		Methods("POST")
