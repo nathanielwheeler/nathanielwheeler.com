@@ -25,12 +25,9 @@ type Config struct {
 }
 
 // LoadConfig will load production or development configuration files.
-func LoadConfig(configReq bool) Config {
+func LoadConfig() Config {
 	f, err := os.Open(prodConfigFile)
 	if err != nil {
-    if configReq {
-      panic(err)
-    }
 		f, err = os.Open(devConfigFile)
 		if err != nil {
 			panic("No configuration file detected!")
