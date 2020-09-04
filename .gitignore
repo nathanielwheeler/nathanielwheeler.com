@@ -1,5 +1,6 @@
 .*
 tmp
 exp
+dist
 
-/public/images/
+/public/images/posts
