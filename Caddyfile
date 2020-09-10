@@ -1,4 +1,4 @@
-128.199.11.200 {
+nathanielwheeler.com {
 	encode gzip
 	reverse_proxy localhost:3000
 }
