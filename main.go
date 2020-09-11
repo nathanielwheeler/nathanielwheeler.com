@@ -80,7 +80,10 @@ func main() {
 		Methods("GET")
 	r.HandleFunc("/login",
 		usersC.Login).
-		Methods("POST")
+    Methods("POST")
+  r.Handle("/logout",
+    requireUserMw.ApplyFn(usersC.Logout)).
+    Methods("POST")
 	r.HandleFunc("/cookietest",
 		usersC.CookieTest).
 		Methods("GET")
