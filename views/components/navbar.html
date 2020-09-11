@@ -25,9 +25,7 @@
 
 			<!-- TODO Ideally, I want this section right-aligned -->
 			{{if .User}}
-			<li class="nav-item"><a class="nav-link" href="/logout">
-					Logout
-				</a></li>
+			<li class="nav-item navform">{{template "logoutForm"}}</li>
 			{{else}}
 			<li class="nav-item"><a class="nav-link" href="/login">
 					Login

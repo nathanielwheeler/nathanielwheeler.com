@@ -1,7 +1,7 @@
 {{define "yield"}}
 <main class="container">
 	<div class="row">
-		<div class="col-12 offset-md-2 col-md-8 offset-lg-2 col-lg-6">
+		<div class="col-12 offset-md-2 col-md-8 offset-lg-3 col-lg-6">
 
 			<div class="card border-light bg-dark">
 				<h3 class="card-header border-light text-center">
@@ -12,47 +12,9 @@
 					<div class="card-text">
 						{{template "registerForm"}}
 					</div>
-					<p class="card-text text-center">
-						Already have an account? <a href="/login">Click here to login!</a>
-					</p>
 				</div>
 			</div>
 		</div>
 	</div>
 </main>
-{{end}}
-
-<!-- POST /register -->
-
-{{define "registerForm"}}
-<form action="/register" method="POST">
-	{{csrfField}}
-	<div class="form-group">
-
-		<div class="row">
-			<label for="name" class="col-12">
-				Name
-				<input class="form-control" type="text" name="name" id="name" placeholder="Ken Thompson">
-			</label>
-		</div>
-		<div class="row">
-			<label for="email" class="col-12">
-				Email Address
-				<input class="form-control" type="email" name="email" id="email" placeholder="gopherfan70@example.com">
-			</label>
-		</div>
-		<div class="row">
-			<label for="password" class="col-12">
-				Password
-				<input class="form-control" type="password" name="password" id="password"
-					placeholder="Use a password manager!">
-			</label>
-		</div>
-		<br>
-		<div class="row d-flex justify-content-center">
-			<button class="btn btn-success btn-lg" type="submit">Register!</button>
-		</div>
-
-	</div>
-</form>
 {{end}}

@@ -1,0 +1,28 @@
+<!-- POST /login -->
+{{define "loginForm"}}
+<form action="/login" method="POST">
+	{{csrfField}}
+	<div class="form-group">
+
+		<div class="row">
+			<label for="email" class="col-12">
+				Email Address
+				<input type="email" name="email" class="form-control" id="email" placeholder="gopherfan70@example.com">
+			</label>
+		</div>
+		<div class="row">
+			<label for="password" class="col-12">
+				Password
+				<input type="password" name="password" class="form-control" id="password" placeholder="LPT: use a password manager!">
+			</label>
+		</div>
+		<br>
+		<div class="row">
+			<div class="col-10 offset-1 col-md-8 offset-md-2 d-flex justify-content-around">
+				<a href="/register" class="btn btn-secondary btn-lg" role="button">Register</a>
+				<button class="btn btn-success btn-lg" type="submit">Submit</button>
+			</div>
+		</div>
+	</div>
+</form>
+{{end}}

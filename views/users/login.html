@@ -12,43 +12,9 @@
 					<div class="card-text">
 						{{template "loginForm"}}
 					</div>
-					<p class="card-text text-center">
-						Don't have an account?  <a href="/register">Click here to register!</a>
-					</p>
 				</div>
 			</div>
 		</div>
 	</div>
 </main>
-{{end}}
-
-<!-- POST /login -->
-
-{{define "loginForm"}}
-<form action="/login" method="POST">
-	{{csrfField}}
-	<div class="form-group">
-
-		<div class="row">
-			<label for="email" class="col-12">
-				Email Address
-				<input type="email" name="email" class="form-control" id="email"
-					placeholder="gopherfan70@example.com">
-			</label>
-		</div>
-		<div class="row">
-			<label for="password" class="col-12">
-				Password
-				<input type="password" name="password" class="form-control" id="password"
-					placeholder="Use a password manager!">
-			</label>
-		</div>
-		<br>
-		<div class="row d-flex justify-content-center">
-			<button class="btn btn-success btn-lg" type="submit">
-				Log In!
-			</button>
-		</div>
-	</div>
-</form>
 {{end}}
