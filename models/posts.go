@@ -30,8 +30,8 @@ const (
 type Post struct {
 	gorm.Model
 	Title       string `gorm:"not_null"`
-	URLTitle    string `gorm:"not_null"`
-	FilePath    string `gorm:"not_null;index"`
+	URLPath     string `gorm:"not_null"`
+	FilePath    string `gorm:"not_null"`
 	Body        string `gorm:"-"` // Not stored in database
 	BodyPreview string `gorm:"-"` // TODO implement
 }
@@ -83,7 +83,7 @@ func (ps *postsService) GetMarkdown(post *Post) error {
 // PostsDB will handle database interaction for posts.
 type PostsDB interface {
 	ByID(id uint) (*Post, error)
-	ByYearAndTitle(year int, title string) (*Post, error)
+	ByURL(urlpath string) (*Post, error)
 	GetAll() ([]Post, error)
 	Create(post *Post) error
 	Update(post *Post) error
@@ -112,10 +112,10 @@ func (pg *postsGorm) ByID(id uint) (*Post, error) {
 	return &post, nil
 }
 
-// ByYearAndTitle will search the posts database for input URL-friendly year and title.
-func (pg *postsGorm) ByYearAndTitle(year int, urlTitle string) (*Post, error) {
+// ByURL will search the posts database for input url string.
+func (pg *postsGorm) ByURL(urlpath string) (*Post, error) {
 	var post Post
-	db := pg.db.Where("url_title = ? AND year = ?", urlTitle, year)
+	db := pg.db.Where("url_path = ?", urlpath)
 	err := first(db, &post)
 	if err != nil {
 		return nil, err

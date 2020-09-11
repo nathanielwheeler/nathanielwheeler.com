@@ -32,7 +32,7 @@ func main() {
 	defer services.Close()
 	services.AutoMigrate()
 
-	// Router Initilization
+	// Router Initialization
 	r := mux.NewRouter()
 
 	// Initialize controllers
@@ -110,7 +110,7 @@ func main() {
 		postsC.BlogIndex).
 		Methods("GET").
 		Name(controllers.BlogIndexRoute)
-	r.HandleFunc("/blog/{year:20[0-9]{2}}/{title}",
+	r.HandleFunc(`/blog/{urlpath:[a-zA-Z0-9\/\-_~.]+}`,
 		postsC.BlogPost).
 		Methods("GET").
 		Name(controllers.BlogPostRoute)

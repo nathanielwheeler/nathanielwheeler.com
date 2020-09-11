@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"nathanielwheeler.com/context"
 	"nathanielwheeler.com/models"
@@ -52,6 +51,7 @@ func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *P
 // PostForm will hold information for creating a new post
 type PostForm struct {
 	Title    string `schema:"title"`
+	URLPath  string `schema:"urlpath"`
 	FilePath string `schema:"filepath"`
 }
 
@@ -71,7 +71,7 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 	}
 	post := models.Post{
 		Title:    form.Title,
-		URLTitle: strings.Replace(form.Title, " ", "_", -1),
+		URLPath:  form.URLPath,
 		FilePath: form.FilePath,
 	}
 	if err := p.ps.Create(&post); err != nil {
@@ -169,9 +169,9 @@ func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, url.Path, http.StatusFound)
 }
 
-// BlogPost : GET /blog/:year/:urltitle
+// BlogPost : GET /blog/:filepath
 func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
-	post, err := p.postByYearAndTitle(res, req)
+	post, err := p.postByURL(res, req)
 	if err != nil {
 		// postByYearAndTitle already renders error
 		return
@@ -286,17 +286,10 @@ func (p *Posts) ImageDelete(res http.ResponseWriter, req *http.Request) {
 
 // #region HELPERS
 
-func (p *Posts) postByYearAndTitle(res http.ResponseWriter, req *http.Request) (*models.Post, error) {
+func (p *Posts) postByURL(res http.ResponseWriter, req *http.Request) (*models.Post, error) {
 	vars := mux.Vars(req)
-	yearVar := vars["year"]
-	year, err := strconv.Atoi(yearVar)
-	if err != nil {
-		log.Println(err)
-		http.Error(res, "Invalid post URL", http.StatusNotFound)
-		return nil, err
-	}
-	urlTitle := vars["title"]
-	post, err := p.ps.ByYearAndTitle(year, urlTitle)
+	urlpath := vars["urlpath"]
+	post, err := p.ps.ByURL(urlpath)
 	if err != nil {
 		switch err {
 		case models.ErrNotFound:
