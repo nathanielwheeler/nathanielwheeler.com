@@ -20,7 +20,7 @@
 				</a></li>
 
 			<li class="nav-item"><a class="nav-link" href="/blog">
-					Posts
+					Blog
 				</a></li>
 
 			<!-- TODO Ideally, I want this section right-aligned -->
@@ -30,6 +30,15 @@
 			<li class="nav-item"><a class="nav-link" href="/login">
 					Login
 				</a></li>
+			{{end}}
+
+			<!-- Admin Panel -->
+			{{if .User }}
+			{{if .User.IsAdmin}}
+			<li class="nav-item"><a class="nav-link" href="/posts/new">
+					New Post
+				</a></li>
+			{{end}}
 			{{end}}
 		</ul>
 	</div>
