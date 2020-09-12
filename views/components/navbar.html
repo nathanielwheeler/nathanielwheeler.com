@@ -4,9 +4,18 @@
 		Issue: because I turned off the toggle feature of bootstrap navbar, the placement of the navbar is all weird.  I have to put a vertical spacer below it in app.html to make non-home pages display correctly.
 		Problem with fix: the home page looks like shit.
 -->
-<nav class="navbar navbar-expand fixed-top navbar-dark bg-secondary">
+<nav class="navbar navbar-expand fixed-top navbar-dark bg-primary">
 
-	<div class="collapse navbar-collapse w-100 order-1 order-md-0 dual-collapse">
+	<div class="mx-auto order-0">
+		<a href="/" class="navbar-brand mx-auto">Nathaniel J. Wheeler</a>
+
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".dual-collapse"
+			aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+	</div>
+
+	<div class="collapse navbar-collapse w-100 order-1 dual-collapse ml-3">
 		<ul class="navbar-nav mr-auto">
 
 			<!-- Site Navigation -->
@@ -18,15 +27,6 @@
 				</a></li>
 
 		</ul>
-	</div>
-
-	<div class="mx-auto order-0">
-		<a href="/" class="navbar-brand mx-auto">Nathaniel J. Wheeler</a>
-
-		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".dual-collapse"
-			aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
-			<span class="navbar-toggler-icon"></span>
-		</button>
 	</div>
 
 	<div class="collapse navbar-collapse w-100 order-3 dual-collapse">
