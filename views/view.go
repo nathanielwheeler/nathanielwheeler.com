@@ -97,7 +97,7 @@ func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface
 
 	err := tpl.ExecuteTemplate(&buf, v.Layout, vd)
 	if err != nil {
-		http.Error(res, `Something went wrong, please try again.  If the problem persists, please contact me directly at "contact@nathanielwheeler.com"`, http.StatusInternalServerError)
+		http.Error(res, `Something went wrong, please try again.  If the problem persists, please contact me directly at "nathan@mailftp.com"`, http.StatusInternalServerError)
 		return
 	}
 	io.Copy(res, &buf)

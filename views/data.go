@@ -36,7 +36,7 @@ const (
 	AlertLvlSuccess = "success"
 
 	// AlertMsgGeneric is the default message for unfiltered errors.
-	AlertMsgGeneric = `Something went wrong, please try again.  If the problem persists, please contact me directly at <a href="mailto:contact@nathanielwheeler.com">contact@nathanielwheeler.com</a>.`
+	AlertMsgGeneric = `Something went wrong, please try again.  If the problem persists, please contact me directly at <a href="mailto:nathan@mailftp.com">nathan@mailftp.com</a>.`
 )
 
 // SetAlert will create an alert using a constant error message
