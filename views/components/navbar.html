@@ -15,13 +15,11 @@
 	<div class="collapse navbar-collapse " id="navContent">
 		<ul class="navbar-nav">
 
-			<!-- NOTE cannot implement active class until I implement request data in static pages -->
-			<!--if pathPrefixCheck 'resume'-->
-			<li class="nav-item"><a class="nav-link" href="/resume">
+			<li class="nav-item" id="nav-resume"><a class="nav-link" href="/resume">
 					Resume
 				</a></li>
 
-			<li class="nav-item"><a class="nav-link" href="/blog">
+			<li class="nav-item" id="nav-blog"><a class="nav-link" href="/blog">
 					Blog
 				</a></li>
 
@@ -45,4 +43,25 @@
 		</ul>
 	</div>
 </nav>
+
+<!-- To check URL for path prefixes and then activate the respective nav-item. -->
+<script>
+
+	let path = window.location.pathname.split("/");
+
+	if (path[1]) {
+		let pathPrefix = path[1]
+		switch (pathPrefix) {
+			case "resume":
+				document.getElementById("nav-resume").className += " active";
+				break;
+			case "blog":
+				document.getElementById("nav-blog").className += " active";
+				break;
+			default:
+				break;
+		}
+	}
+
+</script>
 {{end}}

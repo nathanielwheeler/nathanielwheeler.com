@@ -51,11 +51,6 @@ func NewView(layout string, files ...string) *View {
 			"pathEscape": func(s string) string {
 				return url.PathEscape(s)
 			},
-			// pathPrefixCheck will return true if input string matches the path prefix
-			// - TODO find a way to pass request data for static pages
-			// "pathPrefixCheck": func(s string) bool {
-			// 	return false
-			// },
 		}).
 		ParseFiles(files...)
 	if err != nil {
@@ -98,15 +93,6 @@ func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface
 		"csrfField": func() template.HTML {
 			return csrfField
 		},
-		// "pathPrefixCheck": func(s string) bool {
-		// - NOTE cannot implement until static pages can get request data
-		// 	for _, v := range pathPrefix {
-		// 		if strings.Contains(v, s) {
-		// 			return true
-		// 		}
-		// 	}
-		// 	return false
-		// },
 	})
 
 	err := tpl.ExecuteTemplate(&buf, v.Layout, vd)
