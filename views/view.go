@@ -50,6 +50,11 @@ func NewView(layout string, files ...string) *View {
 			"pathEscape": func(s string) string {
 				return url.PathEscape(s)
 			},
+			// pathPrefixCheck will return true if input string matches the path prefix
+			// - TODO find a way to pass request data for static pages
+			// "pathPrefixCheck": func(s string) bool {
+			// 	return false
+			// },
 		}).
 		ParseFiles(files...)
 	if err != nil {
@@ -80,12 +85,22 @@ func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface
 	vd.User = context.User(req.Context())
 	var buf bytes.Buffer
 
-	// Create csrfField using current http request and add it onto the template FuncMap for any forms that need it.
+	// Create variables using current http request and add it onto the template FuncMap.
 	csrfField := csrf.TemplateField(req)
+	// pathPrefix := mux.Vars(req)
 	tpl := v.Template.Funcs(template.FuncMap{
 		"csrfField": func() template.HTML {
 			return csrfField
 		},
+		// "pathPrefixCheck": func(s string) bool {
+		// - NOTE cannot implement until static pages can get request data
+		// 	for _, v := range pathPrefix {
+		// 		if strings.Contains(v, s) {
+		// 			return true
+		// 		}
+		// 	}
+		// 	return false
+		// },
 	})
 
 	err := tpl.ExecuteTemplate(&buf, v.Layout, vd)
