@@ -1,6 +1,6 @@
 {{define "logoutForm"}}
 <form action="/logout" method="POST" class="form-inline">
 	{{csrfField}}
-	<a class="nav-link" onclick="this.closest('form').submit();return false;">Log out</a>
+	<button class="btn btn-danger-outline" type="submit">Log out</button>
 </form>
 {{end}}

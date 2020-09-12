@@ -4,35 +4,35 @@
 		Issue: because I turned off the toggle feature of bootstrap navbar, the placement of the navbar is all weird.  I have to put a vertical spacer below it in app.html to make non-home pages display correctly.
 		Problem with fix: the home page looks like shit.
 -->
-<nav class="navbar navbar-expand fixed-top navbar-dark bg-primary">
-	<a href="/" class="navbar-brand">Nathaniel J. Wheeler</a>
+<nav class="navbar navbar-expand fixed-top navbar-dark bg-secondary">
 
-	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navContent"
-		aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
-		<span class="navbar-toggler-icon"></span>
-	</button>
+	<div class="collapse navbar-collapse w-100 order-1 order-md-0 dual-collapse">
+		<ul class="navbar-nav mr-auto">
 
-	<div class="collapse navbar-collapse " id="navContent">
-		<ul class="navbar-nav">
-
+			<!-- Site Navigation -->
 			<li class="nav-item" id="nav-resume"><a class="nav-link" href="/resume">
 					Resume
 				</a></li>
-
 			<li class="nav-item" id="nav-blog"><a class="nav-link" href="/blog">
 					Blog
 				</a></li>
 
-			<!-- TODO Ideally, I want this section right-aligned -->
-			{{if .User}}
-			<li class="nav-item navform">{{template "logoutForm"}}</li>
-			{{else}}
-			<li class="nav-item"><a class="nav-link" href="/login">
-					Login
-				</a></li>
-			{{end}}
+		</ul>
+	</div>
 
-			<!-- Admin Panel -->
+	<div class="mx-auto order-0">
+		<a href="/" class="navbar-brand mx-auto">Nathaniel J. Wheeler</a>
+
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".dual-collapse"
+			aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+	</div>
+
+	<div class="collapse navbar-collapse w-100 order-3 dual-collapse">
+		<ul class="navbar-nav ml-auto">
+
+			<!-- Admin Section -->
 			{{if .User }}
 			{{if .User.IsAdmin}}
 			<li class="nav-item"><a class="nav-link" href="/posts/new">
@@ -40,8 +40,19 @@
 				</a></li>
 			{{end}}
 			{{end}}
+
+			<!-- User Section -->
+			{{if .User}}
+			<li class="nav-item navform">{{template "logoutForm"}}</li>
+			{{else}}
+			<li class="nav-item"><a class="btn btn-success" role="button" href="/login">
+					Login
+			</a></li>
+			{{end}}
+
 		</ul>
 	</div>
+
 </nav>
 
 <!-- To check URL for path prefixes and then activate the respective nav-item. -->
