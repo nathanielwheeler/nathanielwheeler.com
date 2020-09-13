@@ -2,6 +2,8 @@ package views
 
 import (
 	"log"
+	"net/http"
+	"time"
 
 	"nathanielwheeler.com/models"
 )
@@ -60,4 +62,64 @@ func (d *Data) AlertError(msg string) {
 		Level:   AlertLvlError,
 		Message: msg,
 	}
+}
+
+// RedirectAlert redirects with a persisting error
+func (d *Data) RedirectAlert(res http.ResponseWriter, req *http.Request, urlStr string, code int, alert Alert) {
+	persistAlert(res, alert)
+	http.Redirect(res, req, urlStr, code)
+}
+
+// getAlert will retrieve an alert from cookie data.  Errors probably mean the alert is invalid, so will return nil.
+func getAlert(req *http.Request) *Alert {
+	lvl, err := req.Cookie("alert_level")
+	if err != nil {
+		return nil
+	}
+	msg, err := req.Cookie("alert_message")
+	if err != nil {
+		return nil
+	}
+	alert := Alert{
+		Level:   lvl.Value,
+		Message: msg.Value,
+	}
+	return &alert
+}
+
+// persistAlert will use cookie data to store alerts, expiring after 5 minutes
+func persistAlert(res http.ResponseWriter, alert Alert) {
+	expiresAt := time.Now().Add(5 * time.Minute)
+	lvl := http.Cookie{
+		Name:     "alert_level",
+		Value:    alert.Level,
+		Expires:  expiresAt,
+		HttpOnly: true,
+	}
+	msg := http.Cookie{
+		Name:     "alert_message",
+		Value:    alert.Message,
+		Expires:  expiresAt,
+		HttpOnly: true,
+	}
+	http.SetCookie(res, &lvl)
+	http.SetCookie(res, &msg)
+}
+
+// clearAlert will clear alerts within cookies
+func clearAlert(res http.ResponseWriter) {
+	lvl := http.Cookie{
+		Name:     "alert_level",
+		Value:    "",
+		Expires:  time.Now(),
+		HttpOnly: true,
+	}
+	msg := http.Cookie{
+		Name:     "alert_message",
+		Value:    "",
+		Expires:  time.Now(),
+		HttpOnly: true,
+	}
+	http.SetCookie(res, &lvl)
+	http.SetCookie(res, &msg)
 }

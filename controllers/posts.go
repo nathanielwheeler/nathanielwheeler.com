@@ -179,8 +179,12 @@ func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
 	var vd views.Data
 	// Get post from /markdown/blog
 	if err := p.ps.GetMarkdown(post); err != nil {
-		vd.SetAlert(err)
-		p.New.Render(res, req, vd)
+    log.Println(err)
+		alert := views.Alert{
+      Level: views.AlertLvlDanger,
+      Message: "Whoops, something went wrong!"
+    }
+		vd.RedirectAlert(res, req, "/", http.StatusFound, alert)
 		return
 	}
 	vd.Yield = post

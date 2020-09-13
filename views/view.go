@@ -108,69 +108,9 @@ func (v *View) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	v.Render(res, req, nil)
 }
 
-// RedirectAlert accepts params for an http.Redirect and performs a redirect after persisting the provided alert in a cookie.
-func RedirectAlert(res http.ResponseWriter, req *http.Request, urlStr string, code int, alert Alert) {
-  persistAlert(res, alert)
-  http.Redirect(res, req, urlStr, code)
-}
-
 /*
   HELPERS
 */
-
-// getAlert will retrieve an alert from cookie data.  Errors probably mean the alert is invalid, so will return nil.
-func getAlert(req *http.Request) *Alert {
-  lvl, err := req.Cookie("alert_level")
-  if err != nil {
-    return nil
-  }
-  msg, err := req.Cookie("alert_message")
-  if err != nil {
-    return nil
-  }
-  alert := Alert{
-    Level: lvl.Value,
-    Message: msg.Value,
-  }
-  return &alert
-}
-
-// persistAlert will use cookie data to store alerts, expiring after 5 minutes
-func persistAlert(res http.ResponseWriter, alert Alert) {
-	expiresAt := time.Now().Add(5 * time.Minute)
-	lvl := http.Cookie{
-		Name:     "alert_level",
-		Value:    alert.Level,
-		Expires:  expiresAt,
-		HttpOnly: true,
-	}
-	msg := http.Cookie{
-		Name:     "alert_message",
-		Value:    alert.Message,
-		Expires:  expiresAt,
-		HttpOnly: true,
-  }
-  http.SetCookie(res, &lvl)
-  http.SetCookie(res, &msg)
-}
-
-// clearAlert will clear alerts within cookies
-func clearAlert(res http.ResponseWriter) {
-	lvl := http.Cookie{
-		Name:     "alert_level",
-		Value:    "",
-		Expires:  time.Now(),
-		HttpOnly: true,
-	}
-	msg := http.Cookie{
-		Name:     "alert_message",
-		Value:    "",
-		Expires:  time.Now(),
-		HttpOnly: true,
-  }
-  http.SetCookie(res, &lvl)
-  http.SetCookie(res, &msg)
-}
 
 // takes a slice of strings (should be file paths) and prepends the templateDir to each string
 func addTemplatePath(files []string) {
