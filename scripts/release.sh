@@ -7,6 +7,7 @@ echo "==== Releasing nathanielwheeler.com ===="
 echo "	Merging dev to master..."
 git checkout master
 git merge dev
+git push
 
 # Pull current code from master
 echo "	Pulling from master in production..."
