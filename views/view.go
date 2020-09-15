@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"time"
 
 	"nathanielwheeler.com/context"
 
@@ -76,12 +75,12 @@ func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface
 		vd = Data{
 			Yield: data,
 		}
-  }
-  // Check cookie for alerts
-  if alert := getAlert(req); alert != nil {
-    vd.Alert = alert
-    clearAlert(res)
-  }
+	}
+	// Check cookie for alerts
+	if alert := getAlert(req); alert != nil {
+		vd.Alert = alert
+		clearAlert(res)
+	}
 	// Lookup and set the user to the User field
 	vd.User = context.User(req.Context())
 	var buf bytes.Buffer

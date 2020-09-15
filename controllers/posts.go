@@ -181,8 +181,8 @@ func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
 	if err := p.ps.GetMarkdown(post); err != nil {
     log.Println(err)
 		alert := views.Alert{
-      Level: views.AlertLvlDanger,
-      Message: "Whoops, something went wrong!"
+      Level: views.AlertLvlError,
+      Message: "Whoops, something went wrong!",
     }
 		vd.RedirectAlert(res, req, "/", http.StatusFound, alert)
 		return
