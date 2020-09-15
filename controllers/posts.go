@@ -72,7 +72,7 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 	post := models.Post{
 		Title:    form.Title,
 		URLPath:  form.URLPath,
-		FilePath: form.FilePath,
+		FilePath: "public/markdown/" + form.FilePath + ".md",
 	}
 	if err := p.ps.Create(&post); err != nil {
 		vd.SetAlert(err)
@@ -179,12 +179,12 @@ func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
 	var vd views.Data
 	// Get post from /markdown/blog
 	if err := p.ps.GetMarkdown(post); err != nil {
-    log.Println(err)
+		log.Println(err)
 		alert := views.Alert{
-      Level: views.AlertLvlError,
-      Message: "Whoops, something went wrong!",
-    }
-		vd.RedirectAlert(res, req, "/", http.StatusFound, alert)
+			Level:   views.AlertLvlError,
+			Message: fmt.Sprintf("Whoops, something went wrong: %s", err),
+		}
+		vd.RedirectAlert(res, req, "/blog", http.StatusFound, alert)
 		return
 	}
 	vd.Yield = post
