@@ -182,7 +182,7 @@ func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		alert := views.Alert{
 			Level:   views.AlertLvlError,
-			Message: fmt.Sprintf("Whoops, something went wrong: %s", err),
+			Message: "A terrible error happened.  Oh, the humanity!",
 		}
 		vd.RedirectAlert(res, req, "/blog", http.StatusFound, alert)
 		return
