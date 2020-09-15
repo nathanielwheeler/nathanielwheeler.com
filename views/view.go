@@ -50,6 +50,9 @@ func NewView(layout string, files ...string) *View {
 			"pathEscape": func(s string) string {
 				return url.PathEscape(s)
 			},
+      "renderHTML": func(s string) template.HTML {
+        return template.HTML(s)
+      },
 		}).
 		ParseFiles(files...)
 	if err != nil {
@@ -91,6 +94,9 @@ func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface
 	tpl := v.Template.Funcs(template.FuncMap{
 		"csrfField": func() template.HTML {
 			return csrfField
+		},
+		"renderHTML": func(s string) template.HTML {
+			return template.HTML(s)
 		},
 	})
 

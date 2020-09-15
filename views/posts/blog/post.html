@@ -1,8 +1,19 @@
 {{define "yield"}}
 <main class="container">
 	<div class="row">
-		<div class="col-12 text-center">
-			{{.Title}}
+		<div class="col-12">
+			{{if .Body}}
+			{{.Body | renderHTML}}
+			{{else}}
+			<div class="alert alert-danger">
+				<button class="btn btn-secondary close" type="button" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<div class="text-center">
+					Uh... was that supposed to happen?
+				</div>
+			</div>
+			{{end}}
 		</div>
 	</div>
 </main>
