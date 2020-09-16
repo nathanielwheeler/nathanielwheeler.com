@@ -4,18 +4,17 @@
 		Issue: because I turned off the toggle feature of bootstrap navbar, the placement of the navbar is all weird.  I have to put a vertical spacer below it in app.html to make non-home pages display correctly.
 		Problem with fix: the home page looks like shit.
 -->
-<nav class="navbar navbar-expand fixed-top navbar-dark bg-primary">
+<nav class="navbar navbar-expand-sm fixed-top navbar-dark bg-primary">
 
-	<div class="mx-auto order-0">
-		<a href="/" class="navbar-brand mx-auto">Nathaniel J. Wheeler</a>
+	<a href="/" class="navbar-brand order-0">Nathaniel Wheeler</a>
 
-		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".dual-collapse"
-			aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
-			<span class="navbar-toggler-icon"></span>
-		</button>
-	</div>
+	<button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target=".dual-collapse"
+		aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
 
-	<div class="collapse navbar-collapse w-100 order-1 dual-collapse ml-3">
+
+	<div class="collapse navbar-collapse w-100 order-2 dual-collapse ml-3">
 		<ul class="navbar-nav mr-auto">
 
 			<!-- Site Navigation -->
@@ -47,10 +46,10 @@
 			{{else}}
 			<li class="nav-item mx-1"><a class="btn btn-primary" role="button" href="/register">
 					Register
-			</a></li>
+				</a></li>
 			<li class="nav-item ml-1"><a class="btn btn-success" role="button" href="/login">
 					Login
-			</a></li>
+				</a></li>
 			{{end}}
 
 		</ul>
