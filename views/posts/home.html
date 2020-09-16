@@ -3,31 +3,20 @@
 <div class="jumbotron bg-dark text-light">
 	<div class="container">
 		<header class="row">
-			<div class="col-12 col-md-6 order-1 order-md-2">
-				<img class="center-img" src="https://i.ibb.co/syq3fQx/baldy-balcony.jpg" alt="">
+			<div class="col-12 col-md-5 order-0">
+				<img class="center-img jumbo-pic" src="https://i.ibb.co/syq3fQx/baldy-balcony.jpg" alt="">
 			</div>
-			<div class="col-12 col-md-6 order-2 order-md-1">
-				<h1 class="display-4 text-center">Welcome!</h1>
-				<p>
+			<div class="col-12 col-md-6 order-1 jumbo-lead">
+				<p class="lead text-center">
 					I am a full-stack web developer who works in Go, C#, and JavaScript. I use Node/Express, Vue.js, Svelte.js,
-					and ASP.NET frameworks. <br>
-
-				</p>
-				<p class="d-flex justify-content-center">
-					<button class="btn btn-primary" onclick="window.location.href='/resume'">Check out my resume!</button>
-				</p>
-				<p>
-					To get in contact, please send an email to <a href="mailto:nathan@mailftp.com">nathan@mailftp.com</a>.
+					and ASP.NET frameworks.
 				</p>
 			</div>
 		</header>
 		{{if .Body}}
 		<hr class="my-4 border-light">
 		<div class="row">
-			<h3 class="col-12 text-center">
-				Latest: {{.Title}}
-			</h3>
-			<div class="col-12">
+			<div class="col-12 spotlight">
 				{{.Body | renderHTML}}
 			</div>
 		</div>

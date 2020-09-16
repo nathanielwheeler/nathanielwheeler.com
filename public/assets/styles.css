@@ -29,3 +29,22 @@
 .navform {
 	cursor: pointer;
 }
+
+.jumbo-pic {
+	padding-bottom: 1.5rem;
+}
+
+.jumbo-lead {
+	display: flex;
+	align-items: center;
+	/* padding-right: 100px; */
+}
+
+.spotlight h1 {
+	text-align: center;
+	margin-bottom: 1rem;
+}
+
+.spotlight p {
+	apply
+}
