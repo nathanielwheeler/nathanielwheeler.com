@@ -21,7 +21,17 @@
 				</p>
 			</div>
 		</header>
-		<hr class="my-4">
+		{{if .Body}}
+		<hr class="my-4 border-light">
+		<div class="row">
+			<h3 class="col-12 text-center">
+				Latest: {{.Title}}
+			</h3>
+			<div class="col-12">
+				{{.Body | renderHTML}}
+			</div>
+		</div>
+		{{end}}
 
 	</div>
 </div>

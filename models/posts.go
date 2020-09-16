@@ -83,7 +83,8 @@ func (ps *postsService) GetMarkdown(post *Post) error {
 // PostsDB will handle database interaction for posts.
 type PostsDB interface {
 	ByID(id uint) (*Post, error)
-	ByURL(urlpath string) (*Post, error)
+  ByURL(urlpath string) (*Post, error)
+  ByLatest() (*Post, error)
 	GetAll() ([]Post, error)
 	Create(post *Post) error
 	Update(post *Post) error
@@ -121,6 +122,17 @@ func (pg *postsGorm) ByURL(urlpath string) (*Post, error) {
 		return nil, err
 	}
 	return &post, nil
+}
+
+// ByLatest will get the most recent post (by CreatedAt)
+func (pg *postsGorm) ByLatest() (*Post, error) {
+  var post Post
+  db := pg.db.Order("created_at")
+  err := first(db, &post)
+  if err != nil {
+    return nil, err
+  }
+  return &post, nil
 }
 
 // GetAll will return all posts

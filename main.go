@@ -61,9 +61,6 @@ func main() {
 		Handler(publicHandler)
 
 	// Statics Routes
-	r.Handle("/",
-		staticC.Home).
-		Methods("GET")
 	r.Handle("/resume",
 		staticC.Resume).
 		Methods("GET")
@@ -88,7 +85,20 @@ func main() {
 		usersC.CookieTest).
 		Methods("GET")
 
-		// Post Routes
+  // Post Routes
+  //    Blog
+  r.HandleFunc("/",
+    postsC.Home).
+    Methods("GET")
+  r.HandleFunc("/blog",
+    postsC.BlogIndex).
+    Methods("GET").
+    Name(controllers.BlogIndexRoute)
+  r.HandleFunc(`/blog/{urlpath:[a-zA-Z0-9\/\-_~.]+}`,
+    postsC.BlogPost).
+    Methods("GET").
+    Name(controllers.BlogPostRoute)
+  //    API / Admin
 	r.HandleFunc("/posts",
 		requireUserMw.ApplyFn(postsC.Create)).
 		Methods("POST")
@@ -105,15 +115,6 @@ func main() {
 	r.HandleFunc("/posts/{id:[0-9]+}/delete",
 		requireUserMw.ApplyFn(postsC.Delete)).
 		Methods("POST")
-		//    Blog
-	r.HandleFunc("/blog",
-		postsC.BlogIndex).
-		Methods("GET").
-		Name(controllers.BlogIndexRoute)
-	r.HandleFunc(`/blog/{urlpath:[a-zA-Z0-9\/\-_~.]+}`,
-		postsC.BlogPost).
-		Methods("GET").
-		Name(controllers.BlogPostRoute)
 		//    Images
 	r.HandleFunc("/posts/{id:[0-9]+}/upload",
 		requireUserMw.ApplyFn(postsC.ImageUpload)).

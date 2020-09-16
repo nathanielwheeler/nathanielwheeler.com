@@ -26,10 +26,11 @@ const (
 
 // Posts will hold information about views and services
 type Posts struct {
-	New           *views.View
-	EditView      *views.View
+  HomeView *views.View
 	BlogPostView  *views.View
 	BlogIndexView *views.View
+	New           *views.View
+  EditView      *views.View
 	ps            models.PostsService
 	is            models.ImagesService
 	r             *mux.Router
@@ -38,14 +39,65 @@ type Posts struct {
 // NewPosts is a constructor for Posts struct
 func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *Posts {
 	return &Posts{
+    HomeView: views.NewView("app", "posts/home"),
+    BlogPostView:  views.NewView("app", "posts/blog/post"),
+		BlogIndexView: views.NewView("app", "posts/blog/index"),
 		New:           views.NewView("app", "posts/new"),
 		EditView:      views.NewView("app", "posts/edit"),
-		BlogPostView:  views.NewView("app", "posts/blog/post"),
-		BlogIndexView: views.NewView("app", "posts/blog/index"),
 		ps:            ps,
 		is:            is,
 		r:             r,
 	}
+}
+
+// Home : GET /
+func (p *Posts) Home(res http.ResponseWriter, req *http.Request) {
+  post, err := p.postByLatest(res, req)
+  if err != nil {
+    return
+  }
+  if err := p.ps.GetMarkdown(post); err != nil {
+    log.Println(err)
+    return
+  }
+  var vd views.Data
+  vd.Yield = post
+  p.HomeView.Render(res, req, vd)
+}
+
+// BlogPost : GET /blog/:filepath
+func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
+	post, err := p.postByURL(res, req)
+	if err != nil {
+		// postByYearAndTitle already renders error
+		return
+	}
+	var vd views.Data
+	// Get post from /markdown/blog
+	if err := p.ps.GetMarkdown(post); err != nil {
+		log.Println(err)
+		alert := views.Alert{
+			Level:   views.AlertLvlError,
+			Message: "A terrible error happened.  Oh, the humanity!",
+		}
+		vd.RedirectAlert(res, req, "/blog", http.StatusFound, alert)
+		return
+	}
+	vd.Yield = post
+	p.BlogPostView.Render(res, req, vd)
+}
+
+// BlogIndex : GET /blog
+func (p *Posts) BlogIndex(res http.ResponseWriter, req *http.Request) {
+	posts, err := p.ps.GetAll()
+	if err != nil {
+		log.Println(err)
+		http.Error(res, "Something bad happened.", http.StatusInternalServerError)
+		return
+	}
+	var vd views.Data
+	vd.Yield = posts
+	p.BlogIndexView.Render(res, req, vd)
 }
 
 // PostForm will hold information for creating a new post
@@ -169,41 +221,6 @@ func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, url.Path, http.StatusFound)
 }
 
-// BlogPost : GET /blog/:filepath
-func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
-	post, err := p.postByURL(res, req)
-	if err != nil {
-		// postByYearAndTitle already renders error
-		return
-	}
-	var vd views.Data
-	// Get post from /markdown/blog
-	if err := p.ps.GetMarkdown(post); err != nil {
-		log.Println(err)
-		alert := views.Alert{
-			Level:   views.AlertLvlError,
-			Message: "A terrible error happened.  Oh, the humanity!",
-		}
-		vd.RedirectAlert(res, req, "/blog", http.StatusFound, alert)
-		return
-	}
-	vd.Yield = post
-	p.BlogPostView.Render(res, req, vd)
-}
-
-// BlogIndex : GET /blog
-func (p *Posts) BlogIndex(res http.ResponseWriter, req *http.Request) {
-	posts, err := p.ps.GetAll()
-	if err != nil {
-		log.Println(err)
-		http.Error(res, "Something bad happened.", http.StatusInternalServerError)
-		return
-	}
-	var vd views.Data
-	vd.Yield = posts
-	p.BlogIndexView.Render(res, req, vd)
-}
-
 // ImageUpload : POST /posts/:id/upload
 func (p *Posts) ImageUpload(res http.ResponseWriter, req *http.Request) {
 	post, err := p.postByID(res, req)
@@ -305,6 +322,21 @@ func (p *Posts) postByURL(res http.ResponseWriter, req *http.Request) (*models.P
 		return nil, err
 	}
 	return post, nil
+}
+
+func (p *Posts) postByLatest(res http.ResponseWriter, req *http.Request) (*models.Post, error) {
+  post, err := p.ps.ByLatest()
+  if err != nil {
+    switch err  {
+    case models.ErrNotFound:
+      http.Error(res, "Post not found", http.StatusNotFound)
+    default:
+      log.Println(err)
+      http.Error(res, "Well, that wasn't supposed to happen", http.StatusInternalServerError)
+    }
+    return nil, err
+  }
+  return post, nil
 }
 
 func (p *Posts) postByID(res http.ResponseWriter, req *http.Request) (*models.Post, error) {
