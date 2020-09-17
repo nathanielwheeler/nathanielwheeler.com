@@ -61,6 +61,7 @@ func NewPostsService(db *gorm.DB) PostsService {
 
 // GetMarkdown will retrieve raw markdown from fileserver, parse it, and attach the HTML to the post's body.
 // TODO consider sanitizing HTML
+// TODO I should consider either deleting this, or figure out a way to dynamically parse markdown.  Should I use a markdown controller?  Will I be able to access those methods when I render the template?
 func (ps *postsService) GetMarkdown(post *Post) error {
 	data, err := ioutil.ReadFile(post.FilePath)
 	if err != nil {

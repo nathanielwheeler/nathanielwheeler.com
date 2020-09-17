@@ -2,8 +2,8 @@
 <main class="container">
 	<div class="row">
 		<div class="col-12">
-			{{if .Body}}
-			{{.Body | renderHTML}}
+			{{if .FilePath}}
+			{{.FilePath | markdownFromFilePath}}
 			{{else}}
 			<div class="alert alert-danger">
 				<button class="btn btn-secondary close" type="button" aria-label="Close">

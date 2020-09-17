@@ -5,6 +5,7 @@ import (
 	"errors"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 	"nathanielwheeler.com/context"
 
 	"github.com/gorilla/csrf"
+	"github.com/yuin/goldmark"
 )
 
 /*
@@ -50,9 +52,20 @@ func NewView(layout string, files ...string) *View {
 			"pathEscape": func(s string) string {
 				return url.PathEscape(s)
 			},
-      "renderHTML": func(s string) template.HTML {
-        return template.HTML(s)
-      },
+			"renderHTML": func(s string) template.HTML {
+				return template.HTML(s)
+			},
+			"markdownFromFilePath": func(fp string) template.HTML {
+				data, err := ioutil.ReadFile(fp)
+				if err != nil {
+					return ""
+				}
+				var buf bytes.Buffer
+				if err := goldmark.Convert(data, &buf); err != nil {
+					return ""
+        }
+        return template.HTML(buf.String())
+			},
 		}).
 		ParseFiles(files...)
 	if err != nil {
@@ -94,9 +107,6 @@ func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface
 	tpl := v.Template.Funcs(template.FuncMap{
 		"csrfField": func() template.HTML {
 			return csrfField
-		},
-		"renderHTML": func(s string) template.HTML {
-			return template.HTML(s)
 		},
 	})
 

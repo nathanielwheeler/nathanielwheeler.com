@@ -51,13 +51,10 @@ func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *P
 }
 
 // Home : GET /
+// Needs to render the latest post
 func (p *Posts) Home(res http.ResponseWriter, req *http.Request) {
   post, err := p.postByLatest(res, req)
   if err != nil {
-    return
-  }
-  if err := p.ps.GetMarkdown(post); err != nil {
-    log.Println(err)
     return
   }
   var vd views.Data
@@ -73,16 +70,6 @@ func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	var vd views.Data
-	// Get post from /markdown/blog
-	if err := p.ps.GetMarkdown(post); err != nil {
-		log.Println(err)
-		alert := views.Alert{
-			Level:   views.AlertLvlError,
-			Message: "A terrible error happened.  Oh, the humanity!",
-		}
-		vd.RedirectAlert(res, req, "/blog", http.StatusFound, alert)
-		return
-	}
 	vd.Yield = post
 	p.BlogPostView.Render(res, req, vd)
 }
