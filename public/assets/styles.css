@@ -1,3 +1,4 @@
+/* Bootstrap: no curved borders */
 .badge,
 .btn,
 .card,
@@ -14,7 +15,6 @@
 	background-size: cover;
 	background-position: center;
 }
-
 .hero-overlay {
 	background: rgba(0,0,0,.4);
 	position: absolute;
@@ -23,7 +23,6 @@
 	filter: blur(4px);
 	width: 100%;
 }
-
 .hero-shadow {
 		text-shadow: 0 0 1px black, 0 0 2px black, 0 0 4px black, 0 0 6px black, 0 0 8px black, 0 0 12px black, 0 0 16px black;
 }
@@ -50,7 +49,13 @@
 	/* padding-right: 100px; */
 }
 
-.latest-post h1 {
+/* Markdown Styling */
+
+.post-md h1 {
 	text-align: center;
 	margin-bottom: 1rem;
+}
+
+.post-md p {
+	white-space: pre-wrap;
 }

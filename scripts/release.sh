@@ -17,7 +17,7 @@ ssh nathanielwheeler.com "cd /root/go/src/nathanielwheeler.com; \
 # Update dependencies
 echo "	Updating dependencies..."
 ssh nathanielwheeler.com "cd /root/go/src/nathanielwheeler.com; \
-	go get -u; \
+	go get -u ./...; \
 	go mod tidy"
 
 # Building binaries
