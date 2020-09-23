@@ -19,13 +19,13 @@
 </header>
 
 <main class="container pt-3">
-	{{if .FilePath}}
 	<div class="row">
-		<div class="post-md col-12 offset-md-1 offset-lg-2 offset-xl-3 col-md-10 col-lg-8 col-xl-6">
-			{{.FilePath | markdownFromFilePath}}
+		<div class="col-12 offset-md-1 offset-lg-2 offset-xl-3 col-md-10 col-lg-8 col-xl-6">
+			{{range $i, $post := .}}
+				{{template "blogCard" .}}
+			{{end}}
 		</div>
 	</div>
-	{{end}}
 </main>
 
 {{end}}

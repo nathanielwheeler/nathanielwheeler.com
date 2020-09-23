@@ -1,11 +1,5 @@
-/* Bootstrap: no curved borders */
-.badge,
-.btn,
-.card,
-.jumbotron,
-.navbar-toggler,
-.form-control {
-	border-radius: 0;
+main {
+	margin-top: 30px
 }
 
 .hero-background {
@@ -46,16 +40,30 @@
 .flex-align-center {
 	display: flex;
 	align-items: center;
-	/* padding-right: 100px; */
 }
 
 /* Markdown Styling */
 
+.post-md {
+	margin-bottom: 2rem;
+}
+
 .post-md h1 {
 	text-align: center;
-	margin-bottom: 1rem;
+	margin-top: -1rem;;
+	margin-bottom: 1.5rem;
 }
 
 .post-md p {
 	white-space: pre-wrap;
+}
+
+/* Bootstrap: no curved borders */
+.badge,
+.btn,
+.card,
+.jumbotron,
+.navbar-toggler,
+.form-control {
+	border-radius: 0;
 }

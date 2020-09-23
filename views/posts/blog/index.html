@@ -1,18 +1,18 @@
 {{define "yield"}}
 <main class="container-fluid">
 	<div class="row">
-		<div class="col-12 offset-md-2 col-md-8">
-			{{range .}}
-			<div class="card border-light bg-dark">
-				<h3 class="card-header border-light"><a href="/blog/{{.URLPath}}">
-						{{.Title}}
-					</a></h3>
-				<p class="card-body">
-					(post body)
-				</p>
-			</div>
-			<hr>
-			{{end}}
+		<h1 class="col-12 text-center">Blog Archive</h1>
+	</div>
+	<div class="row">
+		<div class="col-12 offset-md-1 offset-lg-2 offset-xl-3 col-md-10 col-lg-8 col-xl-6">
+			<h3>2020</h3>
+			<ul>
+				{{range .}}
+				<li>
+					<a href="/blog/{{.URLPath}}">{{.Title}}</a>
+				</li>
+				{{end}}
+			</ul>
 		</div>
 	</div>
 </main>

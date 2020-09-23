@@ -1,3 +1,7 @@
 {{define "blogCard"}}
-{{.}}
+<div class="post-md">
+	{{.FilePath | markdownFromFilePath}}
+</div>
+<hr class="border-secondary">
+<br>
 {{end}}

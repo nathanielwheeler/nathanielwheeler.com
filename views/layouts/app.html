@@ -15,23 +15,11 @@
 
 	{{template "navbar" .}}
 
-
 	{{if .Alert}}
 	{{template "alert" .Alert}}
 	{{end}}
 
 	{{template "yield" .Yield}}
-
-	<div class="my-spacer"></div>
-
-	<footer class=" container-fluid text-center">
-		<hr class="border-secondary">
-		<p>
-			This site was made by me using <a href="https://golang.org/">Go</a>!
-		</p>
-	</footer>
-
-	<div class="my-spacer"></div>
 
 	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
 		integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"

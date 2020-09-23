@@ -53,12 +53,13 @@ func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *P
 // Home : GET /
 // Needs to render the latest post
 func (p *Posts) Home(res http.ResponseWriter, req *http.Request) {
-  post, err := p.postByLatest(res, req)
+  posts, err := p.ps.GetAll()
   if err != nil {
+		log.Println(err)
     return
   }
   var vd views.Data
-  vd.Yield = post
+  vd.Yield = posts
   p.HomeView.Render(res, req, vd)
 }
 
