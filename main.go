@@ -55,7 +55,7 @@ func main() {
 	publicHandler := http.FileServer(http.Dir("./public/"))
 	r.PathPrefix("/images/").
 		Handler(publicHandler)
-	r.PathPrefix("/assets/").
+	r.PathPrefix("/stylesheets/").
 		Handler(publicHandler)
 	r.PathPrefix("/markdown/").
 		Handler(publicHandler)

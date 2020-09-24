@@ -2,3 +2,6 @@
 tmp
 exp
 dist
+node_modules
+
+public/stylesheets

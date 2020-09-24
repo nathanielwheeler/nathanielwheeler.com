@@ -9,4 +9,4 @@ While I am eager to get started on something new, I still have a lot of features
 - Sign in with google or some other account verifier
 - An RSS Feed
 
-I'm still considering what to do after I've finished polishing this website.  I'd like to experiment with javascript frontends for a go backend.  I'd also like to make journaling app inspired by [the Theme System](https://www.thethemesystem.com/).
+I'm still considering what to do after I've finished polishing this website.  I'd like to experiment with javascript frontends for a go backend.  I'd also like to make journaling app inspired by the [Theme System](https://www.thethemesystem.com/).

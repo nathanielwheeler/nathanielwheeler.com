@@ -1,0 +1,23 @@
+// Options
+$enable-rounded: false
+
+// Colors
+$dark: #2e2a24
+$darker: darken($dark, 5%)
+$light: #f9d094
+
+$theme-colors: ("darker": $darker)
+
+// Body
+$body-bg: $darker
+$body-color: $light
+
+// Links
+$link-color: #be862d
+
+
+// In sass, variable overrides need to come *before* imports.
+@import "../../node_modules/bootstrap/scss/bootstrap"
+// Everything else, like mixins and map additions, need to be used *after*
+
+
