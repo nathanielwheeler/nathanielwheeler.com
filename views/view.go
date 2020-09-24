@@ -5,15 +5,14 @@ import (
 	"errors"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path/filepath"
 
 	"nathanielwheeler.com/context"
+	"nathanielwheeler.com/models"
 
 	"github.com/gorilla/csrf"
-	"github.com/yuin/goldmark"
 )
 
 /*
@@ -24,7 +23,6 @@ var (
 	templateDir  string = "views/"
 	layoutDir    string = templateDir + "layouts/"
 	componentDir string = templateDir + "components/"
-	formDir      string = templateDir + "forms/"
 	templateExt  string = ".html"
 )
 
@@ -40,7 +38,6 @@ func NewView(layout string, files ...string) *View {
 	addTemplateExt(files)
 	files = append(files, layoutFiles()...)
 	files = append(files, componentFiles()...)
-	files = append(files, formFiles()...)
 	t, err := template.
 		New("").
 		Funcs(template.FuncMap{
@@ -52,19 +49,8 @@ func NewView(layout string, files ...string) *View {
 			"pathEscape": func(s string) string {
 				return url.PathEscape(s)
 			},
-			"renderHTML": func(s string) template.HTML {
-				return template.HTML(s)
-			},
-			"markdownFromFilePath": func(fp string) template.HTML {
-				data, err := ioutil.ReadFile(fp)
-				if err != nil {
-					return ""
-				}
-				var buf bytes.Buffer
-				if err := goldmark.Convert(data, &buf); err != nil {
-					return ""
-        }
-        return template.HTML(buf.String())
+			"bodyFromPost": func(post *models.Post) *models.Post {
+				return post
 			},
 		}).
 		ParseFiles(files...)
@@ -151,14 +137,6 @@ func layoutFiles() []string {
 
 func componentFiles() []string {
 	files, err := filepath.Glob(componentDir + "*" + templateExt)
-	if err != nil {
-		panic(err)
-	}
-	return files
-}
-
-func formFiles() []string {
-	files, err := filepath.Glob(formDir + "*" + templateExt)
 	if err != nil {
 		panic(err)
 	}

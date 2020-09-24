@@ -5,7 +5,11 @@ import (
 	"io/ioutil"
 
 	"github.com/jinzhu/gorm"
+
 	"github.com/yuin/goldmark"
+	meta "github.com/yuin/goldmark-meta"
+	_ "github.com/yuin/goldmark/extension" // Needed for goldmark extensions
+	"github.com/yuin/goldmark/parser"
 )
 
 // #region ERRORS
@@ -29,18 +33,41 @@ const (
 */
 type Post struct {
 	gorm.Model
-	Title       string `gorm:"not_null"`
-	URLPath     string `gorm:"not_null"`
-	FilePath    string `gorm:"not_null"`
-	Body        string `gorm:"-"` // Not stored in database
-	BodyPreview string `gorm:"-"` // TODO implement
+	Title       string                 `gorm:"not_null"`
+	URLPath     string                 `gorm:"not_null"`
+	FilePath    string                 `gorm:"not_null"`
+	Body        string                 `gorm:"-"` // Not stored in database
+	BodyPreview string                 `gorm:"-"` // TODO implement
+	MetaData    map[string]interface{} `gorm:"-"`
+}
+
+// ParseMD will parse the associated markdown of a post.
+func (post *Post) ParseMD() error {
+	data, err := ioutil.ReadFile(post.FilePath)
+	if err != nil {
+		return err
+	}
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			meta.Meta,
+		),
+	)
+	var buf bytes.Buffer
+	ctx := parser.NewContext()
+	if err := md.Convert([]byte(data), &buf, parser.WithContext(ctx)); err != nil {
+		return err
+	}
+
+	post.Body = buf.String()
+	post.MetaData = meta.Get(ctx)
+
+	return nil
 }
 
 // #region SERVICE
 
 // PostsService will handle business rules for posts.
 type PostsService interface {
-	GetMarkdown(post *Post) error
 	PostsDB
 }
 
@@ -57,22 +84,6 @@ func NewPostsService(db *gorm.DB) PostsService {
 			},
 		},
 	}
-}
-
-// GetMarkdown will retrieve raw markdown from fileserver, parse it, and attach the HTML to the post's body.
-// TODO consider sanitizing HTML
-// TODO I should consider either deleting this, or figure out a way to dynamically parse markdown.  Should I use a markdown controller?  Will I be able to access those methods when I render the template?
-func (ps *postsService) GetMarkdown(post *Post) error {
-	data, err := ioutil.ReadFile(post.FilePath)
-	if err != nil {
-		return err
-	}
-	var buf bytes.Buffer
-	if err := goldmark.Convert(data, &buf); err != nil {
-		return err
-	}
-	post.Body = buf.String()
-	return nil
 }
 
 // #endregion

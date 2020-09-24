@@ -19,7 +19,7 @@
 </header>
 
 <main class="container pt-3">
-			{{range $i, $post := .}}
+			{{range .}}
 				{{template "blogCard" .}}
 			{{end}}
 </main>

@@ -26,11 +26,11 @@ const (
 
 // Posts will hold information about views and services
 type Posts struct {
-  HomeView *views.View
+	HomeView      *views.View
 	BlogPostView  *views.View
 	BlogIndexView *views.View
 	New           *views.View
-  EditView      *views.View
+	EditView      *views.View
 	ps            models.PostsService
 	is            models.ImagesService
 	r             *mux.Router
@@ -39,8 +39,8 @@ type Posts struct {
 // NewPosts is a constructor for Posts struct
 func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *Posts {
 	return &Posts{
-    HomeView: views.NewView("app", "posts/home"),
-    BlogPostView:  views.NewView("app", "posts/blog/post"),
+		HomeView:      views.NewView("app", "posts/home"),
+		BlogPostView:  views.NewView("app", "posts/blog/post"),
 		BlogIndexView: views.NewView("app", "posts/blog/index"),
 		New:           views.NewView("app", "posts/new"),
 		EditView:      views.NewView("app", "posts/edit"),
@@ -53,14 +53,22 @@ func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *P
 // Home : GET /
 // Needs to render the latest post
 func (p *Posts) Home(res http.ResponseWriter, req *http.Request) {
-  posts, err := p.ps.GetAll()
-  if err != nil {
+	posts, err := p.ps.GetAll()
+	if err != nil {
 		log.Println(err)
-    return
-  }
-  var vd views.Data
-  vd.Yield = posts
-  p.HomeView.Render(res, req, vd)
+		return
+	}
+
+	for _, post := range posts {
+		err := post.ParseMD()
+		if err != nil {
+      log.Println(err)
+		}
+	}
+
+	var vd views.Data
+	vd.Yield = posts
+	p.HomeView.Render(res, req, vd)
 }
 
 // BlogPost : GET /blog/:filepath
@@ -69,6 +77,10 @@ func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		// postByYearAndTitle already renders error
 		return
+	}
+	err = post.ParseMD()
+	if err != nil {
+		log.Println(err)
 	}
 	var vd views.Data
 	vd.Yield = post
@@ -313,18 +325,18 @@ func (p *Posts) postByURL(res http.ResponseWriter, req *http.Request) (*models.P
 }
 
 func (p *Posts) postByLatest(res http.ResponseWriter, req *http.Request) (*models.Post, error) {
-  post, err := p.ps.ByLatest()
-  if err != nil {
-    switch err  {
-    case models.ErrNotFound:
-      http.Error(res, "Post not found", http.StatusNotFound)
-    default:
-      log.Println(err)
-      http.Error(res, "Well, that wasn't supposed to happen", http.StatusInternalServerError)
-    }
-    return nil, err
-  }
-  return post, nil
+	post, err := p.ps.ByLatest()
+	if err != nil {
+		switch err {
+		case models.ErrNotFound:
+			http.Error(res, "Post not found", http.StatusNotFound)
+		default:
+			log.Println(err)
+			http.Error(res, "Well, that wasn't supposed to happen", http.StatusInternalServerError)
+		}
+		return nil, err
+	}
+	return post, nil
 }
 
 func (p *Posts) postByID(res http.ResponseWriter, req *http.Request) (*models.Post, error) {
