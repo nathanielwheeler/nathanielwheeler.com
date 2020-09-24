@@ -18,12 +18,18 @@ ssh nathanielwheeler.com "cd /root/go/src/nathanielwheeler.com; \
 echo "	Updating dependencies..."
 ssh nathanielwheeler.com "cd /root/go/src/nathanielwheeler.com; \
 	go get -u ./...; \
-	go mod tidy"
+	go mod tidy; \
+	yarn"
 
 # Building binaries
 echo "	Building nathanielwheeler.com..."
 ssh nathanielwheeler.com "cd /root/app; \
 	go build -o ./server /root/go/src/nathanielwheeler.com/*.go"
+
+# Preprocess Sass
+echo "	Preprocessing Sass..."
+ssh nathanielwheeler.com "cd /root/go/src/nathanielwheeler.com; \
+	dart-sass app/sass/main.sass public/stylesheets/main.css"
 
 # Transferring files
 echo "	Transferring files..."
