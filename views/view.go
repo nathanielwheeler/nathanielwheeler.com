@@ -36,8 +36,8 @@ type View struct {
 func NewView(layout string, files ...string) *View {
 	addTemplatePath(files)
 	addTemplateExt(files)
-	files = append(files, layoutFiles()...)
-	files = append(files, componentFiles()...)
+	files = append(files, dirFiles("layouts")...)
+	files = append(files, dirFiles("components")...)
 	t, err := template.
 		New("").
 		Funcs(template.FuncMap{
@@ -127,16 +127,8 @@ func addTemplateExt(files []string) {
 	}
 }
 
-func layoutFiles() []string {
-	files, err := filepath.Glob(layoutDir + "*" + templateExt)
-	if err != nil {
-		panic(err)
-	}
-	return files
-}
-
-func componentFiles() []string {
-	files, err := filepath.Glob(componentDir + "*" + templateExt)
+func dirFiles(dir string) []string {
+	files, err := filepath.Glob(layoutDir + dir + templateExt)
 	if err != nil {
 		panic(err)
 	}
