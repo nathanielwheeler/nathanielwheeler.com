@@ -15,14 +15,8 @@ import (
 	"github.com/gorilla/csrf"
 )
 
-/*
-NOTE In this file, I am panicking so much because if these views are not parsed correctly, the entire app is useless.
-*/
-
 var (
 	templateDir  string = "views/"
-	layoutDir    string = templateDir + "layouts/"
-	componentDir string = templateDir + "components/"
 	templateExt  string = ".html"
 )
 
@@ -64,7 +58,7 @@ func NewView(layout string, files ...string) *View {
 	}
 }
 
-// Render : Responsible for rendering the view.  Checks the underlying type of data passed into it.
+// Render is responsible for rendering the view.  Checks the underlying type of data passed into it.  Then checks cookie for alerts, looks up the user, creates a CSRF field with the request data, and then executes the template.
 func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface{}) {
 	res.Header().Set("Content-Type", "text/html")
 	var vd Data
@@ -77,19 +71,21 @@ func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface
 		vd = Data{
 			Yield: data,
 		}
-	}
+  }
+  
 	// Check cookie for alerts
 	if alert := getAlert(req); alert != nil {
 		vd.Alert = alert
 		clearAlert(res)
-	}
+  }
+  
 	// Lookup and set the user to the User field
 	vd.User = context.User(req.Context())
 	var buf bytes.Buffer
 
-	// Create variables using current http request and add it onto the template FuncMap.
-	csrfField := csrf.TemplateField(req)
-	// pathPrefix := mux.Vars(req)
+	// Create CSRF field using current http request and add it onto the template FuncMap.
+  csrfField := csrf.TemplateField(req)
+  
 	tpl := v.Template.Funcs(template.FuncMap{
 		"csrfField": func() template.HTML {
 			return csrfField
@@ -104,7 +100,7 @@ func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface
 	io.Copy(res, &buf)
 }
 
-// ServeHTTP : Renders and serves views.
+// ServeHTTP renders and serves views.
 func (v *View) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	v.Render(res, req, nil)
 }
@@ -128,7 +124,7 @@ func addTemplateExt(files []string) {
 }
 
 func dirFiles(dir string) []string {
-	files, err := filepath.Glob(layoutDir + dir + templateExt)
+	files, err := filepath.Glob(templateDir + dir + templateExt)
 	if err != nil {
 		panic(err)
 	}
