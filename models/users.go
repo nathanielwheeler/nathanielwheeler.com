@@ -12,50 +12,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// #region ERRORS
-var (
-	// ErrNotFound : Indicates that a resource does not exist within postgres.
-	ErrNotFound modelError = "models: resource not found"
-	// ErrIDInvalid : Returned when an invalid ID is provided to a method like Delete.
-	ErrIDInvalid modelError = "models: ID provided was invalid"
-
-	// ErrEmailRequired is returned when an email address is not provided when creating or updating a user.
-	ErrEmailRequired modelError = "models: email address is required"
-	// ErrEmailInvalid is returned when an email address does not match the regex pattern of an email.
-	ErrEmailInvalid modelError = "models: invalid email address"
-	// ErrEmailTaken is returned when an update or create is attempted with an email address that is already in use.
-	ErrEmailTaken modelError = "models: email address is already taken"
-
-	// ErrPasswordRequired is returned when a password is required but is not provided.
-	ErrPasswordRequired modelError = "models: password is required"
-	// ErrPasswordInvalid : Returned when an invalid password is is used when attempting to authenticate a user.
-	ErrPasswordInvalid modelError = "models: incorrect password"
-	// ErrPasswordTooShort indicates that the password is less than 8 characters long
-	ErrPasswordTooShort modelError = "models: password was too short"
-	// TODO password validator for max length
-	// TODO password validator for restricted characters in password
-
-	// ErrRememberRequired is returned when a create or update is attempted without a token hash
-	ErrRememberRequired modelError = "models: remember token required"
-	// ErrRememberTooShort is returned when a remember token is not at least 32 bytes
-	ErrRememberTooShort modelError = "models: remember token should be at least 32 bytes"
-)
-
-type modelError string
-
-func (e modelError) Error() string {
-	return string(e)
-}
-
-func (e modelError) Public() string {
-	s := strings.Replace(string(e), "models: ", "", 1)
-	split := strings.Split(s, " ")
-	split[0] = strings.Title(split[0])
-	return strings.Join(split, " ")
-}
-
-// #endregion
-
 // User : Model for people that want updates from my website and want to leave comments on my posts.
 type User struct {
 	gorm.Model
@@ -119,8 +75,8 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	switch err {
 	case nil:
 		return foundUser, nil
-	case bcrypt.ErrMismatchedHashAndPassword:
-		return nil, ErrPasswordInvalid
+	case bcrypt.errMismatchedHashAndPassword:
+		return nil, errPasswordInvalid
 	default:
 		return nil, err
 	}
@@ -352,7 +308,7 @@ func (uv *userValidator) setRememberIfUnset(user *User) error {
 func (uv *userValidator) idGreaterThan(n uint) userValFn {
 	return userValFn(func(user *User) error {
 		if user.ID <= n {
-			return ErrIDInvalid
+			return errIDInvalid
 		}
 		return nil
 	})
@@ -368,7 +324,7 @@ func (uv *userValidator) normalizeEmail(user *User) error {
 // requireEmail requires an email to be entered before continuing.
 func (uv *userValidator) requireEmail(user *User) error {
 	if user.Email == "" {
-		return ErrEmailRequired
+		return errEmailRequired
 	}
 	return nil
 }
@@ -380,7 +336,7 @@ func (uv *userValidator) emailFormat(user *User) error {
 		return nil
 	}
 	if !uv.emailRegex.MatchString(user.Email) {
-		return ErrEmailInvalid
+		return errEmailInvalid
 	}
 	return nil
 }
@@ -389,7 +345,7 @@ func (uv *userValidator) emailFormat(user *User) error {
 func (uv *userValidator) emailIsAvail(user *User) error {
 	existing, err := uv.ByEmail(user.Email)
 	// This means the email address is available.  Continue.
-	if err == ErrNotFound {
+	if err == errNotFound {
 		return nil
 	}
 	// Other errors are bad.  Return error.
@@ -398,7 +354,7 @@ func (uv *userValidator) emailIsAvail(user *User) error {
 	}
 	// Check if the existing email belongs to someone else.
 	if user.ID != existing.ID {
-		return ErrEmailTaken
+		return errEmailTaken
 	}
 	return nil
 }
@@ -409,7 +365,7 @@ func (uv *userValidator) passwordMinLength(user *User) error {
 		return nil
 	}
 	if len(user.Password) < 8 {
-		return ErrPasswordTooShort
+		return errPasswordTooShort
 	}
 	return nil
 }
@@ -417,7 +373,7 @@ func (uv *userValidator) passwordMinLength(user *User) error {
 // passwordRequired returns an error if the password field passed in is empty
 func (uv *userValidator) passwordRequired(user *User) error {
 	if user.Password == "" {
-		return ErrPasswordRequired
+		return errPasswordRequired
 	}
 	return nil
 }
@@ -425,7 +381,7 @@ func (uv *userValidator) passwordRequired(user *User) error {
 // passwordHashRequired returns if a hash for whatever reason wasn't made
 func (uv *userValidator) passwordHashRequired(user *User) error {
 	if user.PasswordHash == "" {
-		return ErrPasswordRequired
+		return errPasswordRequired
 	}
 	return nil
 }
@@ -440,7 +396,7 @@ func (uv *userValidator) rememberMinBytes(user *User) error {
 		return err
 	}
 	if n < 32 {
-		return ErrRememberTooShort
+		return errRememberTooShort
 	}
 	return nil
 }
@@ -448,7 +404,7 @@ func (uv *userValidator) rememberMinBytes(user *User) error {
 // rememberHashRequired checks if there is a remember token hash
 func (uv *userValidator) rememberHashRequired(user *User) error {
 	if user.RememberHash == "" {
-		return ErrRememberRequired
+		return errRememberRequired
 	}
 	return nil
 }

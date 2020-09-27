@@ -12,25 +12,7 @@ import (
 	"github.com/yuin/goldmark/parser"
 )
 
-// #region ERRORS
-
-/* TODO
-- Need to make a private error type
-*/
-
-const (
-	// ErrUserIDRequired indicates that there is a missing user ID
-	ErrUserIDRequired modelError = "models: user ID is required"
-	// ErrTitleRequired indicates that there is a missing title
-	ErrTitleRequired modelError = "models: title is required"
-)
-
-// #endregion
-
 // Post will hold all of the information needed for a blog post.
-/* TODO
-- implement Body
-*/
 type Post struct {
 	gorm.Model
 	Title       string                 `gorm:"not_null"`
@@ -234,14 +216,14 @@ func runPostsValFns(post *Post, fns ...postsValFn) error {
 
 func (pv *postsValidator) titleRequired(p *Post) error {
 	if p.Title == "" {
-		return ErrTitleRequired
+		return errTitleRequired
 	}
 	return nil
 }
 
 func (pv *postsValidator) nonZeroID(post *Post) error {
 	if post.ID <= 0 {
-		return ErrIDInvalid
+		return errIDInvalid
 	}
 	return nil
 }
