@@ -8,7 +8,7 @@ _ "github.com/jinzhu/gorm/dialects/postgres" // Not directly used, but needed to
 func first(db *gorm.DB, dst interface{}) error {
 	err := db.First(dst).Error
 	if err == gorm.ErrRecordNotFound {
-		return ErrNotFound
+		return errNotFound
 	}
 	return err
 }
@@ -16,7 +16,7 @@ func first(db *gorm.DB, dst interface{}) error {
 func last(db *gorm.DB, dst interface{}) error {
 	err := db.Last(dst).Error
 	if err == gorm.ErrRecordNotFound {
-		return ErrNotFound
+		return errNotFound
 	}
 	return err
 }
