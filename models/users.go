@@ -8,7 +8,6 @@ import (
 	"nathanielwheeler.com/rand"
 
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres" // Not directly used, but needed to help gorm communicate with postgres
 	"golang.org/x/crypto/bcrypt"
 )
 

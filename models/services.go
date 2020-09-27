@@ -90,3 +90,19 @@ func (s *Services) DestructiveReset() error {
 	}
 	return s.AutoMigrate()
 }
+
+func first(db *gorm.DB, dst interface{}) error {
+	err := db.First(dst).Error
+	if err == gorm.ErrRecordNotFound {
+		return errNotFound
+	}
+	return err
+}
+
+func last(db *gorm.DB, dst interface{}) error {
+	err := db.Last(dst).Error
+	if err == gorm.ErrRecordNotFound {
+		return errNotFound
+	}
+	return err
+}
