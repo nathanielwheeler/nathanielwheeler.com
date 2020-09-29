@@ -19,7 +19,6 @@ type Post struct {
 	URLPath     string                 `gorm:"not_null"`
 	FilePath    string                 `gorm:"not_null"`
 	Body        string                 `gorm:"-"` // Not stored in database
-	BodyPreview string                 `gorm:"-"` // TODO implement
 	MetaData    map[string]interface{} `gorm:"-"`
 }
 

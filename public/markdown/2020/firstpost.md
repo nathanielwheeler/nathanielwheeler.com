@@ -1,4 +1,8 @@
-# New Blog!
+---
+Title: New Blog!
+Date: September 15, 2020
+---
+
 Hello the internet!  Welcome to the blog of me, Nathaniel Wheeler.
 
 What is this blog for?  I'm glad you asked.  This is a blog for _whatever happens to hold my interest at the time of writing._  This could, potentially, be many things, but let's not initialize our chickens before they're defined, am I right?

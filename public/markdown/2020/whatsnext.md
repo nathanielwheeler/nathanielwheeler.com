@@ -1,4 +1,7 @@
-# What's Next?
+---
+Title: What's Next?
+Date: September 23, 2020
+---
 
 Now that I have a blog in production, I've been asking myself what I should focus on for my next project.
 

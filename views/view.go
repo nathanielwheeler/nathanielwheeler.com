@@ -42,11 +42,9 @@ func NewView(layout string, files ...string) *View {
 			// pathEscape will escape a path using the net/url package.
 			"pathEscape": func(s string) string {
 				return url.PathEscape(s)
-			},
-      "bodyFromPost": func(data interface{}) template.HTML {
-        post, ok := data.(models.Post); if !ok {
-          return template.HTML("Error processing post...")
-        }
+      },
+      // bodyFromPost will check for HTML in the post's body and, if it exists, render it.
+      "bodyFromPost": func(post models.Post) template.HTML {
         if post.Body == "" {
           return template.HTML("Missing body...")
         }
