@@ -24,7 +24,7 @@ ssh nathanielwheeler.com "cd /root/go/src/nathanielwheeler.com; \
 # Building binaries
 echo "	Building nathanielwheeler.com..."
 ssh nathanielwheeler.com "cd /root/app; \
-	go build -o ./server /root/go/src/nathanielwheeler.com/*.go"
+	go build -o ./server /root/go/src/nathanielwheeler.com/main.go"
 
 # Preprocess Sass
 echo "	Preprocessing Sass..."
