@@ -3,7 +3,7 @@ package models
 import "strings"
 
 const (
-  errNotFound  modelError = "models: resource not found"
+  ErrNotFound  modelError = "models: resource not found"
   
   errIDInvalid modelError = "models: ID provided was invalid"
   
@@ -13,8 +13,8 @@ const (
 	errEmailInvalid  modelError = "models: invalid email address"
 	errEmailTaken    modelError = "models: email address is already taken"
 
+	ErrPasswordInvalid  modelError = "models: incorrect password"
 	errPasswordRequired modelError = "models: password is required"
-	errPasswordInvalid  modelError = "models: incorrect password"
 	errPasswordTooShort modelError = "models: password was too short"
 	// TODO password validator for max length (64)
 	// TODO password validator for restricted characters in password

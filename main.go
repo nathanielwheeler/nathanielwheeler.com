@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"nathanielwheeler.com/config"
 	"nathanielwheeler.com/controllers"
 	"nathanielwheeler.com/middleware"
 	"nathanielwheeler.com/models"
@@ -18,7 +19,7 @@ import (
 */
 
 func main() {
-	cfg := LoadConfig()
+	cfg := config.LoadConfig()
 	dbCfg := cfg.Database
 
 	// Initialize services

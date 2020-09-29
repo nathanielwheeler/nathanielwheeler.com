@@ -94,7 +94,7 @@ func (s *Services) DestructiveReset() error {
 func first(db *gorm.DB, dst interface{}) error {
 	err := db.First(dst).Error
 	if err == gorm.ErrRecordNotFound {
-		return errNotFound
+		return ErrNotFound
 	}
 	return err
 }
@@ -102,7 +102,7 @@ func first(db *gorm.DB, dst interface{}) error {
 func last(db *gorm.DB, dst interface{}) error {
 	err := db.Last(dst).Error
 	if err == gorm.ErrRecordNotFound {
-		return errNotFound
+		return ErrNotFound
 	}
 	return err
 }

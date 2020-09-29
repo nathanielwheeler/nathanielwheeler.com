@@ -43,9 +43,15 @@ func NewView(layout string, files ...string) *View {
 			"pathEscape": func(s string) string {
 				return url.PathEscape(s)
 			},
-			"bodyFromPost": func(post *models.Post) *models.Post {
-				return post
-			},
+      "bodyFromPost": func(data interface{}) template.HTML {
+        post, ok := data.(models.Post); if !ok {
+          return template.HTML("Error processing post...")
+        }
+        if post.Body == "" {
+          return template.HTML("Missing body...")
+        }
+        return template.HTML(post.Body)
+      },
 		}).
 		ParseFiles(files...)
 	if err != nil {
@@ -124,7 +130,7 @@ func addTemplateExt(files []string) {
 }
 
 func dirFiles(dir string) []string {
-	files, err := filepath.Glob(templateDir + dir + templateExt)
+	files, err := filepath.Glob(templateDir + dir + "/*" + templateExt)
 	if err != nil {
 		panic(err)
 	}

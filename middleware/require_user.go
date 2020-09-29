@@ -52,7 +52,7 @@ func (mw *RequireUser) Apply(next http.Handler) http.HandlerFunc {
   return mw.ApplyFn(next.ServeHTTP)
 }
 
-// ApplyFn will take in an http.HandlerFunc and run middlware that will check for a remember token cookie.  If there is no user in context, the user will be redirected to /login.
+// ApplyFn will take in an http.HandlerFunc and run middleware that will check for a remember token cookie.  If there is no user in context, the user will be redirected to /login.
 func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
   return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
     user := context.User(req.Context())

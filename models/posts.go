@@ -23,8 +23,31 @@ type Post struct {
 	MetaData    map[string]interface{} `gorm:"-"`
 }
 
+// #region SERVICE
+
+// PostsService will handle business rules for posts.
+type PostsService interface {
+  PostsDB
+  ParseMD(*Post) error
+}
+
+type postsService struct {
+  PostsDB
+}
+
+// NewPostsService is
+func NewPostsService(db *gorm.DB) PostsService {
+	return &postsService{
+		PostsDB: &postsValidator{
+			PostsDB: &postsGorm{
+				db: db,
+			},
+		},
+	}
+}
+
 // ParseMD will parse the associated markdown of a post.
-func (post *Post) ParseMD() error {
+func (ps *postsService) ParseMD(post *Post) error {
 	data, err := ioutil.ReadFile(post.FilePath)
 	if err != nil {
 		return err
@@ -44,28 +67,6 @@ func (post *Post) ParseMD() error {
 	post.MetaData = meta.Get(ctx)
 
 	return nil
-}
-
-// #region SERVICE
-
-// PostsService will handle business rules for posts.
-type PostsService interface {
-	PostsDB
-}
-
-type postsService struct {
-	PostsDB
-}
-
-// NewPostsService is
-func NewPostsService(db *gorm.DB) PostsService {
-	return &postsService{
-		PostsDB: &postsValidator{
-			PostsDB: &postsGorm{
-				db: db,
-			},
-		},
-	}
 }
 
 // #endregion

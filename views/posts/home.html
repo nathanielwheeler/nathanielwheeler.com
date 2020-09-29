@@ -19,8 +19,8 @@
 </header>
 
 <main class="container pt-3">
-			{{range .}}
-				{{template "blogCard" .}}
+			{{range $i := .}}
+				{{template "blogCard" $i}}
 			{{end}}
 </main>
 

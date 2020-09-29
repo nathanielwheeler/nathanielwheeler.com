@@ -74,8 +74,8 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	switch err {
 	case nil:
 		return foundUser, nil
-	case bcrypt.errMismatchedHashAndPassword:
-		return nil, errPasswordInvalid
+	case bcrypt.ErrMismatchedHashAndPassword:
+		return nil, ErrPasswordInvalid
 	default:
 		return nil, err
 	}
@@ -344,7 +344,7 @@ func (uv *userValidator) emailFormat(user *User) error {
 func (uv *userValidator) emailIsAvail(user *User) error {
 	existing, err := uv.ByEmail(user.Email)
 	// This means the email address is available.  Continue.
-	if err == errNotFound {
+	if err == ErrNotFound {
 		return nil
 	}
 	// Other errors are bad.  Return error.

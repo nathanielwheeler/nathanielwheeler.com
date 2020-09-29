@@ -59,11 +59,12 @@ func (p *Posts) Home(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	for _, post := range posts {
-		err := post.ParseMD()
+	for i, post := range posts {
+		err := p.ps.ParseMD(&post)
 		if err != nil {
       log.Println(err)
-		}
+    }
+    posts[i] = post
 	}
 
 	var vd views.Data
@@ -78,7 +79,7 @@ func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
 		// postByYearAndTitle already renders error
 		return
 	}
-	err = post.ParseMD()
+	err = p.ps.ParseMD(post)
 	if err != nil {
 		log.Println(err)
 	}

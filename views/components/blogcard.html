@@ -3,7 +3,9 @@
 	<div class="col-12 offset-md-1 offset-lg-2 offset-xl-3 col-md-10 col-lg-8 col-xl-6">
 		<div class="card bg-dark border-light">
 			<div class="post-md card-body">
+				{{if .Body}}
 				{{. | bodyFromPost}}
+				{{end}}
 			</div>
 		</div>
 	</div>
