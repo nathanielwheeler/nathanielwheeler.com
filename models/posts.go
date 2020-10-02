@@ -104,7 +104,7 @@ func (ps *postsService) MakePostsFeed() error {
 		feed.Items = append(feed.Items, &feeds.Item{
 			Title:       post.MetaData["Title"].(string),
 			Link:        &feeds.Link{Href: "https://nathanielwheeler.com/blog/" + post.URLPath},
-			Description: post.MetaData["Summary"].(string),
+			Description: post.Body,
 			Created:     post.CreatedAt,
 		})
 	}
