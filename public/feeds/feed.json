@@ -1,0 +1,32 @@
+{
+  "version": "https://jsonfeed.org/version/1",
+  "title": "Nathan's Blog",
+  "home_page_url": "https://nathanielwheeler.com",
+  "description": "A blog about code and whatever I feel like.",
+  "author": {
+    "name": "Nathaniel Wheeler"
+  },
+  "items": [
+    {
+      "id": "",
+      "url": "https://nathanielwheeler.com/blog/2020/blogtober-01",
+      "title": "Blogtober Day 1: Developing an App",
+      "summary": "Blogtober is a month-long challenge to publish a blog post every day for the month of October.  When I realized this event was coming up, I knew that I had to commit for my fresh new blog.\n...",
+      "date_published": "2020-10-01T20:28:22.433705-06:00"
+    },
+    {
+      "id": "",
+      "url": "https://nathanielwheeler.com/blog/2020/whats-next",
+      "title": "What's Next?",
+      "summary": "Now that I have a blog in production, I've been asking myself what I should focus on for my next project.\n...",
+      "date_published": "2020-09-23T13:28:19.819285-06:00"
+    },
+    {
+      "id": "",
+      "url": "https://nathanielwheeler.com/blog/2020/newblog",
+      "title": "New Blog!",
+      "summary": "My introductory blog post.",
+      "date_published": "2020-09-15T12:54:37.182019-06:00"
+    }
+  ]
+}

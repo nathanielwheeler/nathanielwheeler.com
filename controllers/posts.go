@@ -66,7 +66,7 @@ func (p *Posts) Home(res http.ResponseWriter, req *http.Request) {
 			log.Println(err)
 		}
 		posts[i] = post
-	}
+  }
 
 	var vd views.Data
 	vd.Yield = posts
@@ -98,7 +98,14 @@ func (p *Posts) BlogIndex(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	var vd views.Data
-	vd.Yield = posts
+  vd.Yield = posts
+
+  err = p.ps.MakePostsFeed()
+  if err != nil {
+    vd.SetAlert(err)
+    vd.RedirectAlert(res, req, "/home", http.StatusFound, *vd.Alert)
+    return
+  }
 	p.BlogIndexView.Render(res, req, vd)
 }
 
@@ -132,14 +139,20 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 		vd.SetAlert(err)
 		p.New.Render(res, req, vd)
 		return
-	}
-	url, err := p.r.Get(EditPost).URL("id", fmt.Sprintf("%v", post.ID))
+  }
+	url, err := p.r.Get(BlogPostRoute).URL("id", fmt.Sprintf("%v", post.ID))
 	if err != nil {
 		log.Println(err)
 		http.Redirect(res, req, "/blog", http.StatusFound)
 		return
-	}
-	http.Redirect(res, req, url.Path, http.StatusFound)
+  }
+  err = p.ps.MakePostsFeed()
+  if err != nil {
+    vd.SetAlert(err)
+    vd.RedirectAlert(res, req, url.Path, http.StatusFound, *vd.Alert)
+    return
+  }
+  http.Redirect(res, req, url.Path, http.StatusFound)
 }
 
 // Edit : POST /posts/:id/update
@@ -305,28 +318,6 @@ func (p *Posts) ImageDelete(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	http.Redirect(res, req, url.Path, http.StatusFound)
-}
-
-// Feed : GET /feeds/:type
-func (p *Posts) Feed(res http.ResponseWriter, req *http.Request) {
-	feedtype := mux.Vars(req)["type"]
-  switch (feedtype) {
-  case "atom":
-  case "rss":
-  case "json":
-    break
-  default:
-    http.Error(res, "Invalid feed", http.StatusNotFound)
-    return
-  }
-	feed, err := p.ps.GetPostsFeed(feedtype)
-	if err != nil {
-		log.Println(err)
-		http.Error(res, "Error processing feed.", http.StatusInternalServerError)
-		return
-  }
-  // An easy way to just return text
-	http.Error(res, feed, http.StatusFound)
 }
 
 // #region HELPERS
