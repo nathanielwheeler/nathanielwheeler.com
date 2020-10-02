@@ -1,7 +1,6 @@
 ---
 Title: New Blog!
 Date: September 15, 2020
-Summary: My introductory blog post.
 ---
 
 Hello the internet!  Welcome to the blog of me, Nathaniel Wheeler.

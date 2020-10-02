@@ -1,7 +1,6 @@
 ---
 Title: "Blogtober Day 1: Developing an App"
 Date: October 1, 2020
-Summary: "Blogtober is a month-long challenge to publish a blog post every day for the month of October.  When I realized this event was coming up, I knew that I had to commit for my fresh new blog.\n..."
 ---
 
 

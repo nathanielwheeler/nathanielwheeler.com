@@ -1,7 +1,6 @@
 ---
 Title: What's Next?
 Date: September 23, 2020
-Summary: "Now that I have a blog in production, I've been asking myself what I should focus on for my next project.\n..."
 ---
 
 Now that I have a blog in production, I've been asking myself what I should focus on for my next project.
