@@ -122,7 +122,11 @@ func main() {
 		Methods("POST")
 	r.HandleFunc("/posts/{id:[0-9]+}/image/{filename}/delete",
 		requireUserMw.ApplyFn(postsC.ImageDelete)).
-		Methods("POST")
+    Methods("POST")
+    //    Feeds
+  r.HandleFunc("/feeds/{type}", 
+    postsC.Feed).
+    Methods("GET")
 
 	// Start that server!
 	port := fmt.Sprintf(":%d", cfg.Port)

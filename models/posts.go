@@ -2,37 +2,49 @@ package models
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
+	"log"
+	"time"
 
 	"github.com/jinzhu/gorm"
 
 	"github.com/yuin/goldmark"
 	meta "github.com/yuin/goldmark-meta"
 	_ "github.com/yuin/goldmark/extension" // Needed for goldmark extensions
-  "github.com/yuin/goldmark/parser"
-  "github.com/yuin/goldmark/renderer/html"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
+
+	"github.com/gorilla/feeds"
 )
 
 // Post will hold all of the information needed for a blog post.
 type Post struct {
 	gorm.Model
-	Title       string                 `gorm:"not_null"`
-	URLPath     string                 `gorm:"not_null"`
-	FilePath    string                 `gorm:"not_null"`
-	Body        string                 `gorm:"-"` // Not stored in database
-	MetaData    map[string]interface{} `gorm:"-"`
+	Title    string                 `gorm:"not_null"`
+	URLPath  string                 `gorm:"not_null"`
+	FilePath string                 `gorm:"not_null"`
+	Body     string                 `gorm:"-"` // Not stored in database
+	MetaData map[string]interface{} `gorm:"-"`
+}
+
+// MetaData is constructed from YAML at the head of markdown files
+type MetaData struct {
+	Title string
+	Date  string
 }
 
 // #region SERVICE
 
 // PostsService will handle business rules for posts.
 type PostsService interface {
-  PostsDB
+	PostsDB
   ParseMD(*Post) error
+  GetPostsFeed(string) (string, error)
 }
 
 type postsService struct {
-  PostsDB
+	PostsDB
 }
 
 // NewPostsService is
@@ -55,10 +67,10 @@ func (ps *postsService) ParseMD(post *Post) error {
 	md := goldmark.New(
 		goldmark.WithExtensions(
 			meta.Meta,
-    ),
-    goldmark.WithRendererOptions(
-      html.WithUnsafe(),
-    ),
+		),
+		goldmark.WithRendererOptions(
+			html.WithUnsafe(),
+		),
 	)
 	var buf bytes.Buffer
 	ctx := parser.NewContext()
@@ -70,6 +82,56 @@ func (ps *postsService) ParseMD(post *Post) error {
 	post.MetaData = meta.Get(ctx)
 
 	return nil
+}
+
+func (ps *postsService) GetPostsFeed(feedtype string) (string, error) {
+	now := time.Now()
+	feed := &feeds.Feed{
+		Title:       "Nathan's Blog",
+		Link:        &feeds.Link{Href: "nathanielwheeler.com"},
+		Description: "A blog about code and whatever I feel like.",
+		Author:      &feeds.Author{Name: "Nathaniel Wheeler", Email: "nathan@mailftp.com"},
+		Created:     now,
+	}
+
+	posts, err := ps.PostsDB.GetAll()
+	if err != nil {
+		return "", err
+	}
+	for _, post := range posts {
+		ps.ParseMD(&post)
+		feed.Items = append(feed.Items, &feeds.Item{
+			Title:       post.MetaData["Title"].(string),
+			Link:        &feeds.Link{Href: "https://nathanielwheeler.com/blog/" + post.URLPath},
+			Description: post.Body,
+			Created:     post.CreatedAt,
+		})
+	}
+	switch feedtype {
+	case "atom":
+		atom, err := feed.ToAtom()
+		if err != nil {
+			log.Println(err)
+			return "", nil
+		}
+		return atom, nil
+	case "rss":
+		rss, err := feed.ToRss()
+		if err != nil {
+			log.Println(err)
+			return "", nil
+		}
+		return rss, nil
+	case "json":
+		json, err := feed.ToJSON()
+		if err != nil {
+			log.Println(err)
+			return "", nil
+		}
+		return json, nil
+	}
+	err = fmt.Errorf("invalid feed type")
+	return "", err
 }
 
 // #endregion
