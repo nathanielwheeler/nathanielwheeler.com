@@ -9,7 +9,8 @@ import (
 	"github.com/yuin/goldmark"
 	meta "github.com/yuin/goldmark-meta"
 	_ "github.com/yuin/goldmark/extension" // Needed for goldmark extensions
-	"github.com/yuin/goldmark/parser"
+  "github.com/yuin/goldmark/parser"
+  "github.com/yuin/goldmark/renderer/html"
 )
 
 // Post will hold all of the information needed for a blog post.
@@ -45,7 +46,7 @@ func NewPostsService(db *gorm.DB) PostsService {
 	}
 }
 
-// ParseMD will parse the associated markdown of a post.
+// ParseMD will parse the associated markdown of a post.  User Content, such as comments, should _never_ use this function, as it parses HTML as-is.
 func (ps *postsService) ParseMD(post *Post) error {
 	data, err := ioutil.ReadFile(post.FilePath)
 	if err != nil {
@@ -54,7 +55,10 @@ func (ps *postsService) ParseMD(post *Post) error {
 	md := goldmark.New(
 		goldmark.WithExtensions(
 			meta.Meta,
-		),
+    ),
+    goldmark.WithRendererOptions(
+      html.WithUnsafe(),
+    ),
 	)
 	var buf bytes.Buffer
 	ctx := parser.NewContext()

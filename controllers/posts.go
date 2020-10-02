@@ -39,8 +39,8 @@ type Posts struct {
 // NewPosts is a constructor for Posts struct
 func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *Posts {
 	return &Posts{
-		HomeView:      views.NewView("app", "posts/home"),
-		BlogPostView:  views.NewView("app", "posts/blog/post"),
+		HomeView:      views.NewView("app", "posts/home", "posts/blog/card"),
+		BlogPostView:  views.NewView("app", "posts/blog/post", "posts/blog/card"),
 		BlogIndexView: views.NewView("app", "posts/blog/index"),
 		New:           views.NewView("app", "posts/new"),
 		EditView:      views.NewView("app", "posts/edit"),
