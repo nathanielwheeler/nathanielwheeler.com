@@ -80,10 +80,6 @@ func (p *Posts) BlogPost(res http.ResponseWriter, req *http.Request) {
 		// postByYearAndTitle already renders error
 		return
 	}
-	err = p.ps.ParseMD(post)
-	if err != nil {
-		log.Println(err)
-	}
 	var vd views.Data
 	vd.Yield = post
 	p.BlogPostView.Render(res, req, vd)
