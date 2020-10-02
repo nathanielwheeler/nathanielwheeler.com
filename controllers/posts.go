@@ -45,7 +45,6 @@ func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *P
 		BlogIndexView: views.NewView("app", "posts/blog/index"),
 		New:           views.NewView("app", "posts/new"),
 		EditView:      views.NewView("app", "posts/edit"),
-		FeedView:      views.NewView("feed", "posts/blog/feed"),
 		ps:            ps,
 		is:            is,
 		r:             r,
@@ -311,15 +310,13 @@ func (p *Posts) ImageDelete(res http.ResponseWriter, req *http.Request) {
 // Feed : GET /feeds/:type
 func (p *Posts) Feed(res http.ResponseWriter, req *http.Request) {
 	feedtype := mux.Vars(req)["type"]
-  var vd views.Data
   switch (feedtype) {
   case "atom":
   case "rss":
   case "json":
     break
   default:
-    vd.Yield = "Invalid feed"
-    p.FeedView.Render(res, req, vd)
+    http.Error(res, "Invalid feed", http.StatusNotFound)
     return
   }
 	feed, err := p.ps.GetPostsFeed(feedtype)
@@ -327,9 +324,9 @@ func (p *Posts) Feed(res http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		http.Error(res, "Error processing feed.", http.StatusInternalServerError)
 		return
-	}
-	vd.Yield = feed
-	p.FeedView.Render(res, req, vd)
+  }
+  // An easy way to just return text
+	http.Error(res, feed, http.StatusFound)
 }
 
 // #region HELPERS
