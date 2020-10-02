@@ -2,9 +2,9 @@ package models
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -39,8 +39,8 @@ type MetaData struct {
 // PostsService will handle business rules for posts.
 type PostsService interface {
 	PostsDB
-  ParseMD(*Post) error
-  GetPostsFeed(string) (string, error)
+	ParseMD(*Post) error
+	MakePostsFeed() error
 }
 
 type postsService struct {
@@ -84,11 +84,12 @@ func (ps *postsService) ParseMD(post *Post) error {
 	return nil
 }
 
-func (ps *postsService) GetPostsFeed(feedtype string) (string, error) {
+// MakePostsFeed will create static feed files in atom, rss, and json.
+func (ps *postsService) MakePostsFeed() error {
 	now := time.Now()
 	feed := &feeds.Feed{
 		Title:       "Nathan's Blog",
-		Link:        &feeds.Link{Href: "nathanielwheeler.com"},
+		Link:        &feeds.Link{Href: "https://nathanielwheeler.com"},
 		Description: "A blog about code and whatever I feel like.",
 		Author:      &feeds.Author{Name: "Nathaniel Wheeler", Email: "nathan@mailftp.com"},
 		Created:     now,
@@ -96,42 +97,48 @@ func (ps *postsService) GetPostsFeed(feedtype string) (string, error) {
 
 	posts, err := ps.PostsDB.GetAll()
 	if err != nil {
-		return "", err
+		return err
 	}
 	for _, post := range posts {
 		ps.ParseMD(&post)
 		feed.Items = append(feed.Items, &feeds.Item{
 			Title:       post.MetaData["Title"].(string),
 			Link:        &feeds.Link{Href: "https://nathanielwheeler.com/blog/" + post.URLPath},
-			Description: post.Body,
+			Description: post.MetaData["Summary"].(string),
 			Created:     post.CreatedAt,
 		})
 	}
-	switch feedtype {
-	case "atom":
-		atom, err := feed.ToAtom()
-		if err != nil {
-			log.Println(err)
-			return "", nil
-		}
-		return atom, nil
-	case "rss":
-		rss, err := feed.ToRss()
-		if err != nil {
-			log.Println(err)
-			return "", nil
-		}
-		return rss, nil
-	case "json":
-		json, err := feed.ToJSON()
-		if err != nil {
-			log.Println(err)
-			return "", nil
-		}
-		return json, nil
+
+	atom, err := feed.ToAtom()
+	if err != nil {
+		log.Println(err)
+		return err
 	}
-	err = fmt.Errorf("invalid feed type")
-	return "", err
+	rss, err := feed.ToRss()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	json, err := feed.ToJSON()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	feeds := map[string]string{
+		"atom": atom,
+		"rss":  rss,
+		"json": json,
+	}
+	for k, feed := range feeds {
+		f, err := os.OpenFile("public/feeds/feed."+k, os.O_WRONLY, 0777)
+		if err != nil {
+			return err
+		}
+		f.WriteString(feed)
+	}
+
+	return nil
 }
 
 // #endregion

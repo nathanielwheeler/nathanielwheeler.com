@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Nathan&#39;s Blog</title>
+  <id>https://nathanielwheeler.com</id>
+  <updated>2020-10-02T13:25:57-06:00</updated>
+  <subtitle>A blog about code and whatever I feel like.</subtitle>
+  <link href="https://nathanielwheeler.com"></link>
+  <author>
+    <name>Nathaniel Wheeler</name>
+    <email>nathan@mailftp.com</email>
+  </author>
+  <entry>
+    <title>Blogtober Day 1: Developing an App</title>
+    <updated>2020-10-01T20:28:22-06:00</updated>
+    <id>tag:nathanielwheeler.com,2020-10-01:/blog/2020/blogtober-01</id>
+    <link href="https://nathanielwheeler.com/blog/2020/blogtober-01" rel="alternate"></link>
+    <summary type="html">Blogtober is a month-long challenge to publish a blog post every day for the month of October.  When I realized this event was coming up, I knew that I had to commit for my fresh new blog.&#xA;...</summary>
+  </entry>
+  <entry>
+    <title>What&#39;s Next?</title>
+    <updated>2020-09-23T13:28:19-06:00</updated>
+    <id>tag:nathanielwheeler.com,2020-09-23:/blog/2020/whats-next</id>
+    <link href="https://nathanielwheeler.com/blog/2020/whats-next" rel="alternate"></link>
+    <summary type="html">Now that I have a blog in production, I&#39;ve been asking myself what I should focus on for my next project.&#xA;...</summary>
+  </entry>
+  <entry>
+    <title>New Blog!</title>
+    <updated>2020-09-15T12:54:37-06:00</updated>
+    <id>tag:nathanielwheeler.com,2020-09-15:/blog/2020/newblog</id>
+    <link href="https://nathanielwheeler.com/blog/2020/newblog" rel="alternate"></link>
+    <summary type="html">My introductory blog post.</summary>
+  </entry>
+</feed>

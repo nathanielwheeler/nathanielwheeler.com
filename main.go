@@ -59,7 +59,9 @@ func main() {
 	r.PathPrefix("/stylesheets/").
 		Handler(publicHandler)
 	r.PathPrefix("/markdown/").
-		Handler(publicHandler)
+    Handler(publicHandler)
+  r.PathPrefix("/feeds/").
+    Handler(publicHandler)
 
 	// Statics Routes
 	r.Handle("/resume",
@@ -123,10 +125,6 @@ func main() {
 	r.HandleFunc("/posts/{id:[0-9]+}/image/{filename}/delete",
 		requireUserMw.ApplyFn(postsC.ImageDelete)).
     Methods("POST")
-    //    Feeds
-  r.HandleFunc("/feeds/{type}", 
-    postsC.Feed).
-    Methods("GET")
 
 	// Start that server!
 	port := fmt.Sprintf(":%d", cfg.Port)
