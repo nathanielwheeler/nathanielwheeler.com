@@ -3,7 +3,6 @@ module nathanielwheeler.com
 go 1.14
 
 require (
-	github.com/go-delve/delve v1.5.0 // indirect
 	github.com/gorilla/csrf v1.7.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/schema v1.2.0
