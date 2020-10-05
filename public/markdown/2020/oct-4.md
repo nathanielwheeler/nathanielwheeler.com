@@ -1,6 +1,6 @@
 ---
 Title: "Blogtober Day 4: Git Suffers No Fools"
-Date: October 2, 2020
+Date: October 4, 2020
 ---
 
 Today was a great day.  Brunch with family, dnd session, and a chill drive home.  My problems began when I came home and realized that I had _somehow_ pushed a bunch of old code into my master branch when I was working on my laptop.  After too much time trying to be fancy, I ended up going back and manually adding the relevant pieces back in.

@@ -1,6 +1,6 @@
 ---
 Title: "Blogtober Day 3: Saturday Shenanigans"
-Date: October 2, 2020
+Date: October 3, 2020
 ---
 
 Today, I went to the Craters of the Moon with some family and friends.  We lucked out and got an actual pro Vulcanologist to explain the finer details of the geology, which I was happy for.

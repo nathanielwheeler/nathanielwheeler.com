@@ -66,7 +66,10 @@ func main() {
 	// Statics Routes
 	r.Handle("/resume",
 		staticC.Resume).
-		Methods("GET")
+    Methods("GET")
+  r.Handle("/prototypes/theme-system",
+    staticC.PrototypeThemeSystem).
+    Methods("GET")
 
 	// User Routes
 	r.HandleFunc("/register",

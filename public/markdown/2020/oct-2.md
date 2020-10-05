@@ -9,7 +9,7 @@ Obviously, you have your standard home view.  Then you have your user-related pa
 
 I'm thinking that home will simply be a product page that lays out all the features.  If the user is logged in, they should be redirected to their dashboard.
 
-The dashboard should be a splash page related to whatever the user's theme is.  If the user has not done their daily themes and journal pages, it will have the forms for those.  If they have, it should show some analytics.]
+The dashboard should be a splash page related to whatever the user's theme is.  If the user has not done their daily themes and journal pages, it will have the forms for those.  If they have, it should show some analytics.
 
 I feel like the analytics will be one of the bigger features of this app, so I should have another view for some analytics information.
 
