@@ -25,7 +25,7 @@ I have requirements and wireframes for each page listed below.
 					<li>If the day has not been logged, prompt the user with user-defined journal questions.</li>
 					<li>If the day has been logged, show the input answers.</li>
 					<li>Provide navigation elements to review historical data, like an arrow.</li>
-					<li>Provide a nav element to go into views.</li>
+					<li>Provide a nav element to go into themes.</li>
 					<li>Show a logout button.</li>
 				</ul>
 			</div>
@@ -106,6 +106,8 @@ I have requirements and wireframes for each page listed below.
 <br>
 
 You may have noticed that I don't have a page for analytics.  I have decided that analytics will be a stretch goal as they are not crucial to a minimum viable product.
+
+I also didn't try to do anything drastically different between mobile and desktop.  I didn't feel like different layouts would have been worth the increased complexity of the frontend.  Of course, I may change my mind later, but this gives me a solid starting point.
 
 Tomorrow, I'm going to build an interactive prototype and begin fleshing out what sort of resources I will be using in the app.  The prototype will show me if my wireframing is as intuitive of a user experience as I think it is.  It will also help me visualize what sort of data I will need to be passing between the server and client.
 
