@@ -12,14 +12,17 @@ git push
 # Pull current code from master
 echo "	Pulling from master in production..."
 ssh nathanielwheeler.com "cd /root/go/src/nathanielwheeler.com; \
-	git pull"
+	git pull origin master"
 
 # Update dependencies
 echo "	Updating dependencies..."
 ssh nathanielwheeler.com "cd /root/go/src/nathanielwheeler.com; \
 	go get -u ./...; \
 	go mod tidy; \
-	yarn"
+	yarn;
+	git add .;
+	git commit -m 'automatic dependency update';
+	git push origin master"
 
 # Building binaries
 echo "	Building nathanielwheeler.com..."
@@ -48,5 +51,7 @@ ssh nathanielwheeler.com "service caddy restart"
 
 echo "==== nathanielwheeler.com Released! ===="
 
-# Checkout back to dev
+# Checkout back to dev after updating master
+git pull
 git checkout dev
+git merge master
