@@ -11,6 +11,6 @@ In any case, I'm going to have to make actual prototypes tomorrow in the comfort
 
 ### Inktober: Day 4
 
-Tonight, I was exhausted.  I'm going to start doing these first thing in the morning, so I can actually focus on improving.
+Tonight, I was exhausted.  I did a freehand self-portrait of me in the mood I am in and then called it good.  I'm going to start doing these first thing in the morning, so I can actually focus on improving.
 
 <img class="card-img-top" src="/images/posts/inktober20-04.jpeg" alt="Self portrait.  A man with glasses, goatee, shorts, sandals, and a tee shirt that states 'tau > pi.'"><br>
