@@ -1,5 +1,5 @@
 ---
-Title: "Blogtober Day 4: Saturday Shenanigans"
+Title: "Blogtober Day 4: Git Suffers No Fools"
 Date: October 2, 2020
 ---
 
