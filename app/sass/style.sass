@@ -37,3 +37,25 @@ a:hover
 .flex-align-center 
 	display: flex
 	align-items: center
+
+
+// Style for prototype/theme-system
+.theme-system-pagination
+	.page-item
+		margin: -1px
+		.page-link
+			border-color: $primary
+			background: $dark
+.theme-system-page
+	height: 75vh
+.theme-system-header
+	height: 25vh
+	background-image: url("/images/static/hero-background.png")
+	background-repeat: no-repeat
+	background-size: cover
+	background-position: center
+@media (max-width: 480px)
+	.theme-system-header
+		height: 15vh
+		h1
+			font-size: 1.5em
