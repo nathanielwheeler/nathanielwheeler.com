@@ -113,4 +113,6 @@ Tomorrow, I'm going to build an interactive prototype and begin fleshing out wha
 
 ### Inktober: Day 5
 
-<img class="card-img-top" src="/images/posts/inktober20-05.jpeg" alt="ALT TEXT"><br>
+More inkwash practice.  I absolutely ruined a more complex piece, so I decided that I need to practice on simpler shapes.  I thought, _How can I make a sphere interesting?_  By giving it a fez and showing it disappointed that the daily newspaper landed in a puddle.  People still remember newspapers, right?
+
+<img class="card-img-top" src="/images/posts/inktober20-05.jpeg" alt="A giant eyeball with arms and legs holds a dripping newspaper.  Also, the eyeball is wearing a fez, socks, and sandals."><br>
