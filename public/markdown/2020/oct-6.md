@@ -49,3 +49,9 @@ type page struct {
 Note that prompt has the field `qtype.`  To start with, this will have two possible values: text and rating, and will be used to check if a value for `response.answer` is valid.
 
 Pages are more of an archival model.  They will be immutable, so even if a user changes their prompt's wording, they will still hold a historical view of that day.  Later on, when I add local storage, I can simply export the pages JSON for this purpose.
+
+### Inktober Day 6
+
+This is an Anglerfish from Outer Wilds, a space exploration and mystery game that I highly recommend.  I actually started this one yesterday, but abandoned it as I was disgusted with it.  When I looked at it again today, I realized that I just need to add some dark values to save it, and I did so.
+
+<img class="card-img-top" src="/images/posts/inktober20-06.jpeg" alt="A giant anglerfish, about to devour an unfortunate space traveller."><br>
