@@ -10,10 +10,12 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"github.com/yuin/goldmark"
-	meta "github.com/yuin/goldmark-meta"
 	_ "github.com/yuin/goldmark/extension" // Needed for goldmark extensions
+  meta "github.com/yuin/goldmark-meta"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
+  highlighting "github.com/yuin/goldmark-highlighting"
+  chromahtml "github.com/alecthomas/chroma/formatters/html" // Needed for goldmark syntax highlighting
 
 	"github.com/gorilla/feeds"
 )
@@ -66,7 +68,13 @@ func (ps *postsService) ParseMD(post *Post) error {
 	}
 	md := goldmark.New(
 		goldmark.WithExtensions(
-			meta.Meta,
+      meta.Meta,
+      highlighting.NewHighlighting(
+        highlighting.WithStyle("fruity"),
+        highlighting.WithFormatOptions(
+            chromahtml.WithLineNumbers(true),
+        ),
+     ),
 		),
 		goldmark.WithRendererOptions(
 			html.WithUnsafe(),
