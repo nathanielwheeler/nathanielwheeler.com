@@ -57,9 +57,9 @@ func WithUser(pepper, hmacKey string) ServicesConfig {
 }
 
 // WithPosts is a functional option that will construct a new posts service.
-func WithPosts() ServicesConfig {
+func WithPosts(isProd bool) ServicesConfig {
 	return func(s *Services) error {
-		s.Posts = NewPostsService(s.db)
+		s.Posts = NewPostsService(s.db, isProd)
 		return nil
 	}
 }

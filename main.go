@@ -27,7 +27,7 @@ func main() {
 		models.WithGorm(dbCfg.Dialect(), dbCfg.ConnectionString()),
 		models.WithLogMode(!cfg.IsProd()),
 		models.WithUser(cfg.Pepper, cfg.HMACKey),
-		models.WithPosts(),
+		models.WithPosts(cfg.IsProd()),
 		models.WithImages(),
 	)
 	defer services.Close()

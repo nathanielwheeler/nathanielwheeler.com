@@ -42,22 +42,30 @@ type MetaData struct {
 type PostsService interface {
 	PostsDB
 	ParseMD(*Post) error
-	MakePostsFeed() error
+  MakePostsFeed() error
+  IsProduction() bool
 }
 
 type postsService struct {
-	PostsDB
+  PostsDB
+  IsProdVar bool
 }
 
 // NewPostsService is
-func NewPostsService(db *gorm.DB) PostsService {
+func NewPostsService(db *gorm.DB, isProd bool) PostsService {
 	return &postsService{
 		PostsDB: &postsValidator{
 			PostsDB: &postsGorm{
 				db: db,
 			},
-		},
+    },
+    IsProdVar: isProd,
 	}
+}
+
+// IsProduction returns a bool indicating production environment.
+func (ps *postsService) IsProduction() bool {
+  return ps.IsProdVar
 }
 
 // ParseMD will parse the associated markdown of a post.  User Content, such as comments, should _never_ use this function, as it parses HTML as-is.

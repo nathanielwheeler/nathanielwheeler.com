@@ -145,13 +145,16 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		http.Redirect(res, req, "/blog", http.StatusFound)
 		return
-	}
-	err = p.ps.MakePostsFeed()
-	if err != nil {
-		vd.SetAlert(err)
-		vd.RedirectAlert(res, req, url.Path, http.StatusFound, *vd.Alert)
-		return
-	}
+  }
+  // Allows me to test pages locally without updating feeds
+  if (p.ps.IsProduction()) {
+    err = p.ps.MakePostsFeed()
+    if err != nil {
+      vd.SetAlert(err)
+      vd.RedirectAlert(res, req, url.Path, http.StatusFound, *vd.Alert)
+      return
+    }
+  }
 	http.Redirect(res, req, url.Path, http.StatusFound)
 }
 
