@@ -14,7 +14,7 @@ require (
 	github.com/lib/pq v1.8.0 // indirect
 	github.com/yuin/goldmark v1.2.1
 	github.com/yuin/goldmark-highlighting v0.0.0-20200307114337-60d527fdb691
-	github.com/yuin/goldmark-meta v0.0.0-20191126180153-f0638e958b60
-	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
+	github.com/yuin/goldmark-meta v1.0.0
+	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 	gopkg.in/yaml.v2 v2.3.0
 )
