@@ -21,10 +21,10 @@ func (s *server) routes() {
 	postsC := handlers.NewPosts(services.Posts, services.Images, r)
 
 	// Public Routes
-	publicHandler := http.FileServer(http.Dir("./public/"))
+	publicHandler := http.FileServer(http.Dir("./client/public/"))
 	r.PathPrefix("/images/").
 		Handler(publicHandler)
-	r.PathPrefix("/stylesheets/").
+	r.PathPrefix("/assets/").
 		Handler(publicHandler)
 	r.PathPrefix("/markdown/").
 		Handler(publicHandler)
