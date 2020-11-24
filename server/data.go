@@ -13,6 +13,7 @@ type Data struct {
 	Alert *Alert
 	User  *services.User
 	Yield interface{}
+	View *view
 }
 
 // PublicError is an interface applying to errors that have a Public method attached to them.

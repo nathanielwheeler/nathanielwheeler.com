@@ -54,3 +54,19 @@ func newServer() *server {
 	s.routes()
 	return &s
 }
+
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.router.ServeHTTP(w, r)
+}
+
+func (s *server) logErr(message string, err interface{}) {
+	s.logger.Fatalf("%s\n\t%s", message, err)
+}
+
+func (s *server) logMsg(message string) {
+	s.logger.Println(message)
+}
+
+func (s *server) panic(message string, err interface{}) {
+	s.logger.Panicf("%s\n\t%s", message, err)
+}

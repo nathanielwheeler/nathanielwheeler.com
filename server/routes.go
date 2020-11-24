@@ -3,11 +3,8 @@ package server
 import (
 	"net/http"
 
-	"github.com/gorilla/csrf"
 	"nathanielwheeler.com/server/handlers"
 	"nathanielwheeler.com/server/middleware"
-	"nathanielwheeler.com/server/services"
-	"nathanielwheeler.com/server/util"
 )
 
 func (s *server) routes() {
@@ -38,19 +35,19 @@ func (s *server) routes() {
 		Handler(publicHandler)
 
 	// Statics Routes
-	r.Handle("/resume",
-		staticH.Resume).
+	r.HandleFunc("/resume",
+		s.handleTemplate(nil, "app", "static/resume")).
 		Methods("GET")
-	r.Handle("/prototypes/theme-system",
-		staticH.PrototypeThemeSystem).
+	r.HandleFunc("/prototypes/theme-system",
+		s.handleTemplate(nil, "app", "static/prototypes/theme-system")).
 		Methods("GET")
 
 	// User Routes
 	r.HandleFunc("/register",
-		usersH.Registration).
+		s.handleTemplate(nil, "app", "users/register")).
 		Methods("GET")
 	r.HandleFunc("/register",
-		usersH.Register).
+		usersH.handleRegister).
 		Methods("POST")
 	r.Handle("/login",
 		usersH.LoginView).

@@ -16,18 +16,18 @@ import (
 )
 
 var (
-	templateDir string = "ui/templates/"
+	templateDir string = "client/templates/"
 	templateExt string = ".tpl"
 )
 
 // View : Contains a pointer to a template and the name of a layout.
-type View struct {
+type view struct {
 	Template *template.Template
 	Layout   string
 }
 
 // NewView : Takes in a layout name, any number of filename strings, parses them into template, and returns the address of the new view.
-func NewView(layout string, files ...string) *View {
+func (s *server) newView(layout string, files ...string) *view {
 	addTemplatePath(files)
 	addTemplateExt(files)
 	files = append(files, dirFiles("layouts")...)
@@ -56,23 +56,23 @@ func NewView(layout string, files ...string) *View {
 		panic(err)
 	}
 
-	return &View{
+	return &iew{
 		Template: t,
 		Layout:   layout,
 	}
 }
 
 // Render is responsible for rendering the view.  Checks the underlying type of data passed into it.  Then checks cookie for alerts, looks up the user, creates a CSRF field with the request data, and then executes the template.
-func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface{}) {
+func (v *view) Render(res http.ResponseWriter, req *http.Request, data interface{}) {
 	res.Header().Set("Content-Type", "text/html")
-	var vd Data
+	var vd data
 	switch d := data.(type) {
-	case Data:
-		// Done so I can access the data in a var with type Data.
+	case data:
+		// Done so I can access the data in a var with type data.
 		vd = d
 	default:
-		// If data is NOT of type Data, make one and set the data to the Yield field.
-		vd = Data{
+		// If data is NOT of type data, make one and set the data to the Yield field.
+		vd = data{
 			Yield: data,
 		}
 	}
