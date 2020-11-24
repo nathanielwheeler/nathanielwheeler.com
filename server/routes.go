@@ -14,17 +14,17 @@ func (s *server) routes() {
 	r := s.router
 
 	// Middleware
-	userMw := middleware.User{UserService: services.User}
-	b, err := util.Bytes(s.config.CSRFBytes)
-	if err != nil {
-		panic(err)
-	}
-	csrfMw := csrf.Protect(b, csrf.Secure(s.isProd()))
+	// userMw := middleware.User{UserService: s.services.User}
+	// b, err := util.Bytes(s.config.CSRFBytes)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// csrfMw := csrf.Protect(b, csrf.Secure(s.isProd()))
 
 	// Initialize handlers
-	staticC := handlers.NewStatic()
-	usersC := handlers.NewUsers(services.User)
-	postsC := handlers.NewPosts(services.Posts, services.Images, r)
+	staticH := handlers.NewStatic()
+	usersH := handlers.NewUsers(s.services.User)
+	postsH := handlers.NewPosts(s.services.Posts, s.services.Images, r)
 
 	// Fileserver Routes
 	publicHandler := http.FileServer(http.Dir("./client/public/"))
@@ -39,67 +39,67 @@ func (s *server) routes() {
 
 	// Statics Routes
 	r.Handle("/resume",
-		staticC.Resume).
+		staticH.Resume).
 		Methods("GET")
 	r.Handle("/prototypes/theme-system",
-		staticC.PrototypeThemeSystem).
+		staticH.PrototypeThemeSystem).
 		Methods("GET")
 
 	// User Routes
 	r.HandleFunc("/register",
-		usersC.Registration).
+		usersH.Registration).
 		Methods("GET")
 	r.HandleFunc("/register",
-		usersC.Register).
+		usersH.Register).
 		Methods("POST")
 	r.Handle("/login",
-		usersC.LoginView).
+		usersH.LoginView).
 		Methods("GET")
 	r.HandleFunc("/login",
-		usersC.Login).
+		usersH.Login).
 		Methods("POST")
 	r.Handle("/logout",
-		middleware.ApplyFn(usersC.Logout)).
+		middleware.ApplyFn(usersH.Logout)).
 		Methods("POST")
 	r.HandleFunc("/cookietest",
-		usersC.CookieTest).
+		usersH.CookieTest).
 		Methods("GET")
 
 	// Post Routes
 	//    Blog
 	r.HandleFunc("/",
-		postsC.Home).
+		postsH.Home).
 		Methods("GET")
 	r.HandleFunc("/blog",
-		postsC.BlogIndex).
+		postsH.BlogIndex).
 		Methods("GET").
 		Name(handlers.BlogIndexRoute)
 	r.HandleFunc(`/blog/{urlpath:[a-zA-Z0-9\/\-_~.]+}`,
-		postsC.BlogPost).
+		postsH.BlogPost).
 		Methods("GET").
 		Name(handlers.BlogPostRoute)
 		//    API / Admin
 	r.HandleFunc("/posts",
-		middleware.ApplyFn(postsC.Create)).
+		middleware.ApplyFn(postsH.Create)).
 		Methods("POST")
 	r.Handle("/posts/new",
-		middleware.Apply(postsC.New)).
+		middleware.Apply(postsH.New)).
 		Methods("GET")
 	r.HandleFunc("/posts/{id:[0-9]+}/edit",
-		middleware.ApplyFn(postsC.Edit)).
+		middleware.ApplyFn(postsH.Edit)).
 		Methods("GET").
 		Name(handlers.EditPost)
 	r.HandleFunc("/posts/{id:[0-9]+}/update",
-		middleware.ApplyFn(postsC.Update)).
+		middleware.ApplyFn(postsH.Update)).
 		Methods("POST")
 	r.HandleFunc("/posts/{id:[0-9]+}/delete",
-		middleware.ApplyFn(postsC.Delete)).
+		middleware.ApplyFn(postsH.Delete)).
 		Methods("POST")
 		//    Images
 	r.HandleFunc("/posts/{id:[0-9]+}/upload",
-		middleware.ApplyFn(postsC.ImageUpload)).
+		middleware.ApplyFn(postsH.ImageUpload)).
 		Methods("POST")
 	r.HandleFunc("/posts/{id:[0-9]+}/image/{filename}/delete",
-		middleware.ApplyFn(postsC.ImageDelete)).
+		middleware.ApplyFn(postsH.ImageDelete)).
 		Methods("POST")
 }

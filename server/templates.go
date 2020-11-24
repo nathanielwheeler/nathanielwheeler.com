@@ -20,14 +20,14 @@ var (
 	templateExt string = ".tpl"
 )
 
-// UI : Contains a pointer to a template and the name of a layout.
-type UI struct {
+// View : Contains a pointer to a template and the name of a layout.
+type View struct {
 	Template *template.Template
 	Layout   string
 }
 
-// NewUI : Takes in a layout name, any number of filename strings, parses them into template, and returns the address of the new view.
-func NewUI(layout string, files ...string) *View {
+// NewView : Takes in a layout name, any number of filename strings, parses them into template, and returns the address of the new view.
+func NewView(layout string, files ...string) *View {
 	addTemplatePath(files)
 	addTemplateExt(files)
 	files = append(files, dirFiles("layouts")...)
