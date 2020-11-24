@@ -3,9 +3,11 @@ package server
 import (
 	"net/http"
 
+	"github.com/gorilla/csrf"
 	"nathanielwheeler.com/server/handlers"
 	"nathanielwheeler.com/server/middleware"
 	"nathanielwheeler.com/server/services"
+	"nathanielwheeler.com/server/util"
 )
 
 func (s *server) routes() {
@@ -13,7 +15,11 @@ func (s *server) routes() {
 
 	// Middleware
 	userMw := middleware.User{UserService: services.User}
-	requireUserMw := middleware.RequireUser{}
+	b, err := util.Bytes(s.config.CSRFBytes)
+	if err != nil {
+		panic(err)
+	}
+	csrfMw := csrf.Protect(b, csrf.Secure(s.isProd()))
 
 	// Initialize handlers
 	staticC := handlers.NewStatic()

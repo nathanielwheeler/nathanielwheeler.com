@@ -15,21 +15,22 @@ type Services struct {
 }
 
 // NewServices will accept a list of config functions to run.  Each function will accept a pointer to the current Services object, manipulate that object, returning an error if there is one.
-func NewServices(cfgs ...ServicesConfig) (*Services, error) {
-	var s Services
+func (s *server) NewServices(cfgs ...ServicesConfig) (error) {
+	var services Services
 	for _, cfg := range cfgs {
-		if err := cfg(&s); err != nil {
+		if err := cfg(&services); err != nil {
 			return nil, err
 		}
 	}
-	return &s, nil
+	s.services = &s
+	return nil
 }
 
-// ServicesConfig is a type of functional option which returns an error.
-type ServicesConfig func(*Services) error
+// ServiceConfig is a type of functional option which returns an error.
+type ServiceConfig func(*Services) error
 
 // WithGorm is a functional option that will open a connection to GORM, returning an error if something goes wrong.
-func WithGorm(dialect, connectionStr string) ServicesConfig {
+func WithGorm(dialect, connectionStr string) ServiceConfig {
 	return func(s *Services) error {
 		db, err := gorm.Open(dialect, connectionStr)
 		if err != nil {
@@ -41,7 +42,7 @@ func WithGorm(dialect, connectionStr string) ServicesConfig {
 }
 
 // WithLogMode is a functional option that configure log mode with the database.
-func WithLogMode(mode bool) ServicesConfig {
+func WithLogMode(mode bool) ServiceConfig {
 	return func(s *Services) error {
 		s.db.LogMode(mode)
 		return nil
@@ -49,7 +50,7 @@ func WithLogMode(mode bool) ServicesConfig {
 }
 
 // WithUser is a functional option that will construct a new user service, adding in pepper and HMAC key.
-func WithUser(pepper, hmacKey string) ServicesConfig {
+func WithUser(pepper, hmacKey string) ServiceConfig {
 	return func(s *Services) error {
 		s.User = NewUserService(s.db, pepper, hmacKey)
 		return nil
@@ -57,7 +58,7 @@ func WithUser(pepper, hmacKey string) ServicesConfig {
 }
 
 // WithPosts is a functional option that will construct a new posts service.
-func WithPosts(isProd bool) ServicesConfig {
+func WithPosts(isProd bool) ServiceConfig {
 	return func(s *Services) error {
 		s.Posts = NewPostsService(s.db, isProd)
 		return nil
@@ -65,7 +66,7 @@ func WithPosts(isProd bool) ServicesConfig {
 }
 
 // WithImages is a function option that will construct a new images service.
-func WithImages() ServicesConfig {
+func WithImages() ServiceConfig {
 	return func(s *Services) error {
 		s.Images = NewImagesService()
 		return nil
