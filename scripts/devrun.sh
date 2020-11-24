@@ -1,2 +1,2 @@
-sass --watch ui/src/sass:ui/public/assets &
+sass --watch client/src/sass:client/public/assets &
 fresh

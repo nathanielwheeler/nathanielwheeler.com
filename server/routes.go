@@ -20,7 +20,7 @@ func (s *server) routes() {
 	usersC := handlers.NewUsers(services.User)
 	postsC := handlers.NewPosts(services.Posts, services.Images, r)
 
-	// Public Routes
+	// Fileserver Routes
 	publicHandler := http.FileServer(http.Dir("./client/public/"))
 	r.PathPrefix("/images/").
 		Handler(publicHandler)

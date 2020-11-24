@@ -3,3 +3,4 @@ tmp/
 exp/
 dist/
 node_modules
+client/public/assets
