@@ -13,39 +13,36 @@ const (
 	dialect = "postgres"
 )
 
-// Config holds configuration variables
-type Config struct {
+type config struct {
 	Env       string         `yaml:"env"`
 	Port      int            `yaml:"port"`
 	Pepper    string         `yaml:"pepper"`
 	HMACKey   string         `yaml:"hmac_key"`
 	CSRFBytes int            `yaml:"csrf_bytes"`
-	Database  PostgresConfig `yaml:"database"`
+	Database  postgresConfig `yaml:"database"`
 }
 
-// LoadConfig will load production or development configuration files.
-func LoadConfig() Config {
+func loadConfig() *config {
 	f, err := os.Open(configFile)
 	if err != nil {
 			panic("No configuration file detected!")
 	}
   defer f.Close()
 	// Decode file and return Config struct
-  var c Config
+  var c config
   d := yaml.NewDecoder(f)
 	if err := d.Decode(&c); err != nil {
     panic(err)
   }
-	return c
+	return &c
 }
 
-// IsProd sets Config Env to Production
-func (c Config) IsProd() bool {
-	return c.Env == "prod"
+func (s *server) isProd() bool {
+	return s.config.Env == "prod"
 }
 
 // PostgresConfig holds database connection info.
-type PostgresConfig struct {
+type postgresConfig struct {
 	DBName   string `yaml:"name"`
 	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
@@ -53,17 +50,17 @@ type PostgresConfig struct {
 	Password string `yaml:"password"`
 }
 
-// Dialect will return the dialect that GORM will use.
-func (c PostgresConfig) Dialect() string {
+func (s *server) dialect() string {
 	return dialect
 }
 
 // ConnectionString will return a string used to connect to the database
-func (c PostgresConfig) ConnectionString() string {
-	if c.Password == "" {
+func (s *server) connectionString() string {
+	c := s.config.Database
+	if s.isProd() {
 		return fmt.Sprintf(
-			"host=%s port=%s user=%s dbname=%s sslmode=disable",
-			c.Host, c.Port, c.User, c.DBName,
+			"host=%s port=%s user=%s password=%s dbname=%s",
+			c.Host, c.Port, c.User, c.Password, c.DBName,
 		)
 	}
 	return fmt.Sprintf(

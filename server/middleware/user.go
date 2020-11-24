@@ -3,11 +3,14 @@ package middleware
 import (
 	"net/http"
 	"strings"
+
+	"nathanielwheeler.com/server/services"
+	"nathanielwheeler.com/server/util"
 )
 
 // User middleware will lookup the current user via their remember token cookie using the UserService.  If found, they will be set on the request context.  Either way, the next handler is always called.
 type User struct {
-	models.UserService
+	services.UserService
 }
 
 // Apply will allow http.Handler interfaces to be handled by middleware by applying ServeHTTP to the handler and passing it into ApplyFn
@@ -35,7 +38,7 @@ func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		ctx := req.Context()
-		ctx = context.WithUser(ctx, user)
+		ctx = util.WithUser(ctx, user)
 		req = req.WithContext(ctx)
 		next(res, req)
 	})
@@ -52,7 +55,7 @@ func (mw *RequireUser) Apply(next http.Handler) http.HandlerFunc {
 // ApplyFn will take in an http.HandlerFunc and run middleware that will check for a remember token cookie.  If there is no user in context, the user will be redirected to /login.
 func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		user := context.User(req.Context())
+		user := util.User(req.Context())
 		if user == nil {
 			http.Redirect(res, req, "/login", http.StatusFound)
 			return

@@ -38,7 +38,7 @@ ssh nathanielwheeler.com "cd /root/go/src/nathanielwheeler.com; \
 echo "	Transferring files..."
 ssh nathanielwheeler.com "cd /root/app; \
 	cp -R /root/go/src/nathanielwheeler.com/public .; \
-	cp -R /root/go/src/nathanielwheeler.com/views .; \
+	cp -R /root/go/src/nathanielwheeler.com/ui .; \
 	cp /root/go/src/nathanielwheeler.com/Caddyfile ."
 
 # Restarting server

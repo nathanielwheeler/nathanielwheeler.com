@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"nathanielwheeler.com/util"
+	"nathanielwheeler.com/server/services"
+	"nathanielwheeler.com/server/util"
 	views "nathanielwheeler.com/ui"
 
 	"github.com/gorilla/mux"
@@ -31,13 +32,13 @@ type Posts struct {
 	New           *views.View
 	EditView      *views.View
 	FeedView      *views.View
-	ps            models.PostsService
-	is            models.ImagesService
+	ps            services.PostsService
+	is            services.ImagesService
 	r             *mux.Router
 }
 
 // NewPosts is a constructor for Posts struct
-func NewPosts(ps models.PostsService, is models.ImagesService, r *mux.Router) *Posts {
+func NewPosts(ps services.PostsService, is services.ImagesService, r *mux.Router) *Posts {
 	return &Posts{
 		HomeView:      views.NewView("app", "posts/home", "posts/blog/card"),
 		BlogPostView:  views.NewView("app", "posts/blog/post", "posts/blog/card"),
@@ -124,12 +125,12 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 		p.New.Render(res, req, vd)
 		return
 	}
-	user := context.User(req.Context())
+	user := util.User(req.Context())
 	if user.IsAdmin != true {
 		http.Error(res, "You do not have permission to create a post", http.StatusForbidden)
 		return
 	}
-	post := models.Post{
+	post := services.Post{
 		Title:    form.Title,
 		URLPath:  form.URLPath,
 		FilePath: "public/markdown/" + form.FilePath + ".md",
@@ -164,7 +165,7 @@ func (p *Posts) Edit(res http.ResponseWriter, req *http.Request) {
 		// error handled by postByID
 		return
 	}
-	user := context.User(req.Context())
+	user := util.User(req.Context())
 	if user.IsAdmin != true {
 		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
 		return
@@ -182,7 +183,7 @@ func (p *Posts) Update(res http.ResponseWriter, req *http.Request) {
 		// implemented by postByID
 		return
 	}
-	user := context.User(req.Context())
+	user := util.User(req.Context())
 	if user.IsAdmin != true {
 		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
 		return
@@ -217,7 +218,7 @@ func (p *Posts) Delete(res http.ResponseWriter, req *http.Request) {
 		// postByID renders error
 		return
 	}
-	user := context.User(req.Context())
+	user := util.User(req.Context())
 	if user.IsAdmin != true {
 		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
 		return
@@ -245,7 +246,7 @@ func (p *Posts) ImageUpload(res http.ResponseWriter, req *http.Request) {
 		// implemented by postByYearAndTitle
 		return
 	}
-	user := context.User(req.Context())
+	user := util.User(req.Context())
 	if user.IsAdmin != true {
 		http.Error(res, "You do not have permission to edit this post", http.StatusForbidden)
 		return
@@ -295,13 +296,13 @@ func (p *Posts) ImageDelete(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		return
 	}
-	user := context.User(req.Context())
+	user := util.User(req.Context())
 	if user.IsAdmin != true {
 		http.Error(res, "You do not have permission to edit this post or image", http.StatusForbidden)
 		return
 	}
 	filename := mux.Vars(req)["filename"]
-	i := models.Image{
+	i := services.Image{
 		Filename: filename,
 		PostID:   post.ID,
 	}
@@ -324,13 +325,13 @@ func (p *Posts) ImageDelete(res http.ResponseWriter, req *http.Request) {
 
 // #region HELPERS
 
-func (p *Posts) postByURL(res http.ResponseWriter, req *http.Request) (*models.Post, error) {
+func (p *Posts) postByURL(res http.ResponseWriter, req *http.Request) (*services.Post, error) {
 	vars := mux.Vars(req)
 	urlpath := vars["urlpath"]
 	post, err := p.ps.ByURL(urlpath)
 	if err != nil {
 		switch err {
-		case models.ErrNotFound:
+		case services.ErrNotFound:
 			http.Error(res, "Post not found", http.StatusNotFound)
 		default:
 			log.Println(err)
@@ -341,11 +342,11 @@ func (p *Posts) postByURL(res http.ResponseWriter, req *http.Request) (*models.P
 	return post, nil
 }
 
-func (p *Posts) postByLatest(res http.ResponseWriter, req *http.Request) (*models.Post, error) {
+func (p *Posts) postByLatest(res http.ResponseWriter, req *http.Request) (*services.Post, error) {
 	post, err := p.ps.ByLatest()
 	if err != nil {
 		switch err {
-		case models.ErrNotFound:
+		case services.ErrNotFound:
 			http.Error(res, "Post not found", http.StatusNotFound)
 		default:
 			log.Println(err)
@@ -356,7 +357,7 @@ func (p *Posts) postByLatest(res http.ResponseWriter, req *http.Request) (*model
 	return post, nil
 }
 
-func (p *Posts) postByID(res http.ResponseWriter, req *http.Request) (*models.Post, error) {
+func (p *Posts) postByID(res http.ResponseWriter, req *http.Request) (*services.Post, error) {
 	idVar := mux.Vars(req)["id"]
 	id, err := strconv.Atoi(idVar)
 	if err != nil {
@@ -367,7 +368,7 @@ func (p *Posts) postByID(res http.ResponseWriter, req *http.Request) (*models.Po
 	post, err := p.ps.ByID(uint(id))
 	if err != nil {
 		switch err {
-		case models.ErrNotFound:
+		case services.ErrNotFound:
 			http.Error(res, "Post not found", http.StatusNotFound)
 		default:
 			log.Println(err)

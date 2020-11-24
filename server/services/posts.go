@@ -22,7 +22,7 @@ import (
 
 // Post will hold all of the information needed for a blog post.
 type Post struct {
-	gorm.Service
+	gorm.Model
 	Title    string                 `gorm:"not_null"`
 	URLPath  string                 `gorm:"not_null"`
 	FilePath string                 `gorm:"not_null"`

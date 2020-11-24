@@ -1,4 +1,4 @@
-package views
+package ui
 
 import (
 	"bytes"
@@ -9,15 +9,15 @@ import (
 	"net/url"
 	"path/filepath"
 
-	"nathanielwheeler.com/context"
-	"nathanielwheeler.com/models"
+	"nathanielwheeler.com/server/services"
+	"nathanielwheeler.com/server/util"
 
 	"github.com/gorilla/csrf"
 )
 
 var (
-	templateDir  string = "views/"
-	templateExt  string = ".html"
+	templateDir string = "views/"
+	templateExt string = ".html"
 )
 
 // View : Contains a pointer to a template and the name of a layout.
@@ -42,14 +42,14 @@ func NewView(layout string, files ...string) *View {
 			// pathEscape will escape a path using the net/url package.
 			"pathEscape": func(s string) string {
 				return url.PathEscape(s)
-      },
-      // bodyFromPost will check for HTML in the post's body and, if it exists, render it.
-      "bodyFromPost": func(post models.Post) template.HTML {
-        if post.Body == "" {
-          return template.HTML("Missing body...")
-        }
-        return template.HTML(post.Body)
-      },
+			},
+			// bodyFromPost will check for HTML in the post's body and, if it exists, render it.
+			"bodyFromPost": func(post services.Post) template.HTML {
+				if post.Body == "" {
+					return template.HTML("Missing body...")
+				}
+				return template.HTML(post.Body)
+			},
 		}).
 		ParseFiles(files...)
 	if err != nil {
@@ -75,21 +75,21 @@ func (v *View) Render(res http.ResponseWriter, req *http.Request, data interface
 		vd = Data{
 			Yield: data,
 		}
-  }
-  
+	}
+
 	// Check cookie for alerts
 	if alert := getAlert(req); alert != nil {
 		vd.Alert = alert
 		clearAlert(res)
-  }
-  
+	}
+
 	// Lookup and set the user to the User field
-	vd.User = context.User(req.Context())
+	vd.User = util.User(req.Context())
 	var buf bytes.Buffer
 
 	// Create CSRF field using current http request and add it onto the template FuncMap.
-  csrfField := csrf.TemplateField(req)
-  
+	csrfField := csrf.TemplateField(req)
+
 	tpl := v.Template.Funcs(template.FuncMap{
 		"csrfField": func() template.HTML {
 			return csrfField

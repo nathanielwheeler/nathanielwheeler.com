@@ -1,17 +1,17 @@
-package views
+package ui
 
 import (
 	"log"
 	"net/http"
 	"time"
 
-	"nathanielwheeler.com/models"
+	"nathanielwheeler.com/server/services"
 )
 
 // Data is the top level structure that views expect data to come in.
 type Data struct {
 	Alert *Alert
-	User  *models.User
+	User  *services.User
 	Yield interface{}
 }
 

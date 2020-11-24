@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"time"
 
-	"nathanielwheeler.com/util"
+	"nathanielwheeler.com/server/services"
+	"nathanielwheeler.com/server/util"
 	views "nathanielwheeler.com/ui"
 )
 
 // NewUsers initializes the view for users
-func NewUsers(us models.UserService) *Users {
+func NewUsers(us services.UserService) *Users {
 	return &Users{
 		RegisterView: views.NewView("app", "users/register"),
 		LoginView:    views.NewView("app", "users/login"),
@@ -21,7 +22,7 @@ func NewUsers(us models.UserService) *Users {
 type Users struct {
 	RegisterView *views.View
 	LoginView    *views.View
-	us           models.UserService
+	us           services.UserService
 }
 
 // Registration : GET /register
@@ -47,7 +48,7 @@ func (u *Users) Register(res http.ResponseWriter, req *http.Request) {
 		u.RegisterView.Render(res, req, vd)
 		return
 	}
-	user := models.User{
+	user := services.User{
 		Name:     form.Name,
 		Email:    form.Email,
 		Password: form.Password,
@@ -84,8 +85,8 @@ func (u *Users) Login(res http.ResponseWriter, req *http.Request) {
 	user, err := u.us.Authenticate(form.Email, form.Password)
 	if err != nil {
 		switch err {
-		case models.ErrNotFound:
-		case models.ErrPasswordInvalid:
+		case services.ErrNotFound:
+		case services.ErrPasswordInvalid:
 			vd.AlertError("Invalid email and/or password.")
 		default:
 			vd.SetAlert(err)
@@ -115,8 +116,8 @@ func (u *Users) Logout(res http.ResponseWriter, req *http.Request) {
 	}
 	http.SetCookie(res, &cookie)
 	// Update user with a new remember token
-	user := context.User(req.Context())
-	token, _ := rand.RememberToken() // Ignoring errors because because unlikely and not much to do about it.
+	user := util.User(req.Context())
+	token, _ := util.RememberToken() // Ignoring errors because because unlikely and not much to do about it.
 	user.Remember = token
 	u.us.Update(user)
 
@@ -124,9 +125,9 @@ func (u *Users) Logout(res http.ResponseWriter, req *http.Request) {
 }
 
 // signIn is used to sign the given user in via cookies
-func (u *Users) signIn(res http.ResponseWriter, user *models.User) error {
+func (u *Users) signIn(res http.ResponseWriter, user *services.User) error {
 	if user.Remember == "" {
-		token, err := rand.RememberToken()
+		token, err := util.RememberToken()
 		if err != nil {
 			return err
 		}

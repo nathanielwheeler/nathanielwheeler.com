@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"nathanielwheeler.com/util"
+	"nathanielwheeler.com/server/util"
 
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
@@ -12,7 +12,7 @@ import (
 
 // User : Service for people that want updates from my website and want to leave comments on my posts.
 type User struct {
-	gorm.Service
+	gorm.Model
 	Name         string
 	Email        string `gorm:"type:varchar(100);primary key"`
 	Password     string `gorm:"-"` // Ensures that it won't be saved to database
@@ -51,7 +51,7 @@ type userService struct {
 // NewUserService : constructor for userService.  Calls constructors for user gorm and user validator.
 func NewUserService(db *gorm.DB, pepper, hmacKey string) UserService {
 	ug := &userGorm{db}
-	hmac := hash.NewHMAC(hmacKey)
+	hmac := util.NewHMAC(hmacKey)
 	uv := newUserValidator(ug, hmac, pepper)
 	return &userService{
 		UserDB: uv,
@@ -141,7 +141,7 @@ func (ug *userGorm) Delete(id uint) error {
 // userValidator represents the validation layer.  It also handles normalization.
 type userValidator struct {
 	UserDB
-	hmac       hash.HMAC
+	hmac       util.HMAC
 	pepper     string
 	emailRegex *regexp.Regexp
 	// TODO: make regex for password validation
@@ -149,7 +149,7 @@ type userValidator struct {
 }
 
 // Constructor for userValidator layer.  Needed so that I can compile regex and assign it.
-func newUserValidator(udb UserDB, hmac hash.HMAC, pepper string) *userValidator {
+func newUserValidator(udb UserDB, hmac util.HMAC, pepper string) *userValidator {
 	return &userValidator{
 		UserDB: udb,
 		hmac:   hmac,
@@ -294,7 +294,7 @@ func (uv *userValidator) setRememberIfUnset(user *User) error {
 	if user.Remember != "" {
 		return nil
 	}
-	token, err := rand.RememberToken()
+	token, err := util.RememberToken()
 	if err != nil {
 		return err
 	}
@@ -389,7 +389,7 @@ func (uv *userValidator) rememberMinBytes(user *User) error {
 	if user.Remember == "" {
 		return nil
 	}
-	n, err := rand.NBytes(user.Remember)
+	n, err := util.NBytes(user.Remember)
 	if err != nil {
 		return err
 	}
