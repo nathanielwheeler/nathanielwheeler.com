@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"os"
 
-	"nathanielwheeler.com/server/services"
-
 	"github.com/gorilla/mux"
 )
 
@@ -18,16 +16,15 @@ func Run() (err error) {
 	// Start that server!
 	port := fmt.Sprintf(":%d", s.config.Port)
 	fmt.Printf("Now listening on %s...\n", port)
-	http.ListenAndServe(port, csrfMw(userMw.Apply(r)))
+	http.ListenAndServe(port, s.router)
 
 	return err
 }
 
 type server struct {
-	config   *config
-	logger   *log.Logger
-	router   *mux.Router
-	services *services.Services
+	config *config
+	logger *log.Logger
+	router *mux.Router
 }
 
 func newServer() *server {
@@ -36,20 +33,6 @@ func newServer() *server {
 		logger: log.New(os.Stdout, "server: ", log.Lshortfile),
 		router: mux.NewRouter(),
 	}
-
-	// Initialize services
-	err := services.NewServices(
-		services.WithGorm(s.dialect(), s.connectionString()),
-		services.WithLogMode(!s.isProd()),
-		services.WithUser(s.config.Pepper, s.config.HMACKey),
-		services.WithPosts(s.isProd()),
-		services.WithImages(),
-	)
-	if err != nil {
-		
-	}
-	defer s.services.Close()
-	s.services.AutoMigrate()
 
 	s.routes()
 	return &s

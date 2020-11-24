@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	configFile  = ".config.yml"
+	configFile = ".config.yml"
 
 	dialect = "postgres"
 )
@@ -25,15 +25,15 @@ type config struct {
 func loadConfig() *config {
 	f, err := os.Open(configFile)
 	if err != nil {
-			panic("No configuration file detected!")
+		panic("No configuration file detected!")
 	}
-  defer f.Close()
+	defer f.Close()
 	// Decode file and return Config struct
-  var c config
-  d := yaml.NewDecoder(f)
+	var c config
+	d := yaml.NewDecoder(f)
 	if err := d.Decode(&c); err != nil {
-    panic(err)
-  }
+		panic(err)
+	}
 	return &c
 }
 
