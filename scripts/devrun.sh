@@ -1,2 +1,2 @@
-sass --watch app/sass:public/stylesheets &
+sass --watch ui/src/sass:ui/public/assets &
 fresh

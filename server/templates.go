@@ -1,4 +1,4 @@
-package ui
+package server
 
 import (
 	"bytes"
@@ -16,18 +16,18 @@ import (
 )
 
 var (
-	templateDir string = "views/"
-	templateExt string = ".html"
+	templateDir string = "ui/templates/"
+	templateExt string = ".tpl"
 )
 
-// View : Contains a pointer to a template and the name of a layout.
-type View struct {
+// UI : Contains a pointer to a template and the name of a layout.
+type UI struct {
 	Template *template.Template
 	Layout   string
 }
 
-// NewView : Takes in a layout name, any number of filename strings, parses them into template, and returns the address of the new view.
-func NewView(layout string, files ...string) *View {
+// NewUI : Takes in a layout name, any number of filename strings, parses them into template, and returns the address of the new view.
+func NewUI(layout string, files ...string) *View {
 	addTemplatePath(files)
 	addTemplateExt(files)
 	files = append(files, dirFiles("layouts")...)
