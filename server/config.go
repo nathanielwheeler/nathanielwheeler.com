@@ -1,4 +1,4 @@
-package config
+package server
 
 import (
 	"fmt"
@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	devConfigFile  = ".dev_config.yml"
-	prodConfigFile = ".prod_config.yml"
+	configFile  = ".config.yml"
 
 	dialect = "postgres"
 )
@@ -26,16 +25,10 @@ type Config struct {
 
 // LoadConfig will load production or development configuration files.
 func LoadConfig() Config {
-	f, err := os.Open(prodConfigFile)
+	f, err := os.Open(configFile)
 	if err != nil {
-		f, err = os.Open(devConfigFile)
-		if err != nil {
 			panic("No configuration file detected!")
-		}
-		fmt.Println("Using DEVELOPMENT configuration.")
-	} else {
-		fmt.Println("Using PRODUCTION configuration.")
-  }
+	}
   defer f.Close()
 	// Decode file and return Config struct
   var c Config

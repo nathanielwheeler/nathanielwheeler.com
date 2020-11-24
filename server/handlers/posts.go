@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"fmt"
@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"nathanielwheeler.com/context"
-	"nathanielwheeler.com/models"
-	"nathanielwheeler.com/views"
+	"nathanielwheeler.com/util"
+	views "nathanielwheeler.com/ui"
 
 	"github.com/gorilla/mux"
 )
@@ -145,16 +144,16 @@ func (p *Posts) Create(res http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		http.Redirect(res, req, "/blog", http.StatusFound)
 		return
-  }
-  // Allows me to test pages locally without updating feeds
-  if (p.ps.IsProduction()) {
-    err = p.ps.MakePostsFeed()
-    if err != nil {
-      vd.SetAlert(err)
-      vd.RedirectAlert(res, req, url.Path, http.StatusFound, *vd.Alert)
-      return
-    }
-  }
+	}
+	// Allows me to test pages locally without updating feeds
+	if p.ps.IsProduction() {
+		err = p.ps.MakePostsFeed()
+		if err != nil {
+			vd.SetAlert(err)
+			vd.RedirectAlert(res, req, url.Path, http.StatusFound, *vd.Alert)
+			return
+		}
+	}
 	http.Redirect(res, req, url.Path, http.StatusFound)
 }
 

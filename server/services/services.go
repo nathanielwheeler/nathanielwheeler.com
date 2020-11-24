@@ -1,4 +1,4 @@
-package models
+package services
 
 import (
 	"github.com/jinzhu/gorm"
@@ -6,7 +6,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-// Services will hold information about the varying services used in the models package.
+// Services will hold information about the varying services used in the services package.
 type Services struct {
 	User   UserService
 	Posts  PostsService

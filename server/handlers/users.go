@@ -1,13 +1,11 @@
-package controllers
+package handlers
 
 import (
 	"net/http"
 	"time"
 
-	"nathanielwheeler.com/context"
-	"nathanielwheeler.com/models"
-	"nathanielwheeler.com/rand"
-	"nathanielwheeler.com/views"
+	"nathanielwheeler.com/util"
+	views "nathanielwheeler.com/ui"
 )
 
 // NewUsers initializes the view for users
@@ -114,15 +112,15 @@ func (u *Users) Logout(res http.ResponseWriter, req *http.Request) {
 		Value:    "",
 		Expires:  time.Now(),
 		HttpOnly: true,
-  }
-  http.SetCookie(res, &cookie)
-  // Update user with a new remember token
-  user := context.User(req.Context())
-  token, _ := rand.RememberToken() // Ignoring errors because because unlikely and not much to do about it.
-  user.Remember = token
-  u.us.Update(user)
+	}
+	http.SetCookie(res, &cookie)
+	// Update user with a new remember token
+	user := context.User(req.Context())
+	token, _ := rand.RememberToken() // Ignoring errors because because unlikely and not much to do about it.
+	user.Remember = token
+	u.us.Update(user)
 
-  http.Redirect(res, req, "/", http.StatusFound)
+	http.Redirect(res, req, "/", http.StatusFound)
 }
 
 // signIn is used to sign the given user in via cookies

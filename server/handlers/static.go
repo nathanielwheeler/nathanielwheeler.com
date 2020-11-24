@@ -1,8 +1,6 @@
-package controllers
+package handlers
 
-import (
-	"nathanielwheeler.com/views"
-)
+import "nathanielwheeler.com/ui"
 
 // Static : A type that holds the views of the static pages
 type Static struct {

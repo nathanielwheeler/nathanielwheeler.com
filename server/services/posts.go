@@ -1,4 +1,4 @@
-package models
+package services
 
 import (
 	"bytes"
@@ -22,7 +22,7 @@ import (
 
 // Post will hold all of the information needed for a blog post.
 type Post struct {
-	gorm.Model
+	gorm.Service
 	Title    string                 `gorm:"not_null"`
 	URLPath  string                 `gorm:"not_null"`
 	FilePath string                 `gorm:"not_null"`
@@ -239,7 +239,7 @@ func (pg *postsGorm) Update(post *Post) error {
 // Delete will remove a post from default queries.
 /* Really, it will add a timestamp for deleted_at, which will exclude the post from normal queries. */
 func (pg *postsGorm) Delete(id uint) error {
-	post := Post{Model: gorm.Model{ID: id}}
+	post := Post{Service: gorm.Service{ID: id}}
 	return pg.db.Delete(&post).Error
 }
 

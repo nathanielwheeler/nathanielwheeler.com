@@ -1,22 +1,18 @@
-package models
+package services
 
 import (
 	"regexp"
 	"strings"
 
-	"nathanielwheeler.com/hash"
-	"nathanielwheeler.com/rand"
-
-	"nathanielwheeler.com/hash"
-	"nathanielwheeler.com/rand"
+	"nathanielwheeler.com/util"
 
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// User : Model for people that want updates from my website and want to leave comments on my posts.
+// User : Service for people that want updates from my website and want to leave comments on my posts.
 type User struct {
-	gorm.Model
+	gorm.Service
 	Name         string
 	Email        string `gorm:"type:varchar(100);primary key"`
 	Password     string `gorm:"-"` // Ensures that it won't be saved to database
@@ -40,7 +36,7 @@ type UserDB interface {
 
 // #region SERVICE
 
-// UserService is a set of methods used to handle business rules of the user model
+// UserService is a set of methods used to handle business rules of the user service
 type UserService interface {
 	Authenticate(email, password string) (*User, error)
 	UserDB
@@ -134,7 +130,7 @@ func (ug *userGorm) Update(user *User) error {
 
 // Delete removes the user identified by the id
 func (ug *userGorm) Delete(id uint) error {
-	user := User{Model: gorm.Model{ID: id}}
+	user := User{Service: gorm.Service{ID: id}}
 	return ug.db.Delete(&user).Error
 }
 

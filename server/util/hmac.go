@@ -1,4 +1,4 @@
-package hash
+package util
 
 import (
   "crypto/hmac"
