@@ -1,0 +1,10 @@
+{{define "alert"}}
+<div class="alert alert-{{.Level}} alert-dismissible" role="alert">
+	<button class="btn btn-secondary close" type="button" aria-label="Close">
+		<span aria-hidden="true">&times;</span>
+	</button>
+	<div class="text-center">
+		{{.Message}}
+	</div>
+</div>
+{{end}}

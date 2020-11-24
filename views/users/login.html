@@ -1,14 +1,14 @@
 {{define "yield"}}
 <main class="container">
 	<div class="row">
-		<div class="col">
+		<div class="col-12 offset-md-2 col-md-8 offset-lg-3 col-lg-6">
 
-			<div class="card border-primary bg-dark">
+			<div class="card border-light bg-dark">
+				<h3 class="card-header border-light text-center">
+					Login
+				</h3>
 				<div class="card-body">
 
-					<h3 class="card-title text-center">
-						Welcome back!
-					</h3>
 					<div class="card-text">
 						{{template "loginForm"}}
 					</div>
@@ -17,27 +17,4 @@
 		</div>
 	</div>
 </main>
-{{end}}
-
-{{define "loginForm"}}
-<form action="/login" method="POST">
-	<div class="form-group">
-
-		<div class="form-group row">
-			<label for="email" class="col-12">
-				Email Address
-				<input type="email" name="email" class="form-control" id="email" placeholder="you@example.com">
-			</label>
-		</div>
-		<div class="form-group row">
-			<label for="password" class="col-12">
-				Password
-				<input type="password" name="password" class="form-control" id="password" placeholder="password123">
-			</label>
-		</div>
-		<button class="col btn btn-success">
-			Log In
-		</button>
-	</div>
-</form>
 {{end}}

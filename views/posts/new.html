@@ -1,0 +1,61 @@
+{{define "yield"}}
+<main class="container">
+	<div class="row">
+		<div class="col-12 offset-md-2 col-md-8 offset-lg-3 col-lg-6">
+
+			<div class="card border-light bg-dark">
+				<h3 class="card-header border-light text-center">
+					New Post
+				</h3>
+				<div class="card-body">
+
+					<div class="card-text">
+						{{template "postForm"}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
+{{end}}
+
+<!-- POST /posts/ -->
+
+{{define "postForm"}}
+<form action="/posts" method="POST">
+	{{csrfField}}
+	<div class="form-group">
+
+		<div class="row">
+			<label for="title" class="lead col-12">
+				Title
+				<input type="text" name="title" id="title" placeholder="The Great American Blog Post"
+					class="form-control">
+			</label>
+		</div>
+		<div class="row">
+			<label for="filepath" class="lead col-12">
+				File Path
+				<input type="text" name="filepath" id="filepath" placeholder="2020/..."
+					class="form-control">
+			</label>
+			<p class="col-12">Automatically suffixes "public/markdown/"</p>
+			<p class="col-12">Automatically prefixes ".md"</p>
+		</div>
+		<div class="row">
+			<label for="urlpath" class="lead col-12">
+				URL Path
+				<input type="text" name="urlpath" id="urlpath" placeholder="..."
+					class="form-control">
+			</label>
+			<p class="col-12">For now, assumes all posts will go in "blog/"</p>
+		</div>
+		<br>
+		<div class="row d-flex justify-content-center">
+			<button class="btn btn-success btn-lg" type="submit">
+				Post!
+			</button>
+		</div>
+	</div>
+</form>
+{{end}}

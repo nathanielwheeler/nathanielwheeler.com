@@ -1,0 +1,6 @@
+{{define "logoutForm"}}
+<form action="/logout" method="POST" class="form-inline">
+	{{csrfField}}
+	<button class="btn btn-secondary" type="submit">Log out</button>
+</form>
+{{end}}

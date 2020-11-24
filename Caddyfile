@@ -1,0 +1,4 @@
+nathanielwheeler.com {
+	encode gzip
+	reverse_proxy localhost:3000
+}

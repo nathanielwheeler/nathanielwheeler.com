@@ -3,80 +3,134 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
 
+	"nathanielwheeler.com/config"
 	"nathanielwheeler.com/controllers"
+	"nathanielwheeler.com/middleware"
 	"nathanielwheeler.com/models"
+	"nathanielwheeler.com/rand"
 
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 )
 
-type env struct {
-	host, user, password, port, name string
-}
-
-func init() {
-	if err := godotenv.Load(); err != nil {
-		panic("No .env file found")
-	}
-}
+/* TODO
+- Decouple User middleware from routes (like with RequireUser)
+*/
 
 func main() {
-	// Start up database connection
-	dbEnv := getEnv()
-	psqlConnectionStr := fmt.Sprintf(
-		"host=%s port=%s user=%s password='%s' dbname=%s sslmode=disable",
-		dbEnv.host, dbEnv.port, dbEnv.user, dbEnv.password, dbEnv.name,
-	)
+	cfg := config.LoadConfig()
+	dbCfg := cfg.Database
 
 	// Initialize services
-	us, err := models.NewUsersService(psqlConnectionStr)
-	if err != nil {
-		panic(err)
-	}
-	defer us.Close()
-	us.AutoMigrate()
+	services, err := models.NewServices(
+		models.WithGorm(dbCfg.Dialect(), dbCfg.ConnectionString()),
+		models.WithLogMode(!cfg.IsProd()),
+		models.WithUser(cfg.Pepper, cfg.HMACKey),
+		models.WithPosts(cfg.IsProd()),
+		models.WithImages(),
+	)
+	defer services.Close()
+	services.AutoMigrate()
+
+	// Router Initialization
+	r := mux.NewRouter()
 
 	// Initialize controllers
 	staticC := controllers.NewStatic()
-	usersC := controllers.NewUsers(us)
+	usersC := controllers.NewUsers(services.User)
+	postsC := controllers.NewPosts(services.Posts, services.Images, r)
 
-	// Route Handling
-	r := mux.NewRouter()
-	r.Handle("/", staticC.Home).Methods("GET")
-	r.Handle("/resume", staticC.Resume).Methods("GET")
-	r.HandleFunc("/register", usersC.RegisterForm).Methods("GET")
-	r.HandleFunc("/register", usersC.Register).Methods("POST")
-	r.Handle("/login", usersC.LoginView).Methods("GET")
-	r.HandleFunc("/login", usersC.Login).Methods("POST")
+	// Middleware
+	userMw := middleware.User{UserService: services.User}
+	requireUserMw := middleware.RequireUser{}
 
-	// Cookie Test
-	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
+	// CSRF Protection
+	b, err := rand.Bytes(cfg.CSRFBytes)
+	if err != nil {
+		panic(err)
+	}
+	csrfMw := csrf.Protect(b, csrf.Secure(cfg.IsProd()))
+
+	// Public Routes
+	publicHandler := http.FileServer(http.Dir("./public/"))
+	r.PathPrefix("/images/").
+		Handler(publicHandler)
+	r.PathPrefix("/stylesheets/").
+		Handler(publicHandler)
+	r.PathPrefix("/markdown/").
+    Handler(publicHandler)
+  r.PathPrefix("/feeds/").
+    Handler(publicHandler)
+
+	// Statics Routes
+	r.Handle("/resume",
+		staticC.Resume).
+    Methods("GET")
+  r.Handle("/prototypes/theme-system",
+    staticC.PrototypeThemeSystem).
+    Methods("GET")
+
+	// User Routes
+	r.HandleFunc("/register",
+		usersC.Registration).
+		Methods("GET")
+	r.HandleFunc("/register",
+		usersC.Register).
+		Methods("POST")
+	r.Handle("/login",
+		usersC.LoginView).
+		Methods("GET")
+	r.HandleFunc("/login",
+		usersC.Login).
+    Methods("POST")
+  r.Handle("/logout",
+    requireUserMw.ApplyFn(usersC.Logout)).
+    Methods("POST")
+	r.HandleFunc("/cookietest",
+		usersC.CookieTest).
+		Methods("GET")
+
+  // Post Routes
+  //    Blog
+  r.HandleFunc("/",
+    postsC.Home).
+    Methods("GET")
+  r.HandleFunc("/blog",
+    postsC.BlogIndex).
+    Methods("GET").
+    Name(controllers.BlogIndexRoute)
+  r.HandleFunc(`/blog/{urlpath:[a-zA-Z0-9\/\-_~.]+}`,
+    postsC.BlogPost).
+    Methods("GET").
+    Name(controllers.BlogPostRoute)
+  //    API / Admin
+	r.HandleFunc("/posts",
+		requireUserMw.ApplyFn(postsC.Create)).
+		Methods("POST")
+	r.Handle("/posts/new",
+		requireUserMw.Apply(postsC.New)).
+		Methods("GET")
+	r.HandleFunc("/posts/{id:[0-9]+}/edit",
+		requireUserMw.ApplyFn(postsC.Edit)).
+		Methods("GET").
+		Name(controllers.EditPost)
+	r.HandleFunc("/posts/{id:[0-9]+}/update",
+		requireUserMw.ApplyFn(postsC.Update)).
+		Methods("POST")
+	r.HandleFunc("/posts/{id:[0-9]+}/delete",
+		requireUserMw.ApplyFn(postsC.Delete)).
+		Methods("POST")
+		//    Images
+	r.HandleFunc("/posts/{id:[0-9]+}/upload",
+		requireUserMw.ApplyFn(postsC.ImageUpload)).
+		Methods("POST")
+	r.HandleFunc("/posts/{id:[0-9]+}/image/{filename}/delete",
+		requireUserMw.ApplyFn(postsC.ImageDelete)).
+    Methods("POST")
 
 	// Start that server!
-	http.ListenAndServe(":3000", r)
+	port := fmt.Sprintf(":%d", cfg.Port)
+	fmt.Printf("Now listening on %s...\n", port)
+	http.ListenAndServe(port, csrfMw(userMw.Apply(r)))
 }
-
-// #region DB HELPERS
-
-func getEnv() env {
-	return env{
-		host:     checkEnv("host"),
-		user:     checkEnv("user"),
-		password: checkEnv("password"),
-		port:     checkEnv("port"),
-		name:     checkEnv("name"),
-	}
-}
-
-func checkEnv(str string) string {
-	str, exists := os.LookupEnv("DB_" + strings.ToUpper(str))
-	if !exists {
-		panic(".env is missing environment variable: '" + str + "'")
-	}
-	return str
-}
-
-// #endregion

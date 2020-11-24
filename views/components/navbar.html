@@ -1,0 +1,91 @@
+{{define "navbar"}}
+<!-- 
+	TODO: Fix navbar placement issue
+		Issue: because I turned off the toggle feature of bootstrap navbar, the placement of the navbar is all weird.  I have to put a vertical spacer below it in app.html to make non-home pages display correctly.
+		Problem with fix: the home page looks like shit.
+-->
+<nav class="navbar navbar-expand-sm fixed-top navbar-dark bg-darker">
+
+	<a href="/" class="navbar-brand order-0">Nathaniel Wheeler</a>
+
+	<button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target=".dual-collapse"
+		aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+
+
+	<div class="collapse navbar-collapse w-100 order-2 dual-collapse ml-3">
+		<ul class="navbar-nav mr-auto">
+
+			<!-- Site Navigation -->
+			<li class="nav-item" id="nav-resume"><a class="nav-link" href="/resume">
+					Resume
+				</a></li>
+			<li class="nav-item" id="nav-blog"><a class="nav-link" href="/blog">
+					Archive
+				</a></li>
+			<li class="nav-item dropdown"><a href="#" class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Feeds
+				</a>
+				<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+					<a href="/feeds/feed.rss" class="dropdown-item">RSS</a>
+					<a href="/feeds/feed.atom" class="dropdown-item">Atom</a>
+					<a href="/feeds/feed.json" class="dropdown-item">JSON</a>
+				</div>
+			</li>
+
+		</ul>
+	</div>
+
+	<div class="collapse navbar-collapse w-100 order-3 dual-collapse">
+		<ul class="navbar-nav ml-auto">
+
+			<!-- Admin Section -->
+			{{if .User }}
+			{{if .User.IsAdmin}}
+			<li class="nav-item"><a class="nav-link" href="/posts/new">
+					New Post
+				</a></li>
+			{{end}}
+			{{end}}
+
+			<!-- User Section -->
+			{{if .User}}
+			<li class="nav-item navform ml-2">{{template "logoutForm"}}</li>
+			{{else}}
+			<li class="nav-item mx-1"><a class="btn btn-primary" role="button" href="/register">
+					Register
+				</a></li>
+			<li class="nav-item ml-1"><a class="btn btn-success" role="button" href="/login">
+					Login
+				</a></li>
+			{{end}}
+
+		</ul>
+	</div>
+
+</nav>
+
+<div class="nav-spacer"></div>
+
+<!-- To check URL for path prefixes and then activate the respective nav-item. -->
+<script>
+
+	let path = window.location.pathname.split("/");
+
+	if (path[1]) {
+		let pathPrefix = path[1]
+		switch (pathPrefix) {
+			case "resume":
+				document.getElementById("nav-resume").className += " active";
+				break;
+			case "blog":
+				document.getElementById("nav-blog").className += " active";
+				break;
+			default:
+				break;
+		}
+	}
+
+</script>
+{{end}}

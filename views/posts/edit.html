@@ -1,0 +1,158 @@
+{{define "yield"}}
+<main class="container">
+	<div class="row">
+		<div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
+
+			<div class="card border-light bg-dark">
+				<div class="card-body">
+					<div class="card-text">
+						{{template "editPostForm" .}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<br>
+
+	<div class="row">
+		<div class="col-12">
+			<div class="card border-light bg-dark">
+				<h3 class="card-header text-center">
+					Images
+				</h3>
+			</div>
+		</div>
+	</div>
+
+	<br>
+
+	{{template "postImages" .}}
+
+	<br>
+
+	<div class="row">
+		<div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
+
+			<div class="card border-light bg-dark">
+				<h3 class="card-header border-light text-center">
+					Upload Images
+				</h3>
+				<div class="card-body">
+
+					<div class="card-text">
+						{{template "uploadImageForm" .}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<br>
+
+	<div class="row">
+		<div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
+
+			<div class="card border-light bg-dark">
+				<div class="card-body">
+					<div class="card-text">
+						{{template "deletePostForm" .}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
+{{end}}
+
+{{define "editPostForm"}}
+<!-- POST /posts/:id/update -->
+<form action="/posts/{{.ID}}/update" method="POST">
+	{{csrfField}}
+	<div class="form-group">
+
+		<div class="row">
+			<label for="title" class="lead col-12">
+				Title
+				<input type="text" name="title" id="title" placeholder="The Great American Blog Post" value="{{.Title}}"
+					class="form-control">
+			</label>
+		</div>
+		<br>
+		<div class="row d-flex justify-content-center">
+			<button type="submit" class="btn btn-success btn-lg">
+				Edit Post!
+			</button>
+		</div>
+		<br>
+	</div>
+</form>
+{{end}}
+
+{{define "deletePostForm"}}
+<!-- POST /posts/:id/delete -->
+<form action="/posts/{{.ID}}/delete" method="POST">
+	{{csrfField}}
+	<div class="form-group">
+
+		<div class="row d-flex justify-content-center">
+			<button type="submit" class="btn btn-danger btn-lg">
+				Delete Post!
+			</button>
+		</div>
+	</div>
+</form>
+{{end}}
+
+{{define "uploadImageForm"}}
+<form action="/posts/{{.ID}}/upload" method="POST" enctype="multipart/form-data">
+	{{csrfField}}
+	<div class="form-group row">
+		<div class="col-12">
+
+			<p class="form-text">Please only use jpg, jpeg, and png.</p>
+			<input type="file" multiple="multiple" id="images" name="images">
+		</div>
+	</div>
+	<div class="row d-flex justify-content-center">
+		<button type="submit" class="btn btn-primary btn-lg">
+			Upload!
+		</button>
+	</div>
+</form>
+{{end}}
+
+{{define "postImages"}}
+<div class="row">
+	{{if .Images}}
+	<div class="card-deck">
+		{{range .Images}}
+		<div class="col-6 col-md-4 col-lg-3">
+			<div class="card border-light bg-dark">
+				<img src="{{.Path}}" alt="Help, I'm trapped in the alt text!" class="card-img-top">
+				<div class="card-body">
+					<p class="card-text">{{.Filename}}</p>
+					<div class="text-center">
+						{{template "deleteImageForm" .}}
+					</div>
+				</div>
+			</div>
+		</div>
+		{{end}}
+	</div>
+	{{else}}
+	<p class="offset-3 col-6 lead text-center">
+		<br>
+		Upload images below!
+	</p>
+	{{end}}
+</div>
+{{end}}
+
+{{define "deleteImageForm"}}
+<form action="/posts/{{.PostID}}/image/{{pathEscape .Filename}}/delete" method="POST">
+	{{csrfField}}
+	<button type="submit" class="btn btn-danger">Delete!</button>
+	<!-- <a class="badge badge-danger" onclick="this.closest('form').submit();return false;">X</a> -->
+</form>
+{{end}}

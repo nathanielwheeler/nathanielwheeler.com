@@ -1,3 +1,7 @@
+.*
 tmp
 exp
-.env
+dist
+node_modules
+
+public/stylesheets

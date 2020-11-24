@@ -1,33 +1,20 @@
 package models
 
 import (
-	"errors"
+	"regexp"
+	"strings"
+
+	"nathanielwheeler.com/hash"
+	"nathanielwheeler.com/rand"
 
 	"nathanielwheeler.com/hash"
 	"nathanielwheeler.com/rand"
 
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres" // Not directly used, but needed to help gorm communicate with postgres
 	"golang.org/x/crypto/bcrypt"
 )
 
-// TODO: randomize and store securely
-const (
-	hmacSecretKey = "secret-hmac-key"
-	userPwPepper  = "secret-string"
-)
-
-// errors
-var (
-	// ErrNotFound : Indicates that a resource does not exist within postgres
-	ErrNotFound = errors.New("models: resource not found")
-	// ErrInvalidID : Returned when an invalid ID is provided to a method like Delete.
-	ErrInvalidID = errors.New("models: ID provided was invalid")
-	// ErrInvalidPassword : Returned when an invalid password is is used when attempting to authenticate a user.
-	ErrInvalidPassword = errors.New("models: incorrect password")
-)
-
-// User is a model of the people using my website.
+// User : Model for people that want updates from my website and want to leave comments on my posts.
 type User struct {
 	gorm.Model
 	Name         string
@@ -35,86 +22,79 @@ type User struct {
 	Password     string `gorm:"-"` // Ensures that it won't be saved to database
 	PasswordHash string `gorm:"not null"`
 	Remember     string `gorm:"-"`
-	RememberHash string `gorm:"not null;unique_index"`
+	RememberHash string `gorm:"not null; unique_index"`
+	IsAdmin      bool   `gorm:"default:false"`
 }
 
-// UsersDB is used to interact with the users database
-type UsersDB interface {
-	// Methods for querying single users
+// UserDB is used to interact with the users database.
+type UserDB interface {
+	// methods for single user queries
 	ByID(id uint) (*User, error)
 	ByEmail(email string) (*User, error)
 	ByRemember(token string) (*User, error)
-
-	// Methods for altering users
+	// methods for altering users
 	Create(user *User) error
 	Update(user *User) error
 	Delete(id uint) error
-
-	// Used to close a DB connection
-	Close() error
-
-	// Migration helpers
-	AutoMigrate() error
-	DestructiveReset() error
 }
 
-// UsersService processes the logic for users
-type UsersService struct {
-	UsersDB
+// #region SERVICE
+
+// UserService is a set of methods used to handle business rules of the user model
+type UserService interface {
+	Authenticate(email, password string) (*User, error)
+	UserDB
 }
 
-type usersValidator struct {
-	UsersDB
+// userService processes business rules for users
+type userService struct {
+	UserDB
+	pepper string
 }
 
-type usersGorm struct {
-	db   *gorm.DB
-	hmac hash.HMAC
+// NewUserService : constructor for userService.  Calls constructors for user gorm and user validator.
+func NewUserService(db *gorm.DB, pepper, hmacKey string) UserService {
+	ug := &userGorm{db}
+	hmac := hash.NewHMAC(hmacKey)
+	uv := newUserValidator(ug, hmac, pepper)
+	return &userService{
+		UserDB: uv,
+		pepper: pepper,
+	}
 }
 
-// NewUsersService is a constructor for UsersService.  It embeds UsersDB (usersGorm) to handle database connections.
-func NewUsersService(connectionStr string) (*UsersService, error) {
-	ug, err := newUsersGorm(connectionStr)
+// Authenticate : Used to authenticate a user with a provided email address and password.  Returns a user and an error message.
+func (us *userService) Authenticate(email, password string) (*User, error) {
+	// Check if email exists
+	foundUser, err := us.ByEmail(email)
 	if err != nil {
 		return nil, err
 	}
-	return &UsersService{
-		UsersDB: ug,
-	}, nil
-}
-
-// newUsersGorm is a constructor for UsersGorm.  Initializes database connection.
-func newUsersGorm(connectionStr string) (*usersGorm, error) {
-	db, err := gorm.Open("postgres", connectionStr)
-	if err != nil {
+	// If email found, compare password hashes. Return user or error statement.
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(foundUser.PasswordHash),
+		[]byte(password+us.pepper))
+	switch err {
+	case nil:
+		return foundUser, nil
+	case bcrypt.ErrMismatchedHashAndPassword:
+		return nil, ErrPasswordInvalid
+	default:
 		return nil, err
 	}
-	db.LogMode(true)
-	hmac := hash.NewHMAC(hmacSecretKey)
-	return &usersGorm{
-		db:   db,
-		hmac: hmac,
-	}, nil
 }
-
-// #region METHODS: UsersValidation
-
-/* 
-func (uv *usersValidator) ByID (id uint) (*User, error) {
-	// Validate the ID
-	if id <= 0 {
-		return nil, errors.New("Invalid ID")
-	}
-	// If valid, call the next method in the chain and return its results.
-	return uv.UsersDB.ByID(id)
-} */
 
 // #endregion
 
-// #region METHODS: UsersDB
+// #region GORM
+
+// userGORM represents the database interaction layer
+type userGorm struct {
+	db *gorm.DB
+}
 
 // ByID gets a user given an ID.
-func (ug *usersGorm) ByID(id uint) (*User, error) {
+func (ug *userGorm) ByID(id uint) (*User, error) {
 	var user User
 	db := ug.db.Where("id = ?", id)
 	err := first(db, &user)
@@ -125,17 +105,16 @@ func (ug *usersGorm) ByID(id uint) (*User, error) {
 }
 
 // ByEmail gets a user given an email string
-func (ug *usersGorm) ByEmail(email string) (*User, error) {
+func (ug *userGorm) ByEmail(email string) (*User, error) {
 	var user User
 	db := ug.db.Where("email = ?", email)
 	err := first(db, &user)
 	return &user, err
 }
 
-// ByRemember looks up a user with the given remember token and returns that user.
-func (ug *usersGorm) ByRemember(token string) (*User, error) {
+// ByRemember gets a user given a remember token hash
+func (ug *userGorm) ByRemember(rememberHash string) (*User, error) {
 	var user User
-	rememberHash := ug.hmac.Hash(token)
 	err := first(ug.db.Where("remember_hash = ?", rememberHash), &user)
 	if err != nil {
 		return nil, err
@@ -143,101 +122,295 @@ func (ug *usersGorm) ByRemember(token string) (*User, error) {
 	return &user, nil
 }
 
-// Create makes the provided user and fills provided data fields
-func (ug *usersGorm) Create(user *User) error {
-	pwBytes := []byte(user.Password + userPwPepper)
-	hashedBytes, err := bcrypt.GenerateFromPassword(
-		pwBytes, bcrypt.DefaultCost)
+// Create takes in a validated user and adds it the database
+func (ug *userGorm) Create(user *User) error {
+	return ug.db.Create(user).Error
+}
+
+// Update will update details of the user
+func (ug *userGorm) Update(user *User) error {
+	return ug.db.Save(user).Error
+}
+
+// Delete removes the user identified by the id
+func (ug *userGorm) Delete(id uint) error {
+	user := User{Model: gorm.Model{ID: id}}
+	return ug.db.Delete(&user).Error
+}
+
+// #endregion
+
+// #region VALIDATION
+
+// userValidator represents the validation layer.  It also handles normalization.
+type userValidator struct {
+	UserDB
+	hmac       hash.HMAC
+	pepper     string
+	emailRegex *regexp.Regexp
+	// TODO: make regex for password validation
+	// passwordRegex *regexp.Regexp
+}
+
+// Constructor for userValidator layer.  Needed so that I can compile regex and assign it.
+func newUserValidator(udb UserDB, hmac hash.HMAC, pepper string) *userValidator {
+	return &userValidator{
+		UserDB: udb,
+		hmac:   hmac,
+		pepper: pepper,
+		emailRegex: regexp.MustCompile(
+			`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`),
+		// TODO figure out what I need for this
+		/* Requirements:
+		   - A-z
+		   - 0-9
+		   - !@#$%^&*()-_+={}[]\|:;'".,/<>?`~
+		   - spaces
+		*/
+		/* passwordRegex: regexp.MustCompile(
+		   ``), */
+	}
+}
+
+// #region DB VALIDATORS
+
+// ByEmail will normalize an email address before passing it to the database layer.
+func (uv *userValidator) ByEmail(email string) (*User, error) {
+	user := User{
+		Email: email,
+	}
+	err := runUserValFns(&user, uv.normalizeEmail)
+	if err != nil {
+		return nil, err
+	}
+	return uv.UserDB.ByEmail(user.Email)
+}
+
+// ByRemember will hash the remember token then call ByRemember in the UserDB layer.
+func (uv *userValidator) ByRemember(token string) (*User, error) {
+	user := User{
+		Remember: token,
+	}
+	if err := runUserValFns(&user, uv.hmacRemember); err != nil {
+		return nil, err
+	}
+	return uv.UserDB.ByRemember(user.RememberHash)
+}
+
+// Create will make the provided user and backfill data like the ID, CreatedAt, and UpdatedAt fields.
+func (uv *userValidator) Create(user *User) error {
+	err := runUserValFns(user,
+		uv.passwordRequired,
+		uv.passwordMinLength,
+		uv.bcryptPassword,
+		uv.passwordHashRequired,
+		uv.setRememberIfUnset,
+		uv.rememberMinBytes,
+		uv.hmacRemember,
+		uv.rememberHashRequired,
+		uv.normalizeEmail,
+		uv.requireEmail,
+		uv.emailFormat,
+		uv.emailIsAvail)
+	if err != nil {
+		return err
+	}
+	return uv.UserDB.Create(user)
+}
+
+// Update will hash a remember token if one is provided attached to the user object
+func (uv *userValidator) Update(user *User) error {
+	err := runUserValFns(user,
+		uv.passwordMinLength,
+		uv.bcryptPassword,
+		uv.passwordHashRequired,
+		uv.rememberMinBytes,
+		uv.hmacRemember,
+		uv.rememberHashRequired,
+		uv.normalizeEmail,
+		uv.requireEmail,
+		uv.emailFormat,
+		uv.emailIsAvail)
+	if err != nil {
+		return err
+	}
+	return uv.UserDB.Update(user)
+}
+
+// Delete will delete the user with the provided ID, assuming that uint is greater than zero.
+func (uv *userValidator) Delete(id uint) error {
+	var user User
+	user.ID = id
+	err := runUserValFns(&user, uv.idGreaterThan(0))
+	if err != nil {
+		return err
+	}
+	return uv.UserDB.Delete(id)
+}
+
+// #endregion
+
+// #region VAL METHODS
+
+type userValFn func(*User) error
+
+// runUserValFns will take a user object and loop through input validation functions to ensure that all data is proper.
+func runUserValFns(user *User, fns ...userValFn) error {
+	for _, fn := range fns {
+		if err := fn(user); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// bcryptPassword will hash a user's password with pepper and salt it with bcrypt.
+func (uv *userValidator) bcryptPassword(user *User) error {
+	// Will not run if password isn't provided in the provided user
+	if user.Password == "" {
+		return nil
+	}
+
+	pwBytes := []byte(user.Password + uv.pepper)
+	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 	user.PasswordHash = string(hashedBytes)
 	user.Password = ""
 
+	return nil
+}
+
+// hmacRemember will hash a remember token if one is provided
+func (uv *userValidator) hmacRemember(user *User) error {
 	if user.Remember == "" {
-		token, err := rand.RememberToken()
-		if err != nil {
-			return err
-		}
-		user.Remember = token
+		return nil
 	}
-	user.RememberHash = ug.hmac.Hash(user.Remember)
-
-	return ug.db.Create(user).Error
+	user.RememberHash = uv.hmac.Hash(user.Remember)
+	return nil
 }
 
-// Update changes subscriber preferences
-func (ug *usersGorm) Update(user *User) error {
+/* setRememberIfUnset will check the input user object to see if it has a remember token.
+If it does, it returns nil.
+If it doesn't, it calls rand.RememberToken() and adds the returned hash to the user. */
+func (uv *userValidator) setRememberIfUnset(user *User) error {
 	if user.Remember != "" {
-		user.RememberHash = ug.hmac.Hash(user.Remember)
+		return nil
 	}
-	return ug.db.Save(user).Error
-}
-
-// Delete removes the subscriber identified by the id
-func (ug *usersGorm) Delete(id uint) error {
-	if id == 0 {
-		return ErrInvalidID
-	}
-	user := User{Model: gorm.Model{ID: id}}
-	return ug.db.Delete(&user).Error
-}
-
-// Close shuts down the connection to database
-func (ug *usersGorm) Close() error {
-	return ug.db.Close()
-}
-
-// AutoMigrate attempts to automatically migrate the subscribers table
-func (ug *usersGorm) AutoMigrate() error {
-	if err := ug.db.AutoMigrate(&User{}).Error; err != nil {
+	token, err := rand.RememberToken()
+	if err != nil {
 		return err
+	}
+	user.RememberHash = token
+	return nil
+}
+
+// idGreaterThan is to make sure that a uint of zero never reaches the delete function of Gorm, which would delete the entire database.
+func (uv *userValidator) idGreaterThan(n uint) userValFn {
+	return userValFn(func(user *User) error {
+		if user.ID <= n {
+			return errIDInvalid
+		}
+		return nil
+	})
+}
+
+// normalizeEmail will ensure that email addresses are stored in a standardized format in the database.
+func (uv *userValidator) normalizeEmail(user *User) error {
+	user.Email = strings.ToLower(user.Email)
+	user.Email = strings.TrimSpace(user.Email)
+	return nil
+}
+
+// requireEmail requires an email to be entered before continuing.
+func (uv *userValidator) requireEmail(user *User) error {
+	if user.Email == "" {
+		return errEmailRequired
 	}
 	return nil
 }
 
-// DestructiveReset destroys tables and calls AutoMigrate()
-func (ug *usersGorm) DestructiveReset() error {
-	err := ug.db.DropTableIfExists(&User{}).Error
+// emailFormat checks if provided email address is in a proper form
+func (uv *userValidator) emailFormat(user *User) error {
+	if user.Email == "" {
+		// This is a bit weird, but there may be instances where I accept an optional email field, but still need to make sure I have a proper email.
+		return nil
+	}
+	if !uv.emailRegex.MatchString(user.Email) {
+		return errEmailInvalid
+	}
+	return nil
+}
+
+// emailIsAvail checks if the email address entered is not already taken
+func (uv *userValidator) emailIsAvail(user *User) error {
+	existing, err := uv.ByEmail(user.Email)
+	// This means the email address is available.  Continue.
+	if err == ErrNotFound {
+		return nil
+	}
+	// Other errors are bad.  Return error.
 	if err != nil {
 		return err
 	}
-	return ug.AutoMigrate()
+	// Check if the existing email belongs to someone else.
+	if user.ID != existing.ID {
+		return errEmailTaken
+	}
+	return nil
+}
+
+// passwordMinLength enforces a minimum length on password. NOTE: It MUST be run before the password hasher.
+func (uv *userValidator) passwordMinLength(user *User) error {
+	if user.Password == "" {
+		return nil
+	}
+	if len(user.Password) < 8 {
+		return errPasswordTooShort
+	}
+	return nil
+}
+
+// passwordRequired returns an error if the password field passed in is empty
+func (uv *userValidator) passwordRequired(user *User) error {
+	if user.Password == "" {
+		return errPasswordRequired
+	}
+	return nil
+}
+
+// passwordHashRequired returns if a hash for whatever reason wasn't made
+func (uv *userValidator) passwordHashRequired(user *User) error {
+	if user.PasswordHash == "" {
+		return errPasswordRequired
+	}
+	return nil
+}
+
+// rememberMinBytes will check if remember token has 32 bytes
+func (uv *userValidator) rememberMinBytes(user *User) error {
+	if user.Remember == "" {
+		return nil
+	}
+	n, err := rand.NBytes(user.Remember)
+	if err != nil {
+		return err
+	}
+	if n < 32 {
+		return errRememberTooShort
+	}
+	return nil
+}
+
+// rememberHashRequired checks if there is a remember token hash
+func (uv *userValidator) rememberHashRequired(user *User) error {
+	if user.RememberHash == "" {
+		return errRememberRequired
+	}
+	return nil
 }
 
 // #endregion
-
-
-
-// Authenticate is used to authenticate a user with a provided email address and password.  Returns a user and an error message.
-func (us *UsersService) Authenticate(email, password string) (*User, error) {
-	// Check if email exists
-	foundUser, err := us.ByEmail(email)
-	if err != nil {
-		return nil, err
-	}
-	// If email found, compare password hashes. Return user or error statement.
-	err = bcrypt.CompareHashAndPassword(
-		[]byte(foundUser.PasswordHash),
-		[]byte(password+userPwPepper))
-	switch err {
-	case nil:
-		return foundUser, nil
-	case bcrypt.ErrMismatchedHashAndPassword:
-		return nil, ErrInvalidPassword
-	default:
-		return nil, err
-	}
-}
-
-// #region HELPERS
-
-func first(db *gorm.DB, dst interface{}) error {
-	err := db.First(dst).Error
-	if err == gorm.ErrRecordNotFound {
-		return ErrNotFound
-	}
-	return err
-}
 
 // #endregion
