@@ -1,7 +1,6 @@
 .*
-tmp
-exp
-dist
+tmp/
+exp/
+dist/
 node_modules
-
-public/stylesheets
+client/public/assets

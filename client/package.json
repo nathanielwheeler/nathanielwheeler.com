@@ -1,0 +1,9 @@
+{
+  "name": "client",
+  "version": "1.0.0",
+  "author": "Nathaniel Wheeler",
+  "license": "BSD-4-Clause",
+  "dependencies": {
+    "bootstrap": "^4.5.3"
+  }
+}

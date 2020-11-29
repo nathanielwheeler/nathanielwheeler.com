@@ -1,0 +1,11 @@
+{
+	"name": "Nathan's Blog",
+	"description": "A personal blog.",
+	"keywords": [
+    "go",
+    "blog",
+    "personal"
+	],
+	"website": "http://nathanielwheeler.com",
+	"repository": "http://github.com/nathanielwheeler/nathanielwheeler.com"
+}
