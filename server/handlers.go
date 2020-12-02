@@ -18,6 +18,7 @@ func (s *server) handleTemplate(data interface{}, files ...string) http.HandlerF
 			if err != nil {
 				s.logErr("error parsing template files", err)
 			}
+
 			tpl = tpl.New("").Funcs(template.FuncMap{
 				"echo": func(input string) string {
 					return input

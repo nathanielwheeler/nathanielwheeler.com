@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"html/template"
 	"path/filepath"
 )
@@ -12,7 +13,9 @@ func (s *server) parseTemplates(files ...string) (tpl *template.Template, err er
 		file := files[i]
 		file = filepath.Join("client", "templates", v)
 		file = file + ".tpl"
+		files[i] = file
 	}
+	s.logMsg(fmt.Sprintf("Files: %v\n", files))
 	tpl, err = template.ParseFiles(files...)
 	if err != nil {
 		s.logErr("Error parsing template file", err)

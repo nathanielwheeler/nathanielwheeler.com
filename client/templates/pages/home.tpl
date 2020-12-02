@@ -21,9 +21,9 @@
 <main class="container-fluid pt-3">
 	<div class="row">
 		<div class="col-12 offset-md-1 offset-lg-2 offset-xl-3 col-md-10 col-lg-8 col-xl-6">
-			{{range $i := .}}
-				{{template "blogCard" $i}}
-			{{end}}
+			range $i := .
+				template "blogCard" $i
+			end
 		</div>
 	</div>
 </main>
