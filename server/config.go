@@ -7,12 +7,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const (
-	configFile = ".config.yml"
-
-	dialect = "postgres"
-)
-
 type config struct {
 	Env       string         `yaml:"env"`
 	Port      int            `yaml:"port"`
@@ -23,7 +17,7 @@ type config struct {
 }
 
 func loadConfig() *config {
-	f, err := os.Open(configFile)
+	f, err := os.Open(".config.yml")
 	if err != nil {
 		panic("No configuration file detected!")
 	}
@@ -41,7 +35,6 @@ func (s *server) isProd() bool {
 	return s.config.Env == "prod"
 }
 
-// PostgresConfig holds database connection info.
 type postgresConfig struct {
 	DBName   string `yaml:"name"`
 	Host     string `yaml:"host"`
@@ -50,21 +43,11 @@ type postgresConfig struct {
 	Password string `yaml:"password"`
 }
 
-func (s *server) dialect() string {
-	return dialect
-}
-
-// ConnectionString will return a string used to connect to the database
+// Returns a connection string representing a URI in the form of:
+// postgresql://[user[:password]@][port][:port][/dbname]
 func (s *server) connectionString() string {
 	c := s.config.Database
-	if s.isProd() {
-		return fmt.Sprintf(
-			"host=%s port=%s user=%s password=%s dbname=%s",
-			c.Host, c.Port, c.User, c.Password, c.DBName,
-		)
-	}
-	return fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		c.Host, c.Port, c.User, c.Password, c.DBName,
-	)
+
+	return fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
+		c.User, c.Password, c.Host, c.Port, c.DBName)
 }
