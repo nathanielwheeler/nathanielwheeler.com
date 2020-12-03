@@ -2,9 +2,9 @@ package server
 
 import (
 	"bytes"
-	"fmt"
 	"html/template"
 	"io/ioutil"
+	"net/http"
 	"path/filepath"
 
 	"github.com/yuin/goldmark"
@@ -12,17 +12,19 @@ import (
 	"github.com/yuin/goldmark/parser"
 )
 
-func (s *server) parseTemplates(files ...string) (tpl *template.Template, err error) {
+// parseTemplates handles the logic behind parsing templates and attaching functions.
+func (s *server) parseTemplates(w http.ResponseWriter, files ...string) (tpl *template.Template, err error) {
 	// Automatically adds app layout
 	files = append(files, filepath.Join("layouts", "app"))
 	for i, v := range files {
-		file := files[i]
-		file = filepath.Join("client", "templates", v)
-		file = file + ".tpl"
-		files[i] = file
+		files[i] = filepath.Join("client", "templates", v) + ".tpl"
 	}
-	s.logMsg(fmt.Sprintf("Files: %v\n", files))
-	tpl, err = template.ParseFiles(files...)
+
+	tpl, err = template.New("").Funcs(template.FuncMap{
+		"echo": func(input string) string {
+			return input
+    },
+	}).ParseFiles(files...)
 	if err != nil {
 		s.logErr("Error parsing template file", err)
 		return nil, err
@@ -69,6 +71,7 @@ func (s *server) parseMarkdown(file string) markdown {
 		s.logErr("markdown failed to parse", err)
 	}
 
+	// TODO validate MetaData so that I can ensure that markdown files are valid posts.
 	return markdown{
 		Body:     &buf,
 		MetaData: meta.Get(ctx),

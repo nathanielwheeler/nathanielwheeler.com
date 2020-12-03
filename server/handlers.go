@@ -14,16 +14,10 @@ func (s *server) handleTemplate(data interface{}, files ...string) http.HandlerF
 	)
 	return func(w http.ResponseWriter, r *http.Request) {
 		init.Do(func() {
-			tpl, err = s.parseTemplates(files...)
+			tpl, err = s.parseTemplates(w, files...)
 			if err != nil {
 				s.logErr("error parsing template files", err)
 			}
-
-			tpl = tpl.New("").Funcs(template.FuncMap{
-				"echo": func(input string) string {
-					return input
-				},
-			})
 		})
 		w.Header().Set("Content-Type", "text/html")
 		err = tpl.ExecuteTemplate(w, "app", s.parseData(nil))
