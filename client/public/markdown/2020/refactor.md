@@ -15,4 +15,4 @@ In his talk [_A Journey to Postgres Productivity with Go_](#), Johan Brandhorst-
 Previously, I used [GORM](#) for my database interactions.  With the lessons I learned from this talk, I was able to cut the ORM out and make more efficient queries directly.
 
 ## Better Logging
-I have also decided to use a more robust logger than what the standard library provides.  I settled on [logrus](#) since it is widely used, well-maintained, and is directly supported by the pgx driver.
+I have also decided to use a more robust logger than what the standard library provides.  I settled on [logrus](#) since it is widely used, well-maintained, and is directly supported by the [pgx](#) driver that I use for Postgres.
