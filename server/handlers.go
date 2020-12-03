@@ -26,7 +26,7 @@ func (s *server) handleTemplate(data interface{}, files ...string) http.HandlerF
 			})
 		})
 		w.Header().Set("Content-Type", "text/html")
-		err = tpl.Execute(w, s.parseData(nil))
+		err = tpl.ExecuteTemplate(w, "app", s.parseData(nil))
 		if err != nil {
 			s.logErr("error executing template", err)
 		}
