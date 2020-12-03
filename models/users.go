@@ -7,6 +7,9 @@ import (
 	"nathanielwheeler.com/hash"
 	"nathanielwheeler.com/rand"
 
+	"nathanielwheeler.com/hash"
+	"nathanielwheeler.com/rand"
+
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
