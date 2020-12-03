@@ -19,11 +19,28 @@ func (s *server) parseTemplates(w http.ResponseWriter, files ...string) (tpl *te
 	for i, v := range files {
 		files[i] = filepath.Join("client", "templates", v) + ".tpl"
 	}
+	// Automatically adds components folder
+  comps, err := ioutil.ReadDir("." + filepath.Join("client", "templates", "components"))
+  if err != nil {
+    s.logErr("failed to read components", err)
+    return nil, err
+  }
+	for _, v := range comps {
+    files = append(files, v.Name())
+  }
 
 	tpl, err = template.New("").Funcs(template.FuncMap{
 		"echo": func(input string) string {
 			return input
-    },
+		},
+		"isMarkdown": func(data interface{}) bool {
+			switch data.(type) {
+			case markdown:
+				return true
+			default:
+				return false
+			}
+		},
 	}).ParseFiles(files...)
 	if err != nil {
 		s.logErr("Error parsing template file", err)
@@ -47,7 +64,7 @@ type markdown struct {
 }
 
 // parseMarkdown will take in a markdown file location and return html
-func (s *server) parseMarkdown(file string) markdown {
+func (s *server) parseMarkdown(file string) (markdown, error) {
 	var (
 		buf bytes.Buffer
 		err error
@@ -56,7 +73,8 @@ func (s *server) parseMarkdown(file string) markdown {
 
 	src, err := ioutil.ReadFile(file)
 	if err != nil {
-		s.logErr("failed to read .md file", err)
+    s.logErr("failed to read .md file", err)
+    return markdown{}, err
 	}
 
 	md := goldmark.New(
@@ -68,12 +86,13 @@ func (s *server) parseMarkdown(file string) markdown {
 	ctx := parser.NewContext()
 	err = md.Convert([]byte(src), &buf, parser.WithContext(ctx))
 	if err != nil {
-		s.logErr("markdown failed to parse", err)
+    s.logErr("markdown failed to parse", err)
+    return markdown{}, err
 	}
 
 	// TODO validate MetaData so that I can ensure that markdown files are valid posts.
 	return markdown{
 		Body:     &buf,
 		MetaData: meta.Get(ctx),
-	}
+	}, nil
 }
