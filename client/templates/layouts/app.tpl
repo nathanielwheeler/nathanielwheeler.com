@@ -23,7 +23,7 @@
 {{define "navbar"}}
 <nav class="navbar navbar-expand-md navbar-secondary bg-secondary text-dark">
   <a href="/" class="navbar-brand">
-    <img src="images/logoface.svg" alt="Nathan's face" width="100px" class="d-inline-block align-top">Nathaniel Wheeler
+    <span class="logoface"></span> Nathaniel Wheeler
   </a>
 </nav>
 {{end}}
