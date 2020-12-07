@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+// handleTemplate handles the execution of templates given data and any number of files.  The app layout is used as the template base.  A template from the pages directory must be used.  Components used must be included in this call.
 func (s *server) handleTemplate(data interface{}, files ...string) http.HandlerFunc {
 	var (
 		init sync.Once

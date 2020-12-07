@@ -19,6 +19,7 @@ type config struct {
 func loadConfig() *config {
 	f, err := os.Open(".config.yml")
 	if err != nil {
+		// This error can be hit during testing.  If so, it means I didn't set the working directory in the test.
 		panic("No configuration file detected!")
 	}
 	defer f.Close()
