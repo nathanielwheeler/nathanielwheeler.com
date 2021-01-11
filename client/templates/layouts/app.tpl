@@ -21,9 +21,15 @@
 {{end}}
 
 {{define "navbar"}}
-<nav class="navbar navbar-expand-md navbar-secondary bg-secondary text-dark">
-  <a href="/" class="navbar-brand">
-    <span class="logoface"></span> Nathaniel Wheeler
-  </a>
+<nav class="container-flex bg-dark">
+  <h1 class="row">
+    <a class="col-12 text-center" href="/">Nathaniel Wheeler</a>
+  </h1>
+  <div class="row">
+    <div class="col-12 text-center">
+      <a href="#">Portfolio</a> | 
+      <a href="#">Contact</a>
+    </div>
+  </div>
 </nav>
 {{end}}
